@@ -24,8 +24,11 @@ def render(q: Question, query: Query, d: Decision) -> dict:
     else:
         counts = ", ".join(f"{v} {k}" for k, v in sorted(d.tally.items(), key=lambda kv: -kv[1]))
         tail = " is unclear" if d.direction == "unclear" else ""
+        n_papers = sum(d.tally.values())
         answer = (f"{LEAD[d.direction]} {query.outcome}{tail} "
-                  f"({len(d.edge_ids)} edges: {counts}; certainty {d.certainty}).")
+                  f"({n_papers} {'study' if n_papers == 1 else 'studies'},{len(d.edge_ids)} edges: {counts}; certainty {d.certainty}).")
+        if d.notes:
+            answer += " " + " ".join(d.notes)
     return {
         "id": q.id,
         "status": d.status,

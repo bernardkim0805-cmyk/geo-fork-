@@ -50,4 +50,6 @@ class Decision:
     confidence: float = 0.5
     edge_ids: list[str] = field(default_factory=list)
     searched_for: Optional[str] = None
-    tally: dict = field(default_factory=dict)  # per-direction edge counts, for rendering
+    tally: dict = field(default_factory=dict)  # per-direction paper counts, for rendering
+    notes: list[str] = field(default_factory=list)  # plain-English caveats for render
+    votes: list = field(default_factory=list)       # per-edge EdgeVote trace (debug / extras)
