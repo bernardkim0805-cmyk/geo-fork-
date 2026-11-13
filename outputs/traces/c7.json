@@ -1,0 +1,114 @@
+{
+  "id": "c7",
+  "question": "How long do created marshes take to reach biodiversity and function comparable to natural reference wetlands, and which attributes lag?",
+  "plan": {
+    "cause": {
+      "label": "Created marshes",
+      "terms": [
+        "created",
+        "constructed",
+        "artificial",
+        "restored",
+        "engineered",
+        "new",
+        "wetland",
+        "marsh"
+      ],
+      "exclude": [
+        "natural",
+        "reference",
+        "pristine",
+        "old",
+        "mature"
+      ]
+    },
+    "outcome": {
+      "label": "Biodiversity and function comparable to natural reference wetlands",
+      "terms": [
+        "biodiversity",
+        "function",
+        "wetland",
+        "marsh",
+        "reference",
+        "natural"
+      ],
+      "attributes": [
+        "time",
+        "lag",
+        "comparable",
+        "equivalent",
+        "recovery",
+        "development"
+      ],
+      "exclude": [
+        "invasive",
+        "exotic",
+        "non-native"
+      ]
+    }
+  },
+  "n_candidates": 7,
+  "kept": [
+    "camo:edge_0961f414b372",
+    "camo:edge_1941cf4291bf",
+    "camo:edge_4fb19c08e929"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_a46b76e030e6",
+    "camo:edge_6202be97dffd",
+    "camo:edge_733b9e643bcd",
+    "camo:edge_003ea927b856"
+  ],
+  "aggregate": {
+    "direction": "mixed",
+    "certainty": "very_low",
+    "confidence": 0.6,
+    "papers": {
+      "A3U2XCXX": "no_effect",
+      "10.1016/j.ecoleng.2013.01.024": "no_effect",
+      "10.1111/j.1654-109X.2011.01164.x": "decrease"
+    },
+    "paper_counts": {
+      "no_effect": 2,
+      "decrease": 1
+    },
+    "agreement": 0.67,
+    "n_papers": 3
+  },
+  "edges": [
+    {
+      "id": "camo:edge_0961f414b372",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "Restoration status",
+      "predicate": "causes",
+      "object": "Species richness, Shannon Weaver index, or evenness",
+      "paper": "A3U2XCXX",
+      "grade": "low",
+      "sentence": "When only native species were analyzed, there were no overall differences in species richness, Shannon Weaver index, or evenness between restored and reference sites (MANOVA: Wilks' lambda (WL) 5 0.88, *F*3,30 5 1.38; *p* 5 0.2686"
+    },
+    {
+      "id": "camo:edge_1941cf4291bf",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "site age",
+      "predicate": "causes",
+      "object": "vegetation community type",
+      "paper": "10.1016/j.ecoleng.2013.01.024",
+      "grade": "low",
+      "sentence": "The age of reclaimed sites with the recsedge community was not significantly different from reclaimed sites with the distsal community (17 ± 2.9 years and 15 ± 4.3 years, respectively; One-way ANOVA; F(1, 16) = 0.063, p = 0.81); that is, age was not a determining factor in the vegetation communities we observed at oil sands sites."
+    },
+    {
+      "id": "camo:edge_4fb19c08e929",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Restored peatland status",
+      "predicate": "associated_with",
+      "object": "Plant species composition",
+      "paper": "10.1111/j.1654-109X.2011.01164.x",
+      "grade": "low",
+      "sentence": "The centroid positions indicate that plant species compositions of re-vegetated and natural peatlands were dissimilar regardless of position within the gradient of microtopography. The only exception was for hummocks at the re-vegetated Viru site in northern Estonia, whose vegetation was similar to that of local natural bogs (Fig. 2a)."
+    }
+  ]
+}

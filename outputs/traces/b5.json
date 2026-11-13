@@ -1,0 +1,167 @@
+{
+  "id": "b5",
+  "question": "Where restoration sites face several stressors at once (for example deer browsing plus competing vegetation, harvesting plus drought, or repeated fires), do the stressors interact, and which one most limits recovery?",
+  "plan": {
+    "cause": {
+      "label": "Multiple stressors",
+      "terms": [
+        "stressor",
+        "browsing",
+        "harvesting",
+        "drought",
+        "fire",
+        "competition",
+        "disturbance"
+      ],
+      "exclude": [
+        "single",
+        "isolated"
+      ]
+    },
+    "outcome": {
+      "label": "Recovery limitation",
+      "terms": [
+        "recovery",
+        "regeneration",
+        "resilience",
+        "restoration",
+        "succession"
+      ],
+      "attributes": [
+        "limiting",
+        "interaction",
+        "dominant",
+        "constraint",
+        "rate",
+        "success"
+      ],
+      "exclude": [
+        "growth",
+        "yield",
+        "productivity"
+      ]
+    }
+  },
+  "n_candidates": 13,
+  "kept": [
+    "camo:edge_4c78d788f9e0",
+    "camo:edge_4b74d70f1104",
+    "camo:edge_4294a11c140d",
+    "camo:edge_b6fcaeee45eb",
+    "camo:edge_6b4137227797",
+    "camo:edge_2df6435352cb",
+    "camo:edge_13fa9ab84d1e",
+    "camo:edge_8108657fe94e"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_3beb88db4b73",
+    "camo:edge_b190062b645e",
+    "camo:edge_06206aad90af",
+    "camo:edge_d45af8b54803",
+    "camo:edge_529184b0595c"
+  ],
+  "aggregate": {
+    "direction": "mixed",
+    "certainty": "very_low",
+    "confidence": 0.53,
+    "papers": {
+      "10.1016/j.rse.2017.03.035": "mixed"
+    },
+    "paper_counts": {
+      "mixed": 1
+    },
+    "agreement": 0.0,
+    "n_papers": 1
+  },
+  "edges": [
+    {
+      "id": "camo:edge_4c78d788f9e0",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Wildfire disturbance",
+      "predicate": "associated_with",
+      "object": "Decreased Recovery Indicator",
+      "paper": "10.1016/j.rse.2017.03.035",
+      "grade": "low",
+      "sentence": "in contrast to trends observed for ΔNBRregrowth values, wildfire areas generally had lower average RI values (0.55, σ = 0.62); compared to harvest areas (0.61, σ = 0.67; [Fig. 9](#page-10-0)A"
+    },
+    {
+      "id": "camo:edge_4b74d70f1104",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Harvest disturbance",
+      "predicate": "associated_with",
+      "object": "Increased Recovery Indicator",
+      "paper": "10.1016/j.rse.2017.03.035",
+      "grade": "low",
+      "sentence": "In summary, once the magnitude of the disturbance is considered, harvest areas had higher RI values on average than wildfire areas"
+    },
+    {
+      "id": "camo:edge_4294a11c140d",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Harvest disturbance",
+      "predicate": "associated_with",
+      "object": "Decreased time to recovery",
+      "paper": "10.1016/j.rse.2017.03.035",
+      "grade": "low",
+      "sentence": "The national Y2R average value for wildfire areas was 10.6 years (σ = 5.6 years) compared to 6.6 years (σ = 3.9 years) for harvest areas."
+    },
+    {
+      "id": "camo:edge_b6fcaeee45eb",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Wildfire and harvest disturbances",
+      "predicate": "associated_with",
+      "object": "Low overall non-recovery rate",
+      "paper": "10.1016/j.rse.2017.03.035",
+      "grade": "low",
+      "sentence": "Overall, b1% of the areas disturbed by wildfire and harvest were identified as non-recovering by all three spectral measures of recovery used in our analysis"
+    },
+    {
+      "id": "camo:edge_6b4137227797",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Harvest disturbances",
+      "predicate": "associated_with",
+      "object": "High recovery rate",
+      "paper": "10.1016/j.rse.2017.03.035",
+      "grade": "low",
+      "sentence": "Conversely, 77.4% of harvest areas and 57.4% of areas disturbed by wildfire were considered as recovered by all three metrics."
+    },
+    {
+      "id": "camo:edge_2df6435352cb",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Wildfire disturbances",
+      "predicate": "associated_with",
+      "object": "Moderate recovery rate",
+      "paper": "10.1016/j.rse.2017.03.035",
+      "grade": "low",
+      "sentence": "Conversely, 77.4% of harvest areas and 57.4% of areas disturbed by wildfire were considered as recovered by all three metrics."
+    },
+    {
+      "id": "camo:edge_13fa9ab84d1e",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Wildfire disturbances",
+      "predicate": "associated_with",
+      "object": "Delayed recovery",
+      "paper": "10.1016/j.rse.2017.03.035",
+      "grade": "low",
+      "sentence": "Of note, 28.7% of the areas disturbed by wildfire that were identified as recovering by the shortterm metrics, had not yet recovered by the end of the time series in 2010"
+    },
+    {
+      "id": "camo:edge_8108657fe94e",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Harvest disturbances identified as recovering by short-term metrics",
+      "predicate": "associated_with",
+      "object": "Delayed recovery",
+      "paper": "10.1016/j.rse.2017.03.035",
+      "grade": "low",
+      "sentence": "By comparison, only 6.7% of areas disturbed by harvest that were identified as recovering by the short-term metrics, had not yet recovered by the end of the time series in 2010"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "id": "b2",
+  "question": "Which restoration actions, such as peatland rewetting, moss layer transfer or salt marsh realignment, turn degraded sites back into carbon sinks, and what happens to methane emissions?",
+  "plan": {
+    "cause": {
+      "label": "Restoration actions (peatland rewetting, moss layer transfer, salt marsh realignment)",
+      "terms": [
+        "rewetting",
+        "moss",
+        "transfer",
+        "realignment",
+        "peatland",
+        "salt",
+        "marsh",
+        "restoration"
+      ],
+      "exclude": [
+        "drainage",
+        "degradation"
+      ]
+    },
+    "outcome": {
+      "label": "Carbon sink status and methane emissions",
+      "terms": [
+        "carbon",
+        "sink",
+        "methane",
+        "emission"
+      ],
+      "attributes": [
+        "sequestration",
+        "flux",
+        "net",
+        "balance"
+      ],
+      "exclude": [
+        "carbon",
+        "dioxide",
+        "co2"
+      ]
+    }
+  },
+  "n_candidates": 4,
+  "kept": [
+    "camo:edge_911a1a3de5b4",
+    "camo:edge_e8fa313e4ced"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_d4349eba0a25",
+    "camo:edge_df47d1576b5f"
+  ],
+  "aggregate": {
+    "direction": "increase",
+    "certainty": "moderate",
+    "confidence": 0.71,
+    "papers": {
+      "10.1007/s11273-014-9399-6": "increase",
+      "10.1016/j.ecoleng.2018.10.018": "unclear"
+    },
+    "paper_counts": {
+      "increase": 1,
+      "unclear": 1
+    },
+    "agreement": 1.0,
+    "n_papers": 2
+  },
+  "edges": [
+    {
+      "id": "camo:edge_911a1a3de5b4",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "experimental peatland restoration treatment",
+      "predicate": "associated_with",
+      "object": "midday methane flux",
+      "paper": "10.1007/s11273-014-9399-6",
+      "grade": "moderate",
+      "sentence": "Positive values indicate a net warming effect; negative values indicate a net cooling effect. Values for methane fluxes and daytime GWP are given in units of CO2-equivalence, assuming methane has 28 times the global warming potential of CO2 (Myhre et al. [2013"
+    },
+    {
+      "id": "camo:edge_e8fa313e4ced",
+      "direction": "unclear",
+      "flipped": false,
+      "subject": "application of the moss layer transfer technique (MLTT)",
+      "predicate": "causes",
+      "object": "Methane consumption",
+      "paper": "10.1016/j.ecoleng.2018.10.018",
+      "grade": "low",
+      "sentence": "Restored MLTT plots, consumed relatively large amounts of CH<sub>4</sub> one year after restoration, and became a small source of CH<sub>4</sub> in the years following (Table 3"
+    }
+  ]
+}

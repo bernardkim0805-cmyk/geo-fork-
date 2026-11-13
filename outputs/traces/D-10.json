@@ -5,17 +5,19 @@
     "cause": {
       "label": "Livestock grazing",
       "terms": [
-        "grazing",
         "livestock",
+        "grazing",
         "cattle",
         "sheep",
         "goat",
         "horse",
+        "trampling",
         "herbivory"
       ],
       "exclude": [
         "grazing exclusion",
-        "no grazing"
+        "no grazing",
+        "ungrazed"
       ]
     },
     "outcome": {
@@ -24,20 +26,21 @@
         "soil",
         "carbon",
         "soc",
-        "organic matter",
-        "humus"
+        "co2",
+        "sequestration"
       ],
       "attributes": [
-        "content",
+        "level",
         "concentration",
         "stock",
-        "level",
+        "content",
         "change"
       ],
       "exclude": [
         "atmospheric",
         "plant",
-        "root"
+        "root",
+        "litter"
       ]
     }
   },
@@ -53,8 +56,8 @@
     "camo:edge_96d974a9352f"
   ],
   "aggregate": {
-    "direction": "increase",
-    "certainty": "low",
+    "direction": "mixed",
+    "certainty": "very_low",
     "confidence": 0.53,
     "papers": {
       "10.1017/S0376892910000184": "mixed"

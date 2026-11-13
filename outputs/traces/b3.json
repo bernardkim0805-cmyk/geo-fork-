@@ -1,0 +1,210 @@
+{
+  "id": "b3",
+  "question": "When herbicides such as glyphosate are used against invasive plants in grassland restoration, do they also reduce native plant cover and richness?",
+  "plan": {
+    "cause": {
+      "label": "Herbicide application",
+      "terms": [
+        "herbicide",
+        "glyphosate",
+        "picloram",
+        "imazapyr",
+        "triclopyr",
+        "2,4-d",
+        "metsulfuron",
+        "aminopyralid"
+      ],
+      "exclude": [
+        "fertilizer",
+        "inoculant",
+        "seed"
+      ]
+    },
+    "outcome": {
+      "label": "Native plant cover and richness",
+      "terms": [
+        "native",
+        "forb",
+        "grass",
+        "wildflower",
+        "indigenous"
+      ],
+      "attributes": [
+        "cover",
+        "richness",
+        "abundance",
+        "density",
+        "diversity"
+      ],
+      "exclude": [
+        "invasive",
+        "exotic",
+        "non-native",
+        "weedy",
+        "alien"
+      ]
+    }
+  },
+  "n_candidates": 50,
+  "kept": [
+    "camo:edge_5d2d2e187ed3",
+    "camo:edge_8328e65d2d95",
+    "camo:edge_7c23399b6d26",
+    "camo:edge_51647ba04964",
+    "camo:edge_ca84e687f0af",
+    "camo:edge_55bf80c7aa17",
+    "camo:edge_0288ae550545",
+    "camo:edge_56d20d1473dc"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_880bf356af12",
+    "camo:edge_cc1b0368f33b",
+    "camo:edge_9e995f1f539b",
+    "camo:edge_27324a3c69c5",
+    "camo:edge_4b08d1a7641e",
+    "camo:edge_179dfda57575",
+    "camo:edge_dcc4ab5b1e10",
+    "camo:edge_953a594903a5",
+    "camo:edge_05a8acea7649",
+    "camo:edge_5cbd8f29dc40",
+    "camo:edge_d5bb6081f884",
+    "camo:edge_f35e0a9d8fe4",
+    "camo:edge_0edee72a2bc3",
+    "camo:edge_b6b04f1ce591",
+    "camo:edge_fb7dd401e483",
+    "camo:edge_0d6162083840",
+    "camo:edge_98c4b0999eda",
+    "camo:edge_ab894b1857b3",
+    "camo:edge_6434eb7dc1a4",
+    "camo:edge_0a957eb3b370",
+    "camo:edge_b9eafd956de0",
+    "camo:edge_6dfc56697676",
+    "camo:edge_6c3764dbae34",
+    "camo:edge_13c29b760803",
+    "camo:edge_3ca6eb1e87fd",
+    "camo:edge_2ebf9473095d",
+    "camo:edge_5988918f25b5",
+    "camo:edge_222bba0e3392",
+    "camo:edge_73525954fd38",
+    "camo:edge_26e341da9023",
+    "camo:edge_fdb87e11c913",
+    "camo:edge_a2710d938514",
+    "camo:edge_5be82b577166",
+    "camo:edge_b95a61a52eed",
+    "camo:edge_2d3f3a554991",
+    "camo:edge_16a58075562a",
+    "camo:edge_20dc6a868d10",
+    "camo:edge_16dee961fde1",
+    "camo:edge_5834bac3882b",
+    "camo:edge_e29b3e97ec1a",
+    "camo:edge_6e8cc3332878",
+    "camo:edge_b72c9cbd64a8"
+  ],
+  "aggregate": {
+    "direction": "decrease",
+    "certainty": "high",
+    "confidence": 0.87,
+    "papers": {
+      "10.3368/er.29.1-2.35": "decrease",
+      "10.1111/avsc.12316": "decrease",
+      "10.3368/er.25.2.85": "decrease",
+      "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2": "decrease"
+    },
+    "paper_counts": {
+      "decrease": 4
+    },
+    "agreement": 1.0,
+    "n_papers": 4
+  },
+  "edges": [
+    {
+      "id": "camo:edge_5d2d2e187ed3",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "combination of mowing, burning, and glyphosate application",
+      "predicate": "causes",
+      "object": "decreased cover of native graminoids",
+      "paper": "10.3368/er.29.1-2.35",
+      "grade": "moderate",
+      "sentence": "The MBG treatment resulted in a small but significant reduction in native graminoids (Figure 2b)."
+    },
+    {
+      "id": "camo:edge_8328e65d2d95",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Glyphosate treatment",
+      "predicate": "causes",
+      "object": "Decreased native forb cover and richness",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "In 2011 and 2012 native forb cover and richness were significantly lower with glyphosate than controls at Site 3; but only cover at Site 2 in 2011 and Site 3 in 2013 (Fig. 1)."
+    },
+    {
+      "id": "camo:edge_7c23399b6d26",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "glyphosate application",
+      "predicate": "causes",
+      "object": "significant decrease in native species densities by 2006",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "By 2006, above- and belowground densities of exotic species significantly increased and native species significantly decreased with one-time treatments of glyphosate and hand-pulling (ANOVA)."
+    },
+    {
+      "id": "camo:edge_51647ba04964",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Glyphosate treatment",
+      "predicate": "causes",
+      "object": "Absent native forb species Heterotheca villosa and Achillea millefolium",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "The native forb species Heterotheca villosa (Pursch) Shinners (hairy false golden aster) and Achillea millefolium L. (common yarrow) were eliminated by glyphosate."
+    },
+    {
+      "id": "camo:edge_ca84e687f0af",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Glyphosate treatment",
+      "predicate": "causes",
+      "object": "Decreased native forb cover",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "and native forb cover had significantly decreased with glyphosate at Site 3 (Figs 1 and 2)."
+    },
+    {
+      "id": "camo:edge_55bf80c7aa17",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "glyphosate application",
+      "predicate": "causes",
+      "object": "Decreased flowering and seed set of native grasses and forbs",
+      "paper": "10.1111/avsc.12316",
+      "grade": "low",
+      "sentence": "although it significantly reduced that of native grasses and forbs."
+    },
+    {
+      "id": "camo:edge_0288ae550545",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "glyphosate application",
+      "predicate": "causes",
+      "object": "significant decrease in native species densities by 2006",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "One-time treatments in 1998 significantly increased densities and seedbanks of the three exotic species and decreased densities and seedbanks of native species by 2006 (Tables 1–4 and Figures 1 and 2)."
+    },
+    {
+      "id": "camo:edge_56d20d1473dc",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Herbicide application",
+      "predicate": "causes",
+      "object": "decreased native grass establishment",
+      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
+      "grade": "low",
+      "sentence": "Establishment in plots that were broadcast and treated with herbicide increased significantly with June precipitation and decreased significantly with June temperature (multiple regression; establishment 5 11.24(June precipitation) 2 291.61(June temperature) 1 3945.38"
+    }
+  ]
+}

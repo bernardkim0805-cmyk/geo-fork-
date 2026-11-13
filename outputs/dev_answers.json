@@ -4,29 +4,22 @@
     {
       "id": "D-01",
       "status": "answered",
-      "answer": "Herbicide application has mixed effects on Native plant cover and richness, based on 37 claims from 8 studies (per-study verdicts: 2 decrease, 3 increase, 3 mixed). Example (Trowbridge 2017): \"Specifically, when plots were not seeded, the abundance of native species was higher in the two disturbance treatments that included grass-specific herbicide compared with those that did not (Fig. 2B, *t*93.8 = −3.05,...\"",
+      "answer": "Herbicide application has mixed effects on Native plant cover and richness, based on 30 claims from 7 studies (per-study verdicts: 2 decrease, 3 increase, 1 mixed, 1 no effect). Example (Stover 2017): \"In 2011 and 2012 native forb cover and richness were significantly lower with glyphosate than controls at Site 3; but only cover at Site 2 in 2011 and Site 3 in 2013 (Fig. 1).\"",
       "direction": "mixed",
       "confidence": 0.6,
       "certainty": "low",
       "edge_ids": [
-        "camo:edge_880bf356af12",
         "camo:edge_9d981cad6d95",
         "camo:edge_8328e65d2d95",
         "camo:edge_7c23399b6d26",
         "camo:edge_27324a3c69c5",
-        "camo:edge_4b08d1a7641e",
         "camo:edge_179dfda57575",
         "camo:edge_51647ba04964",
-        "camo:edge_05a8acea7649",
+        "camo:edge_0288ae550545",
         "camo:edge_d5bb6081f884",
         "camo:edge_fb7dd401e483",
         "camo:edge_ca84e687f0af",
         "camo:edge_55bf80c7aa17",
-        "camo:edge_0288ae550545",
-        "camo:edge_6dfc56697676",
-        "camo:edge_56d20d1473dc",
-        "camo:edge_13c29b760803",
-        "camo:edge_3ca6eb1e87fd",
         "camo:edge_2ebf9473095d",
         "camo:edge_5988918f25b5",
         "camo:edge_222bba0e3392",
@@ -55,12 +48,14 @@
     {
       "id": "D-02",
       "status": "answered",
-      "answer": "Mulch & surface cover decreases Invasive / non-native species abundance, based on 3 claims from 1 studies (per-study verdicts: 1 decrease). Example (Murphy 2007): \"Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments.\"",
-      "direction": "decrease",
-      "confidence": 0.63,
-      "certainty": "low",
+      "answer": "Mulch & surface cover has mixed effects on Invasive / non-native species abundance, based on 5 claims from 1 studies (per-study verdicts: 1 mixed). Example (Murphy 2007): \"Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments.\"",
+      "direction": "mixed",
+      "confidence": 0.53,
+      "certainty": "very_low",
       "edge_ids": [
+        "camo:edge_4af8274686bd",
         "camo:edge_7ef2e1e59dd8",
+        "camo:edge_b3831f4af80e",
         "camo:edge_0535e981ca40",
         "camo:edge_18ac0bfc5067"
       ],
@@ -72,13 +67,16 @@
     {
       "id": "D-03",
       "status": "answered",
-      "answer": "Peatland rewetting increases Methane emissions, based on 2 claims from 1 studies (per-study verdicts: 1 increase). Example (Strack 2014): \"Mean seasonal CH<sub>4</sub> flux varied with water table with log (total season CH<sub>4</sub> flux + 1) increasing as mean season water table position became shallower (Fig. 5;  $R^2$ (adj)=0.25, p=0.057\"",
+      "answer": "Peatland rewetting increases Methane emissions, based on 5 claims from 2 studies (per-study verdicts: 2 increase). Example (Wilhelm 2015): \"Methane emissions from the experimental site were much greater (habitat: F(2, 18) = 18.8, p\\0.0001), and unlike the reference plot increased substantially from 2008 to 2009 (year 9 habitat: F(2, 18) = 23.3, p\\0.001) s...\"",
       "direction": "increase",
-      "confidence": 0.63,
-      "certainty": "very_low",
+      "confidence": 0.71,
+      "certainty": "moderate",
       "edge_ids": [
         "camo:edge_d4349eba0a25",
-        "camo:edge_df47d1576b5f"
+        "camo:edge_c7081c2dd012",
+        "camo:edge_df47d1576b5f",
+        "camo:edge_911a1a3de5b4",
+        "camo:edge_94523e08e3c5"
       ],
       "searched_for": null,
       "extras": [
@@ -263,10 +261,10 @@
     {
       "id": "D-10",
       "status": "answered",
-      "answer": "Livestock grazing increases Soil organic carbon, based on 2 claims from 1 studies (per-study verdicts: 1 mixed). Example (Yu 2009): \"There was no significant difference in bulk density ( F1,17 = 1.3 , p = 0.271) or per cent organic carbon between grazed and ungrazed soils ( F1,17 = 0.4 , p = 0.536).\"",
-      "direction": "increase",
+      "answer": "Livestock grazing has mixed effects on Soil organic carbon, based on 2 claims from 1 studies (per-study verdicts: 1 mixed). Example (Yu 2009): \"There was no significant difference in bulk density ( F1,17 = 1.3 , p = 0.271) or per cent organic carbon between grazed and ungrazed soils ( F1,17 = 0.4 , p = 0.536).\"",
+      "direction": "mixed",
       "confidence": 0.53,
-      "certainty": "low",
+      "certainty": "very_low",
       "edge_ids": [
         "camo:edge_41d8fc19f522",
         "camo:edge_3811dfc7069f"

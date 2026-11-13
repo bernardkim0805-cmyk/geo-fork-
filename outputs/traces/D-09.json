@@ -31,7 +31,8 @@
         "exotic",
         "alien",
         "weedy",
-        "weed"
+        "weed",
+        "invasion"
       ],
       "attributes": [
         "abundance",
@@ -39,12 +40,15 @@
         "cover",
         "frequency",
         "biomass",
-        "richness"
+        "richness",
+        "diversity"
       ],
       "exclude": [
         "native",
         "indigenous",
-        "local"
+        "local",
+        "desirable",
+        "target"
       ]
     }
   },

@@ -1,0 +1,5 @@
+{
+  "id": "c16-modified",
+  "question": "For grassland restoration in Canada, which intervention-outcome combinations have little or no evidence, and where is the graph densest?",
+  "error": "RuntimeError('LLM call failed after 3 tries: The read operation timed out')"
+}

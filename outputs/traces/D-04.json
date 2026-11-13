@@ -30,12 +30,14 @@
       "attributes": [
         "growth",
         "size",
-        "development"
+        "development",
+        "rate"
       ],
       "exclude": [
         "adult",
         "mature",
-        "canopy"
+        "canopy",
+        "stand"
       ]
     }
   },
