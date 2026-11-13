@@ -1,0 +1,8 @@
+# Hand-checked expectations. Add one entry each time a human confirms an answer.
+# A future tests/eval.py will score answers.json against this.
+cases: []
+#  - id: D-004
+#    status: answered
+#    direction: increase
+#    must_cite: [camo:edge_...]
+#    notes: "why we believe this"
