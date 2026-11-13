@@ -1,0 +1,99 @@
+{
+  "id": "D-05",
+  "question": "What effect does prescribed burning have on invasive / non-native species abundance?",
+  "plan": {
+    "cause": {
+      "label": "Prescribed burning",
+      "terms": [
+        "prescribed",
+        "burn",
+        "fire",
+        "burning",
+        "prescribed fire"
+      ],
+      "exclude": [
+        "uncontrolled",
+        "wildfire",
+        "accidental"
+      ]
+    },
+    "outcome": {
+      "label": "Invasive / non-native species abundance",
+      "terms": [
+        "invasive",
+        "non-native",
+        "exotic",
+        "alien",
+        "weedy"
+      ],
+      "attributes": [
+        "abundance",
+        "density",
+        "cover",
+        "frequency",
+        "richness"
+      ],
+      "exclude": [
+        "native",
+        "indigenous"
+      ]
+    }
+  },
+  "n_candidates": 3,
+  "kept": [
+    "camo:edge_7508d85e106f",
+    "camo:edge_ef38701c9f77",
+    "camo:edge_da0063deef0c"
+  ],
+  "flipped": [],
+  "rejected": [],
+  "aggregate": {
+    "direction": "decrease",
+    "certainty": "moderate",
+    "confidence": 0.71,
+    "papers": {
+      "10.3955/046.085.0212": "decrease",
+      "10.3368/er.29.1-2.35": "decrease"
+    },
+    "paper_counts": {
+      "decrease": 2
+    },
+    "agreement": 1.0,
+    "n_papers": 2
+  },
+  "edges": [
+    {
+      "id": "camo:edge_7508d85e106f",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "SBG treatment (burning + glyphosate)",
+      "predicate": "causes",
+      "object": "decreased cover of non-native grasses (Agrostis spp.)",
+      "paper": "10.3955/046.085.0212",
+      "grade": "moderate",
+      "sentence": "Agrostis spp. were reduced most substantially by the SBG treatment (Figure 2b)."
+    },
+    {
+      "id": "camo:edge_ef38701c9f77",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "combination of mowing, burning, and glyphosate application",
+      "predicate": "causes",
+      "object": "decreased cover of non-native grasses",
+      "paper": "10.3368/er.29.1-2.35",
+      "grade": "moderate",
+      "sentence": "a significant reduction in non-native grasses did result when mowing was combined with burning and glyphosate application (MBG)."
+    },
+    {
+      "id": "camo:edge_da0063deef0c",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "combination of burning and glyphosate application",
+      "predicate": "causes",
+      "object": "decreased cover of perennial non-native forbs",
+      "paper": "10.3368/er.29.1-2.35",
+      "grade": "moderate",
+      "sentence": "Cover of perennial non-native forbs was significantly reduced with treatments that combined burning with glyphosate application (SBG, MBG; Figure 2c)."
+    }
+  ]
+}

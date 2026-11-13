@@ -1,0 +1,56 @@
+{
+  "id": "D-06",
+  "question": "What effect does mowing have on bird abundance?",
+  "plan": {
+    "cause": {
+      "label": "Mowing",
+      "terms": [
+        "mow",
+        "mowing",
+        "cut",
+        "cutting",
+        "grazing",
+        "clippings"
+      ],
+      "exclude": [
+        "harvest",
+        "burn",
+        "fire",
+        "till",
+        "plow"
+      ]
+    },
+    "outcome": {
+      "label": "Bird abundance",
+      "terms": [
+        "bird",
+        "avian",
+        "passerine",
+        "raptor",
+        "nesting",
+        "breeding"
+      ],
+      "attributes": [
+        "abundance",
+        "density",
+        "population",
+        "count",
+        "richness"
+      ],
+      "exclude": [
+        "insect",
+        "reptile",
+        "mammal",
+        "fish"
+      ]
+    }
+  },
+  "n_candidates": 2,
+  "kept": [],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_3de0c6aceebc",
+    "camo:edge_02e52c08fc5c"
+  ],
+  "edges": []
+}

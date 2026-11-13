@@ -1,0 +1,85 @@
+{
+  "id": "D-08",
+  "question": "What effect does coarse woody debris retention have on small mammal abundance?",
+  "plan": {
+    "cause": {
+      "label": "Coarse woody debris retention",
+      "terms": [
+        "coarse",
+        "woody",
+        "debris",
+        "retention",
+        "log",
+        "snag",
+        "deadwood"
+      ],
+      "exclude": [
+        "removal",
+        "clearing",
+        "harvesting"
+      ]
+    },
+    "outcome": {
+      "label": "Small mammal abundance",
+      "terms": [
+        "small",
+        "mammal",
+        "rodent",
+        "shrew",
+        "mouse",
+        "vole",
+        "squirrel"
+      ],
+      "attributes": [
+        "abundance",
+        "density",
+        "population"
+      ],
+      "exclude": [
+        "large",
+        "predator",
+        "insect",
+        "bird"
+      ]
+    }
+  },
+  "n_candidates": 7,
+  "kept": [
+    "camo:edge_9f68a35a2af5"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_261dd8ad2d1e",
+    "camo:edge_8d79ee00a64d",
+    "camo:edge_9bf2ef47df73",
+    "camo:edge_9500262c6a1a",
+    "camo:edge_6d717fa3b5bc",
+    "camo:edge_1f860e21bb1f"
+  ],
+  "aggregate": {
+    "direction": "increase",
+    "certainty": "very_low",
+    "confidence": 0.63,
+    "papers": {
+      "10.1016/j.foreco.2019.117535": "increase"
+    },
+    "paper_counts": {
+      "increase": 1
+    },
+    "agreement": 1.0,
+    "n_papers": 1
+  },
+  "edges": [
+    {
+      "id": "camo:edge_9f68a35a2af5",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Woody debris presence",
+      "predicate": "associated_with",
+      "object": "Increased mean abundance of total small mammals",
+      "paper": "10.1016/j.foreco.2019.117535",
+      "grade": "low",
+      "sentence": "Mean abundance of total small mammals, including the less common species, was significantly (F3,6 = 11.21; P < 0.01) different among treatment sites with the piles and windrows at consistently higher (DMRT; P = 0.05) numbers (1.8 to 2.4 times on average) than the dispersed and forest sites in 2007–2011"
+    }
+  ]
+}

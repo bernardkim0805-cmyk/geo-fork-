@@ -1,0 +1,99 @@
+{
+  "id": "D-03",
+  "question": "What effect does peatland rewetting have on methane emissions?",
+  "plan": {
+    "cause": {
+      "label": "Peatland rewetting",
+      "terms": [
+        "peatland",
+        "rewetting",
+        "rewet",
+        "peat",
+        "bog",
+        "wetland",
+        "drainage",
+        "water table"
+      ],
+      "exclude": [
+        "drain",
+        "drying",
+        "drought"
+      ]
+    },
+    "outcome": {
+      "label": "Methane emissions",
+      "terms": [
+        "methane",
+        "ch4",
+        "emission",
+        "flux",
+        "gas"
+      ],
+      "attributes": [
+        "emission",
+        "flux",
+        "concentration",
+        "rate",
+        "level"
+      ],
+      "exclude": [
+        "carbon dioxide",
+        "co2",
+        "nitrous oxide",
+        "n2o",
+        "oxygen",
+        "o2"
+      ]
+    }
+  },
+  "n_candidates": 7,
+  "kept": [
+    "camo:edge_d4349eba0a25",
+    "camo:edge_df47d1576b5f"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_c7081c2dd012",
+    "camo:edge_fd86025bf68f",
+    "camo:edge_1e4736203aca",
+    "camo:edge_911a1a3de5b4",
+    "camo:edge_94523e08e3c5"
+  ],
+  "aggregate": {
+    "direction": "increase",
+    "certainty": "very_low",
+    "confidence": 0.63,
+    "papers": {
+      "10.1016/j.ecoleng.2013.12.013": "increase"
+    },
+    "paper_counts": {
+      "increase": 1
+    },
+    "agreement": 1.0,
+    "n_papers": 1
+  },
+  "edges": [
+    {
+      "id": "camo:edge_d4349eba0a25",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Increased water table position",
+      "predicate": "correlated_with",
+      "object": "Increased mean seasonal methane flux",
+      "paper": "10.1016/j.ecoleng.2013.12.013",
+      "grade": "low",
+      "sentence": "Mean seasonal CH<sub>4</sub> flux varied with water table with log (total season CH<sub>4</sub> flux + 1) increasing as mean season water table position became shallower (Fig. 5;  $R^2$ (adj)=0.25, p=0.057"
+    },
+    {
+      "id": "camo:edge_df47d1576b5f",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Increased water table position",
+      "predicate": "associated_with",
+      "object": "Increased methane flux",
+      "paper": "10.1016/j.ecoleng.2013.12.013",
+      "grade": "low",
+      "sentence": "Wet restored plots had significantly higher CH<sub>4</sub> flux than dry restored plots (Mann–Whitney, p = 0.006"
+    }
+  ]
+}
