@@ -1,8 +1,299 @@
 # Hand-checked expectations. Add one entry each time a human confirms an answer.
 # A future tests/eval.py will score answers.json against this.
-cases: []
-#  - id: D-004
-#    status: answered
-#    direction: increase
-#    must_cite: [camo:edge_...]
-#    notes: "why we believe this"
+#
+# Practice-set answers for questions.yaml, built by hand from causal_graph.json.
+# Same fields as the answers.json format, plus the original question and kind.
+
+team: geo-fork
+cases:
+- id: c3
+  kind: species_selection
+  question: >-
+    Which seed-mix species establish, persist and self-seed in each Ontario ELC
+    ecosite type (e.g. dry/wet deciduous forest, meadow, riparian)?
+  status: no_evidence
+  answer: >-
+    The graph has no claims about seed-mix species performance by Ontario ELC ecosite
+    type. The only 'ecosite' edges come from seismic-line tree regeneration in Alberta
+    bogs and fens, which is a different question.
+  direction: null
+  confidence: 0.85
+  certainty: null
+  edge_ids: []
+  searched_for: >-
+    edges whose subject is seeding / seed mix and whose object is establishment,
+    persistence or self-seeding of named species, filtered to Ontario ELC ecosite
+    types (dry/wet deciduous forest, meadow, riparian); also any sentence mentioning
+    'ecosite' or 'ELC'
+- id: c4-modified
+  kind: intervention_outcomes
+  question: >-
+    For tree planting in Canadian forest restoration, how do planting-stock traits
+    (seedling size, nursery fertilization, mycorrhizal inoculation) affect survival
+    and growth, and how do competing vegetation and site preparation change that?
+  status: answered
+  answer: >-
+    Mostly positive for growth, weak for survival. Fertilization (including nursery
+    exponential loading) increases height, diameter and biomass in most of 11 studies,
+    but often only for black spruce, not jack pine or tamarack, and one study found
+    Forest Pak fertilization raised seedling mortality. Mycorrhizal inoculation
+    evidence is thin and mixed (5 studies). Seedling size has 1–2 studies: taller
+    stock grows more. Controlling competing vegetation and site preparation (scarification,
+    mounding) consistently increase growth and usually survival.
+  direction: mixed
+  confidence: 0.6
+  certainty: moderate
+  edge_ids:
+  - camo:edge_4ec17738dc6f
+  - camo:edge_ed5dd4b0434b
+  - camo:edge_6b9afb321f2c
+  - camo:edge_624b3855328f
+  - camo:edge_574d67f83afc
+  - camo:edge_d071ab9334cc
+  - camo:edge_6bfff4b7b1a0
+  - camo:edge_1adb62d51a05
+  - camo:edge_9bc04fe17c8c
+  - camo:edge_2b93025ec87c
+  - camo:edge_79240490983f
+  - camo:edge_4b5a90a48179
+  - camo:edge_a17bba572e9b
+  - camo:edge_8d09b599854f
+  - camo:edge_a4ba3ab8148c
+  searched_for: null
+- id: c7
+  kind: outcome_trajectories
+  question: >-
+    How long do created marshes take to reach biodiversity and function comparable
+    to natural reference wetlands, and which attributes lag?
+  status: answered
+  answer: >-
+    Created marshes aren't in the graph; the closest evidence is restored prairie
+    wetlands. Plant species richness in restored wetlands stays below natural reserve
+    wetlands even 20–30 years after restoration, while non-native cover doesn't
+    differ with wetland age. Restored riparian soils have lower microbial biomass,
+    evenness and diversity than reference sites. The graph gives no time-to-equivalence
+    estimate.
+  direction: decrease
+  confidence: 0.45
+  certainty: low
+  edge_ids:
+  - camo:edge_07c3ff579547
+  - camo:edge_3ebf5281f698
+  - camo:edge_0d7b42c4d6ca
+  - camo:edge_9e28e8c79050
+  - camo:edge_922bc2593ad9
+  - camo:edge_4a38f9ec93b0
+  - camo:edge_4ba4dcd78f3c
+  - camo:edge_fb9e7a674929
+  searched_for: null
+- id: c13-modified
+  kind: prioritization
+  question: >-
+    After wildfire in boreal forests, what controls natural conifer regeneration
+    (fire interval, fire severity, seed supply, seedbed type), and which conditions
+    signal that regeneration will fail without active restoration?
+  status: answered
+  answer: >-
+    Partial evidence, mostly associational. Long-interval fire history is associated
+    with more black spruce seedlings and recruits; higher fire severity with denser
+    jack pine regeneration; greater distance to seed trees with lower stocking;
+    and seedbed matters (lichen seedbeds and mat removal reduce black spruce establishment;
+    rotten wood helps). The graph has no direct edge on short fire intervals or
+    a threshold signalling regeneration failure.
+  direction: mixed
+  confidence: 0.5
+  certainty: low
+  edge_ids:
+  - camo:edge_6e2f988b4a10
+  - camo:edge_92bea65950fc
+  - camo:edge_3d5bb3850116
+  - camo:edge_b3563dbcdc08
+  - camo:edge_713a1eaa9d44
+  - camo:edge_89b44c4f1b39
+  - camo:edge_531b195503af
+  - camo:edge_1a2e9e2c5f9b
+  - camo:edge_1dd7816e567e
+  - camo:edge_b190062b645e
+  - camo:edge_06206aad90af
+  - camo:edge_0a918ec7ae8b
+  searched_for: null
+- id: c16-modified
+  kind: graph
+  question: >-
+    For grassland restoration in Canada, which intervention-outcome combinations
+    have little or no evidence, and where is the graph densest?
+  status: answered
+  answer: >-
+    Of 643 intervention claims in grassland contexts (32 papers), evidence is densest
+    for herbicide, seeding and mowing effects on native plants, invasive species
+    and plant cover. Gaps: grazing has no grassland intervention edges at all (the
+    graph's grazing claims are in salt marshes), and no grassland intervention is
+    linked to wildlife or insect outcomes. Burning and tillage have few studies,
+    and soil outcomes are sparse throughout.
+  direction: unclear
+  confidence: 0.7
+  certainty: moderate
+  edge_ids: []
+  searched_for: null
+  extras:
+  - outputs/c16_grassland_gap_map.csv
+- id: b1
+  kind: intervention_outcomes
+  question: >-
+    Which forestry practices (partial harvesting versus clearcutting, retained woody
+    debris, riparian retention) maintain biodiversity or speed its recovery in Canadian
+    forests?
+  status: answered
+  answer: >-
+    Mixed, low certainty, almost all associational. Retained woody debris is consistently
+    linked to more small mammals and plant cover. Partial harvesting and clearcutting
+    both raise total plant richness, but through exotic, ruderal and wind-dispersed
+    species, while spring geophytes, mosses and old-growth species decline. Riparian
+    retention has one edge (30-m reserves still had the lowest shredder richness
+    among logged sites). No study in the graph compares partial harvest directly
+    with clearcutting on biodiversity.
+  direction: mixed
+  confidence: 0.55
+  certainty: low
+  edge_ids:
+  - camo:edge_34682beb6adf
+  - camo:edge_f5ebd4f17342
+  - camo:edge_fc0005f40d0e
+  - camo:edge_cc4099f7ece8
+  - camo:edge_d733403a2702
+  - camo:edge_d881d3e3cbe4
+  - camo:edge_14c37a89d4cb
+  - camo:edge_5b4f79aa0385
+  - camo:edge_655490c88d6f
+  - camo:edge_c4d59c5c9095
+  - camo:edge_a363474b0c09
+  - camo:edge_9404be5454fc
+  - camo:edge_d901b6b3cbe9
+  - camo:edge_a25d7d75201f
+  - camo:edge_49c698748c69
+  searched_for: null
+- id: b2
+  kind: intervention_outcomes
+  question: >-
+    Which restoration actions, such as peatland rewetting, moss layer transfer or
+    salt marsh realignment, turn degraded sites back into carbon sinks, and what
+    happens to methane emissions?
+  status: answered
+  answer: >-
+    For peatlands, yes with caveats: moss layer transfer shifted bare peat from
+    a net carbon source to a sink, and restoration raised gross photosynthesis and
+    lowered global warming potential. Methane tends to rise: restoration treatments
+    and higher water tables are linked to higher methane flux. There is no carbon
+    or methane evidence for salt marsh realignment.
+  direction: increase
+  confidence: 0.6
+  certainty: low
+  edge_ids:
+  - camo:edge_e764a1d31956
+  - camo:edge_d8291b819641
+  - camo:edge_911a1a3de5b4
+  - camo:edge_4d6315ed1305
+  - camo:edge_94523e08e3c5
+  - camo:edge_d4f4498c7a7d
+  - camo:edge_d60c25b60634
+  - camo:edge_d4349eba0a25
+  - camo:edge_df47d1576b5f
+  - camo:edge_e8fa313e4ced
+  - camo:edge_4e8261f47478
+  searched_for: null
+- id: b3
+  kind: intervention_outcomes
+  question: >-
+    When herbicides such as glyphosate are used against invasive plants in grassland
+    restoration, do they also reduce native plant cover and richness?
+  status: answered
+  answer: >-
+    Mostly no: in 5 of 8 studies, herbicide used against invasive plants increased
+    native cover or richness, usually by releasing natives from competition, and
+    many results were null in some years or sites. The exception is direct harm
+    to native forbs: an Alberta glyphosate trial reduced native forb cover and richness,
+    and one forest study found incomplete exotic control made native densities worse.
+  direction: mixed
+  confidence: 0.65
+  certainty: moderate
+  edge_ids:
+  - camo:edge_880bf356af12
+  - camo:edge_179dfda57575
+  - camo:edge_c1599a40867c
+  - camo:edge_5d2d2e187ed3
+  - camo:edge_fe312adb1a47
+  - camo:edge_8328e65d2d95
+  - camo:edge_51647ba04964
+  - camo:edge_d5bb6081f884
+  - camo:edge_ca84e687f0af
+  - camo:edge_7c23399b6d26
+  - camo:edge_dcc4ab5b1e10
+  - camo:edge_f35e0a9d8fe4
+  - camo:edge_0d6162083840
+  - camo:edge_0288ae550545
+  - camo:edge_6434eb7dc1a4
+  searched_for: null
+- id: b4
+  kind: intervention_outcomes
+  question: >-
+    What lethal and sub-lethal effects do contaminants such as oil sands tailings,
+    PCBs and acid deposition have on wildlife and aquatic communities, and do remediation
+    actions allow them to recover?
+  status: answered
+  answer: >-
+    Harm is documented, recovery is partial. Oil sands tailings: tree swallow nestlings
+    had lower weight, smaller broods, higher mortality risk and elevated EROD (sub-lethal),
+    but clutch size and hatching success were unaffected. Acidification and acid
+    mine drainage reduce zooplankton richness and invertebrate presence. Recovery:
+    lake neutralization brought back acid-sensitive mayflies and lower metals raised
+    zooplankton richness, but the Sydney Tar Ponds remediation showed no change
+    in PCB, PAH or metal levels in rock crabs. PCB evidence is limited to tissue
+    concentrations, not effects.
+  direction: decrease
+  confidence: 0.55
+  certainty: low
+  edge_ids:
+  - camo:edge_427ffa334cbc
+  - camo:edge_034559ebee3c
+  - camo:edge_5db626bf7a6d
+  - camo:edge_c476d65288b8
+  - camo:edge_f9c7802c23a5
+  - camo:edge_fa465baa4074
+  - camo:edge_fd235fdc71f7
+  - camo:edge_41a40be513de
+  - camo:edge_abcc4e8e26d8
+  - camo:edge_967bd7194e43
+  - camo:edge_3e52af85ba72
+  - camo:edge_37285e7cacad
+  - camo:edge_5176c83bcd86
+  - camo:edge_dad3a7219bd8
+  - camo:edge_097bb8d60ec8
+  searched_for: null
+- id: b5
+  kind: intervention_outcomes
+  question: >-
+    Where restoration sites face several stressors at once (for example deer browsing
+    plus competing vegetation, harvesting plus drought, or repeated fires), do the
+    stressors interact, and which one most limits recovery?
+  status: answered
+  answer: >-
+    The graph has very little interaction evidence. Stressors are almost always
+    studied one at a time (deer browsing, competing vegetation, fire, harvesting
+    separately). The few combined results: release from competition plus liming
+    increased beech growth where liming alone did not, fire history interacted with
+    microtopography for black spruce recruitment, and lake history moderated copepod
+    responses to pH. Nothing ranks which stressor most limits recovery.
+  direction: unclear
+  confidence: 0.6
+  certainty: very_low
+  edge_ids:
+  - camo:edge_537946f0928a
+  - camo:edge_7d0c8c1c169a
+  - camo:edge_1def71929875
+  - camo:edge_a20f2108aab7
+  - camo:edge_e9b4b035fff0
+  - camo:edge_b8744ac5f78d
+  - camo:edge_b6fcaeee45eb
+  - camo:edge_5b6a779495b4
+  - camo:edge_774d84228e97
+  searched_for: null
