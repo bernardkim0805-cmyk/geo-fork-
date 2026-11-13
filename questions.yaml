@@ -1,0 +1,72 @@
+# Competency questions for the Lane 3 pack.
+#
+
+questions:
+  - id: c3
+    kind: species_selection
+    question: >-
+      Which seed-mix species establish, persist and self-seed in each Ontario ELC 
+      ecosite type (e.g. dry/wet deciduous forest, meadow, riparian)?
+
+  - id: c4-modified
+    kind: intervention_outcomes
+    question: >-
+      For tree planting in Canadian forest restoration, how do planting-stock
+      traits (seedling size, nursery fertilization, mycorrhizal inoculation)
+      affect survival and growth, and how do competing vegetation and site
+      preparation change that?
+    
+  - id: c7
+    kind: outcome_trajectories
+    question: >-
+      How long do created marshes take to reach biodiversity and function comparable 
+      to natural reference wetlands, and which attributes lag?
+
+  - id: c13-modified
+    kind: prioritization
+    question: >-
+      After wildfire in boreal forests, what controls natural conifer
+      regeneration (fire interval, fire severity, seed supply, seedbed type),
+      and which conditions signal that regeneration will fail without active
+      restoration?
+    
+  - id: c16-modified
+    kind: graph
+    question: >-
+      For grassland restoration in Canada, which intervention-outcome combinations 
+      have little or no evidence, and where is the graph densest?
+  
+  - id: b1
+    kind: intervention_outcomes
+    question: >-
+      Which forestry practices (partial harvesting versus clearcutting,
+      retained woody debris, riparian retention) maintain biodiversity or speed
+      its recovery in Canadian forests?
+
+  - id: b2
+    kind: intervention_outcomes
+    question: >-
+      Which restoration actions, such as peatland rewetting, moss layer transfer
+      or salt marsh realignment, turn degraded sites back into carbon sinks, and
+      what happens to methane emissions?
+
+  - id: b3
+    kind: intervention_outcomes
+    question: >-
+      When herbicides such as glyphosate are used against invasive plants in
+      grassland restoration, do they also reduce native plant cover and
+      richness?
+
+  - id: b4
+    kind: intervention_outcomes
+    question: >-
+      What lethal and sub-lethal effects do contaminants such as oil sands
+      tailings, PCBs and acid deposition have on wildlife and aquatic
+      communities, and do remediation actions allow them to recover?
+
+  - id: b5
+    kind: intervention_outcomes
+    question: >-
+      Where restoration sites face several stressors at once (for example deer
+      browsing plus competing vegetation, harvesting plus drought, or repeated
+      fires), do the stressors interact, and which one most limits recovery?
