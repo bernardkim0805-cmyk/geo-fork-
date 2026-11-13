@@ -1,0 +1,167 @@
+{
+  "id": "b1",
+  "question": "Which forestry practices (partial harvesting versus clearcutting, retained woody debris, riparian retention) maintain biodiversity or speed its recovery in Canadian forests?",
+  "plan": {
+    "cause": {
+      "label": "Forestry practices (partial harvesting, clearcutting, retained woody debris, riparian retention)",
+      "terms": [
+        "partial harvest",
+        "clearcut",
+        "woody debris",
+        "riparian retention",
+        "logging",
+        "harvesting",
+        "forest management"
+      ],
+      "exclude": [
+        "burning",
+        "fire",
+        "prescribed fire"
+      ]
+    },
+    "outcome": {
+      "label": "Biodiversity maintenance or recovery",
+      "terms": [
+        "biodiversity",
+        "native",
+        "species richness",
+        "recovery"
+      ],
+      "attributes": [
+        "abundance",
+        "diversity",
+        "cover",
+        "density"
+      ],
+      "exclude": [
+        "invasive",
+        "exotic",
+        "non-native"
+      ]
+    }
+  },
+  "n_candidates": 11,
+  "kept": [
+    "camo:edge_6b4137227797",
+    "camo:edge_cb0dab201fb9",
+    "camo:edge_8780ab776c3e",
+    "camo:edge_d733403a2702",
+    "camo:edge_261dd8ad2d1e",
+    "camo:edge_d881d3e3cbe4",
+    "camo:edge_9bf2ef47df73",
+    "camo:edge_6d717fa3b5bc"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_05293139b2da",
+    "camo:edge_8957f9fbfb16",
+    "camo:edge_b6ec29ad8b3e"
+  ],
+  "aggregate": {
+    "direction": "increase",
+    "certainty": "low",
+    "confidence": 0.87,
+    "papers": {
+      "10.1016/j.rse.2017.03.035": "increase",
+      "EKQPGZD6": "increase",
+      "10.1016/j.foreco.2019.04.010": "increase",
+      "10.1371/journal.pone.0172667": "increase",
+      "10.1016/j.foreco.2019.117535": "increase"
+    },
+    "paper_counts": {
+      "increase": 5
+    },
+    "agreement": 1.0,
+    "n_papers": 5
+  },
+  "edges": [
+    {
+      "id": "camo:edge_6b4137227797",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Harvest disturbances",
+      "predicate": "associated_with",
+      "object": "High recovery rate",
+      "paper": "10.1016/j.rse.2017.03.035",
+      "grade": "low",
+      "sentence": "Conversely, 77.4% of harvest areas and 57.4% of areas disturbed by wildfire were considered as recovered by all three metrics."
+    },
+    {
+      "id": "camo:edge_cb0dab201fb9",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Recently partially harvested stand",
+      "predicate": "associated_with",
+      "object": "Increased proportion of native decumbent hemicryptophytes dispersed by animals or birds",
+      "paper": "EKQPGZD6",
+      "grade": "low",
+      "sentence": "Recently partially harvested stands had a significantly higher proportion of exotic, wind-dispersed hemicryptophytes and of native decumbent hemicryptophytes dispersed by animals or birds than old growth stands."
+    },
+    {
+      "id": "camo:edge_8780ab776c3e",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "harvesting disturbance",
+      "predicate": "associated_with",
+      "object": "increased total number of species",
+      "paper": "10.1016/j.foreco.2019.04.010",
+      "grade": "low",
+      "sentence": "Harvesting disturbance was associated with an increase in total number of species, both at clearcut and downstream unharvested sites compared to the reference forests"
+    },
+    {
+      "id": "camo:edge_d733403a2702",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Time elapsed after clearcutting and slashburning",
+      "predicate": "causes",
+      "object": "higher species richness",
+      "paper": "10.1371/journal.pone.0172667",
+      "grade": "moderate",
+      "sentence": "Species richness increased in all zones (ESSF, *n* = 2; ICH, *n* = 2; and SBS, *n* = 6) between the first year after burning (44, 39, and 58 species respectively) and the end of the monitoring"
+    },
+    {
+      "id": "camo:edge_261dd8ad2d1e",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Woody debris presence",
+      "predicate": "associated_with",
+      "object": "Increased mean species richness",
+      "paper": "10.1016/j.foreco.2019.117535",
+      "grade": "low",
+      "sentence": "Richness was highest (DMRT; P = 0.05) in the piles and windrows with the piles and dispersed also being similar, and these three treatments higher than the forest sites."
+    },
+    {
+      "id": "camo:edge_d881d3e3cbe4",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Clearcutting and slashburning",
+      "predicate": "associated_with",
+      "object": "higher species richness",
+      "paper": "10.1371/journal.pone.0172667",
+      "grade": "moderate",
+      "sentence": "For all zones combined, richness increased from 79 species in year 1 to 132 species 20 years after clearcutting and slashburning."
+    },
+    {
+      "id": "camo:edge_9bf2ef47df73",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Woody debris presence",
+      "predicate": "associated_with",
+      "object": "Increased mean species richness",
+      "paper": "10.1016/j.foreco.2019.117535",
+      "grade": "low",
+      "sentence": "In the 2017–2018 period, both species richness and diversity were significantly (P ≤ 0.05) different among sites with the dispersed, piles, and windrow sites higher (DMRT; P = 0.05) than the forest sites"
+    },
+    {
+      "id": "camo:edge_6d717fa3b5bc",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Presence of piles or windrows",
+      "predicate": "associated_with",
+      "object": "Increased species richness",
+      "paper": "10.1016/j.foreco.2019.117535",
+      "grade": "low",
+      "sentence": "In the 2017–2018 period, both species richness and diversity were significantly (P ≤ 0.05) different among sites with the dispersed, piles, and windrow sites higher (DMRT; P = 0.05) than the forest sites"
+    }
+  ]
+}

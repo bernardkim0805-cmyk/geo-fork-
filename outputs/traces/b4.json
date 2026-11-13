@@ -1,0 +1,107 @@
+{
+  "id": "b4",
+  "question": "What lethal and sub-lethal effects do contaminants such as oil sands tailings, PCBs and acid deposition have on wildlife and aquatic communities, and do remediation actions allow them to recover?",
+  "plan": {
+    "cause": {
+      "label": "Contaminants (oil sands tailings, PCBs, acid deposition)",
+      "terms": [
+        "oil sands",
+        "tailings",
+        "pcb",
+        "acid deposition",
+        "contaminant",
+        "pollutant"
+      ],
+      "exclude": [
+        "remediation",
+        "restoration",
+        "cleanup"
+      ]
+    },
+    "outcome": {
+      "label": "Wildlife and aquatic community effects and recovery",
+      "terms": [
+        "wildlife",
+        "aquatic",
+        "community",
+        "recovery",
+        "lethal",
+        "sub-lethal",
+        "mortality",
+        "toxicity"
+      ],
+      "attributes": [
+        "effect",
+        "impact",
+        "response",
+        "recovery",
+        "abundance",
+        "diversity"
+      ],
+      "exclude": [
+        "invasive",
+        "exotic"
+      ]
+    }
+  },
+  "n_candidates": 4,
+  "kept": [
+    "camo:edge_fa465baa4074",
+    "camo:edge_dad3a7219bd8",
+    "camo:edge_fd235fdc71f7"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_cb159f9b11bb"
+  ],
+  "aggregate": {
+    "direction": "mixed",
+    "certainty": "low",
+    "confidence": 0.6,
+    "papers": {
+      "10.1016/j.envpol.2005.09.013": "increase",
+      "10.1007/s11056-016-9543-7": "decrease"
+    },
+    "paper_counts": {
+      "increase": 1,
+      "decrease": 1
+    },
+    "agreement": 0.5,
+    "n_papers": 2
+  },
+  "edges": [
+    {
+      "id": "camo:edge_fa465baa4074",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Consolidated Tailings Wetland site location",
+      "predicate": "associated_with",
+      "object": "Increased mortality risk",
+      "paper": "10.1016/j.envpol.2005.09.013",
+      "grade": "moderate",
+      "sentence": "Nestlings on NW were 11.4 times more likely to die than those on the PC site (95% CI of the odds ratio ¼ 1.4e91.9, P ¼ 0.02)."
+    },
+    {
+      "id": "camo:edge_dad3a7219bd8",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "planting trees directly in tailings",
+      "predicate": "causes",
+      "object": "100% mortality of all planted trees",
+      "paper": "10.1007/s11056-016-9543-7",
+      "grade": "moderate",
+      "sentence": "After two growing seasons, all trees that were planted directly in the tailings (T treatment) were dead (Fig. [1"
+    },
+    {
+      "id": "camo:edge_fd235fdc71f7",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Nestling origin from Consolidated Tailings Wetlands or Natural Wetlands",
+      "predicate": "associated_with",
+      "object": "Increased mortality rates in 2003",
+      "paper": "10.1016/j.envpol.2005.09.013",
+      "grade": "moderate",
+      "sentence": "Chicks from Suncor (CT and NW) were 13.3 more likely to die than those from the PC site (95% CI ¼ 1.6e107, P ¼ 0.02)."
+    }
+  ]
+}

@@ -12,19 +12,13 @@
         "triclopyr",
         "metsulfuron",
         "imazapic",
-        "imazamox",
-        "aminopyralid",
-        "flumioxazin"
+        "aminopyralid"
       ],
       "exclude": [
         "fertilizer",
-        "insecticide",
-        "fungicide",
-        "herbivory",
-        "grazing",
-        "mowing",
-        "burning",
-        "fire"
+        "mulch",
+        "mechanical",
+        "biological"
       ]
     },
     "outcome": {
@@ -36,55 +30,37 @@
         "shrub",
         "tree",
         "wildflower",
-        "perennial",
-        "annual",
-        "herb",
-        "broadleaf"
+        "indigenous"
       ],
       "attributes": [
         "cover",
         "richness",
         "abundance",
         "density",
-        "diversity",
-        "composition",
-        "proportion",
-        "percent",
-        "area",
-        "frequency"
+        "diversity"
       ],
       "exclude": [
         "invasive",
         "exotic",
         "non-native",
         "alien",
-        "weedy",
-        "weed",
-        "annual",
-        "biennial"
+        "weedy"
       ]
     }
   },
-  "n_candidates": 53,
+  "n_candidates": 51,
   "kept": [
-    "camo:edge_880bf356af12",
     "camo:edge_9d981cad6d95",
     "camo:edge_8328e65d2d95",
     "camo:edge_7c23399b6d26",
     "camo:edge_27324a3c69c5",
-    "camo:edge_4b08d1a7641e",
     "camo:edge_179dfda57575",
     "camo:edge_51647ba04964",
-    "camo:edge_05a8acea7649",
+    "camo:edge_0288ae550545",
     "camo:edge_d5bb6081f884",
     "camo:edge_fb7dd401e483",
     "camo:edge_ca84e687f0af",
     "camo:edge_55bf80c7aa17",
-    "camo:edge_0288ae550545",
-    "camo:edge_6dfc56697676",
-    "camo:edge_56d20d1473dc",
-    "camo:edge_13c29b760803",
-    "camo:edge_3ca6eb1e87fd",
     "camo:edge_2ebf9473095d",
     "camo:edge_5988918f25b5",
     "camo:edge_222bba0e3392",
@@ -107,57 +83,51 @@
   ],
   "flipped": [],
   "rejected": [
+    "camo:edge_880bf356af12",
+    "camo:edge_5d2d2e187ed3",
     "camo:edge_cc1b0368f33b",
     "camo:edge_9e995f1f539b",
+    "camo:edge_4b08d1a7641e",
     "camo:edge_b506e04d990e",
-    "camo:edge_dcc4ab5b1e10",
     "camo:edge_953a594903a5",
+    "camo:edge_05a8acea7649",
     "camo:edge_5cbd8f29dc40",
-    "camo:edge_f35e0a9d8fe4",
     "camo:edge_0edee72a2bc3",
     "camo:edge_b6b04f1ce591",
-    "camo:edge_0d6162083840",
     "camo:edge_98c4b0999eda",
     "camo:edge_ab894b1857b3",
     "camo:edge_6434eb7dc1a4",
     "camo:edge_0a957eb3b370",
     "camo:edge_b9eafd956de0",
-    "camo:edge_6c3764dbae34"
+    "camo:edge_6dfc56697676",
+    "camo:edge_56d20d1473dc",
+    "camo:edge_6c3764dbae34",
+    "camo:edge_13c29b760803",
+    "camo:edge_3ca6eb1e87fd"
   ],
   "aggregate": {
     "direction": "mixed",
     "certainty": "low",
     "confidence": 0.6,
     "papers": {
-      "10.1111/rec.12468": "mixed",
       "10.5558/tfc86234-2": "decrease",
       "10.1111/avsc.12316": "mixed",
       "10.3368/er.25.2.85": "decrease",
       "10.1046/j.1526-100X.2003.rec0217.x": "increase",
+      "10.1111/rec.12468": "no_effect",
       "10.1111/j.1526-100X.2007.00209.x": "increase",
-      "10.3368/er.36.1.19": "increase",
-      "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2": "mixed"
+      "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2": "increase"
     },
     "paper_counts": {
-      "mixed": 3,
       "decrease": 2,
-      "increase": 3
+      "mixed": 1,
+      "increase": 3,
+      "no_effect": 1
     },
-    "agreement": 0.38,
-    "n_papers": 8
+    "agreement": 0.43,
+    "n_papers": 7
   },
   "edges": [
-    {
-      "id": "camo:edge_880bf356af12",
-      "direction": "increase",
-      "flipped": false,
-      "subject": "Disturbance treatments including grass-specific herbicide",
-      "predicate": "causes",
-      "object": "Increased native species abundance",
-      "paper": "10.1111/rec.12468",
-      "grade": "moderate",
-      "sentence": "Specifically, when plots were not seeded, the abundance of native species was higher in the two disturbance treatments that included grass-specific herbicide compared with those that did not (Fig. 2B, *t*93.8 = −3.05, *p*=0.003"
-    },
     {
       "id": "camo:edge_9d981cad6d95",
       "direction": "decrease",
@@ -203,17 +173,6 @@
       "sentence": "The total cover of native species in 2000 was significantly higher in plots receiving herbicide (Fig. 5, F 11.48)"
     },
     {
-      "id": "camo:edge_4b08d1a7641e",
-      "direction": "increase",
-      "flipped": false,
-      "subject": "Disturbance treatments including grass-specific herbicide",
-      "predicate": "causes",
-      "object": "Increased growth of native plants",
-      "paper": "10.1111/j.1526-100X.2007.00209.x",
-      "grade": "moderate",
-      "sentence": "The treatments caused significant increases in the growth and reproduction of many native plants compared to pre-treatment levels (e.g., Camassia; Figs. 2 & 3)."
-    },
-    {
       "id": "camo:edge_179dfda57575",
       "direction": "no_effect",
       "flipped": false,
@@ -236,15 +195,15 @@
       "sentence": "The native forb species Heterotheca villosa (Pursch) Shinners (hairy false golden aster) and Achillea millefolium L. (common yarrow) were eliminated by glyphosate."
     },
     {
-      "id": "camo:edge_05a8acea7649",
-      "direction": "increase",
+      "id": "camo:edge_0288ae550545",
+      "direction": "decrease",
       "flipped": false,
       "subject": "glyphosate application",
       "predicate": "causes",
-      "object": "increased percentage of live forbs",
-      "paper": "10.3368/er.36.1.19",
+      "object": "significant decrease in native species densities by 2006",
+      "paper": "10.3368/er.25.2.85",
       "grade": "moderate",
-      "sentence": "When partitioned by site, percentage of live forbs was also greatest with glyphosate treatment in July 2012, except at Site 3."
+      "sentence": "One-time treatments in 1998 significantly increased densities and seedbanks of the three exotic species and decreased densities and seedbanks of native species by 2006 (Tables 1–4 and Figures 1 and 2)."
     },
     {
       "id": "camo:edge_d5bb6081f884",
@@ -289,61 +248,6 @@
       "paper": "10.1111/avsc.12316",
       "grade": "low",
       "sentence": "although it significantly reduced that of native grasses and forbs."
-    },
-    {
-      "id": "camo:edge_0288ae550545",
-      "direction": "decrease",
-      "flipped": false,
-      "subject": "glyphosate application",
-      "predicate": "causes",
-      "object": "significant decrease in native species densities by 2006",
-      "paper": "10.3368/er.25.2.85",
-      "grade": "moderate",
-      "sentence": "One-time treatments in 1998 significantly increased densities and seedbanks of the three exotic species and decreased densities and seedbanks of native species by 2006 (Tables 1–4 and Figures 1 and 2)."
-    },
-    {
-      "id": "camo:edge_6dfc56697676",
-      "direction": "increase",
-      "flipped": false,
-      "subject": "Herbicide application",
-      "predicate": "causes",
-      "object": "increased native grass establishment",
-      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
-      "grade": "low",
-      "sentence": "Establishment in plots that were broadcast and treated with herbicide increased significantly with June precipitation and decreased significantly with June temperature (multiple regression; establishment 5 11.24(June precipitation) 2 291.61(June temperature) 1 3945.38"
-    },
-    {
-      "id": "camo:edge_56d20d1473dc",
-      "direction": "decrease",
-      "flipped": false,
-      "subject": "Herbicide application",
-      "predicate": "causes",
-      "object": "decreased native grass establishment",
-      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
-      "grade": "low",
-      "sentence": "Establishment in plots that were broadcast and treated with herbicide increased significantly with June precipitation and decreased significantly with June temperature (multiple regression; establishment 5 11.24(June precipitation) 2 291.61(June temperature) 1 3945.38"
-    },
-    {
-      "id": "camo:edge_13c29b760803",
-      "direction": "increase",
-      "flipped": false,
-      "subject": "Herbicide application",
-      "predicate": "causes",
-      "object": "increased native grass survivorship",
-      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
-      "grade": "low",
-      "sentence": "Survivorship in plots that were broadcast and treated with herbicide increased significantly with July precipitation (Fig. 3; survivorship 5 1.64(July precipitation) 1 21.05; *r*<sup>2</sup> 5 0.69"
-    },
-    {
-      "id": "camo:edge_3ca6eb1e87fd",
-      "direction": "increase",
-      "flipped": false,
-      "subject": "Herbicide application",
-      "predicate": "causes",
-      "object": "increased native grass survivorship",
-      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
-      "grade": "low",
-      "sentence": "Survivorship in plots that were drilled and treated with herbicide increased significantly with total precipitation in June and July (*r*<sup>2</sup> 5 0.79"
     },
     {
       "id": "camo:edge_2ebf9473095d",

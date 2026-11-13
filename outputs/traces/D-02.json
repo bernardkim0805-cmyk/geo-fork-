@@ -11,7 +11,8 @@
         "surface cover",
         "ground cover",
         "litter",
-        "organic matter"
+        "organic matter",
+        "fabric"
       ],
       "exclude": [
         "herbicide",
@@ -26,14 +27,15 @@
         "non-native",
         "exotic",
         "alien",
-        "weedy"
+        "weedy",
+        "weed"
       ],
       "attributes": [
         "abundance",
         "density",
         "cover",
         "frequency",
-        "richness"
+        "biomass"
       ],
       "exclude": [
         "native",
@@ -41,31 +43,43 @@
       ]
     }
   },
-  "n_candidates": 5,
+  "n_candidates": 6,
   "kept": [
+    "camo:edge_4af8274686bd",
     "camo:edge_7ef2e1e59dd8",
+    "camo:edge_b3831f4af80e",
     "camo:edge_0535e981ca40",
     "camo:edge_18ac0bfc5067"
   ],
   "flipped": [],
   "rejected": [
-    "camo:edge_4af8274686bd",
-    "camo:edge_b3831f4af80e"
+    "camo:edge_eab8132a3509"
   ],
   "aggregate": {
-    "direction": "decrease",
-    "certainty": "low",
-    "confidence": 0.63,
+    "direction": "mixed",
+    "certainty": "very_low",
+    "confidence": 0.53,
     "papers": {
-      "10.3368/er.25.2.85": "decrease"
+      "10.3368/er.25.2.85": "mixed"
     },
     "paper_counts": {
-      "decrease": 1
+      "mixed": 1
     },
-    "agreement": 1.0,
+    "agreement": 0.0,
     "n_papers": 1
   },
   "edges": [
+    {
+      "id": "camo:edge_4af8274686bd",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
+      "predicate": "causes",
+      "object": "increased density of garlic mustard, dame's rocket, and celandine shoots",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."
+    },
     {
       "id": "camo:edge_7ef2e1e59dd8",
       "direction": "decrease",
@@ -73,6 +87,17 @@
       "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
       "predicate": "causes",
       "object": "decreased density of garlic mustard, dame's rocket, and celandine shoots",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."
+    },
+    {
+      "id": "camo:edge_b3831f4af80e",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
+      "predicate": "causes",
+      "object": "increased density of garlic mustard, dame's rocket, and celandine seeds",
       "paper": "10.3368/er.25.2.85",
       "grade": "moderate",
       "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."

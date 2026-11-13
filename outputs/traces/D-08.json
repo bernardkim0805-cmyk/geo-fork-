@@ -33,7 +33,8 @@
       "attributes": [
         "abundance",
         "density",
-        "population"
+        "population",
+        "richness"
       ],
       "exclude": [
         "large",
