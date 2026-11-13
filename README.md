@@ -166,3 +166,38 @@ Ontology terms (`entity_term`, `measured_attribute`, `applied_to`) are CURIEs
 where an exact Wikidata (`wd:`), ENVO, PATO, CHEBI or GO match was found, and
 free text otherwise. Each node's `embedding_text` puts the readable label next
 to each CURIE, which is the field to embed for retrieval.
+
+---
+
+# Our pipeline (team geo-fork)
+
+**Run it** (one command, from a clean checkout):
+
+```bash
+./run.sh questions.yaml answers.json
+```
+
+First run creates `.venv/` and installs the pinned `requirements.txt`. LLM
+settings come only from `BRINE_URL`, `BRINE_MODEL`, `BRINE_API_KEY` (the
+skeleton does not call the LLM yet).
+
+**Dev loop**
+
+```bash
+.venv/bin/python -m lane2.cli dev_questions.yaml answers.json --debug   # per-question trace
+.venv/bin/python tests/validate_answers.py answers.json dev_questions.yaml
+```
+
+**Stages** (`lane2/`), each swappable; hand-off types live in `schema.py`:
+
+| Stage | File | Status |
+| --- | --- | --- |
+| Parse question -> (intervention, outcome) | `parse.py` | regex stub |
+| Ground phrases -> node ids | `ground.py` | keyword stub. **Main focus** |
+| Retrieve edges X -> Y | `retrieve.py` | direct edges only |
+| Decide direction / certainty / confidence | `decide.py` | majority-vote stub; check trap rules |
+| Render answers.json entry | `render.py` | f-string templates |
+| LLM client (unused) | `llm.py` | stdlib, env vars only |
+
+`dev_questions.yaml` is our own hidden-style test set; `tests/cases.yaml`
+collects hand-checked expected answers.

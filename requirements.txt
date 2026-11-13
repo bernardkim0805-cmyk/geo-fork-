@@ -1,0 +1,2 @@
+# Pinned runtime deps. Keep this list tiny: judging runs on ARM64 Linux.
+PyYAML==6.0.2
