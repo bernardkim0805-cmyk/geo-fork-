@@ -1,0 +1,306 @@
+{
+  "id": "D-09",
+  "question": "What effect does herbicide application have on invasive / non-native species abundance?",
+  "plan": {
+    "cause": {
+      "label": "Herbicide application",
+      "terms": [
+        "herbicide",
+        "glyphosate",
+        "picloram",
+        "triclopyr",
+        "2,4-d",
+        "metsulfuron",
+        "imazapyr",
+        "paraquat",
+        "diquat"
+      ],
+      "exclude": [
+        "biological",
+        "mechanical",
+        "manual",
+        "mowing",
+        "tilling"
+      ]
+    },
+    "outcome": {
+      "label": "Invasive / non-native species abundance",
+      "terms": [
+        "invasive",
+        "non-native",
+        "exotic",
+        "alien",
+        "weedy",
+        "weed"
+      ],
+      "attributes": [
+        "abundance",
+        "density",
+        "cover",
+        "frequency",
+        "biomass",
+        "richness"
+      ],
+      "exclude": [
+        "native",
+        "indigenous",
+        "local"
+      ]
+    }
+  },
+  "n_candidates": 19,
+  "kept": [
+    "camo:edge_e0b14f29cd85",
+    "camo:edge_7508d85e106f",
+    "camo:edge_da0063deef0c",
+    "camo:edge_84284086e663",
+    "camo:edge_dc3a2a7ccb4b",
+    "camo:edge_e6fc26306f73",
+    "camo:edge_459ae71bbd3b",
+    "camo:edge_4af8274686bd",
+    "camo:edge_d725a79ab966",
+    "camo:edge_7ef2e1e59dd8",
+    "camo:edge_63fcc1841c8e",
+    "camo:edge_b3831f4af80e",
+    "camo:edge_d4e906bf61c9",
+    "camo:edge_0535e981ca40",
+    "camo:edge_78690b777465",
+    "camo:edge_2e9da3e08ae5",
+    "camo:edge_1096b0589f2d",
+    "camo:edge_fa7756d677d7",
+    "camo:edge_c66602275f59"
+  ],
+  "flipped": [],
+  "rejected": [],
+  "aggregate": {
+    "direction": "mixed",
+    "certainty": "low",
+    "confidence": 0.6,
+    "papers": {
+      "10.1111/rec.12468": "decrease",
+      "10.3955/046.085.0212": "decrease",
+      "10.3368/er.29.1-2.35": "decrease",
+      "10.1111/avsc.12316": "mixed",
+      "10.3368/er.25.2.85": "mixed",
+      "10.1111/j.1526-100X.1995.tb00096.x": "increase"
+    },
+    "paper_counts": {
+      "decrease": 3,
+      "mixed": 2,
+      "increase": 1
+    },
+    "agreement": 0.5,
+    "n_papers": 6
+  },
+  "edges": [
+    {
+      "id": "camo:edge_e0b14f29cd85",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Grass-specific herbicide application",
+      "predicate": "causes",
+      "object": "Decreased exotic grass abundance",
+      "paper": "10.1111/rec.12468",
+      "grade": "moderate",
+      "sentence": "Treatment was a significant predictor of non-native grass cover at only one site (Triangle Prairie; *F*4,14 =9.22, *p<*0.001), where plots that received applications of grass-specific herbicide had lower abundances of exotic grasses than the remaining disturbance treatments"
+    },
+    {
+      "id": "camo:edge_7508d85e106f",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "SBG treatment (burning + glyphosate)",
+      "predicate": "causes",
+      "object": "decreased cover of non-native grasses (Agrostis spp.)",
+      "paper": "10.3955/046.085.0212",
+      "grade": "moderate",
+      "sentence": "Agrostis spp. were reduced most substantially by the SBG treatment (Figure 2b)."
+    },
+    {
+      "id": "camo:edge_da0063deef0c",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "combination of burning and glyphosate application",
+      "predicate": "causes",
+      "object": "decreased cover of perennial non-native forbs",
+      "paper": "10.3368/er.29.1-2.35",
+      "grade": "moderate",
+      "sentence": "Cover of perennial non-native forbs was significantly reduced with treatments that combined burning with glyphosate application (SBG, MBG; Figure 2c)."
+    },
+    {
+      "id": "camo:edge_84284086e663",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "glyphosate application",
+      "predicate": "causes",
+      "object": "decreased cover of non-native grasses",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "Non-native grass cover was reduced with glyphosate (Fig. 1)."
+    },
+    {
+      "id": "camo:edge_dc3a2a7ccb4b",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "glyphosate application",
+      "predicate": "causes",
+      "object": "significant increase in above- and belowground densities of exotic species by 2006",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "By 2006, above- and belowground densities of exotic species significantly increased and native species significantly decreased with one-time treatments of glyphosate and hand-pulling (ANOVA)."
+    },
+    {
+      "id": "camo:edge_e6fc26306f73",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Herbicide application",
+      "predicate": "causes",
+      "object": "increased cover of annual weeds",
+      "paper": "10.1111/j.1526-100X.1995.tb00096.x",
+      "grade": "moderate",
+      "sentence": "The total cover of annual weeds was significantly higher in quadrats sprayed with herbicide (19%) than in unsprayed quadrats (0.5%;  $F=265.9,\\ p<0.001"
+    },
+    {
+      "id": "camo:edge_459ae71bbd3b",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "glyphosate application",
+      "predicate": "causes",
+      "object": "decreased richness and diversity of non-native grasses",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "Non-native grass species richness and diversity were significantly lower with glyphosate at Sites 1 and 2 in 2011 (Table 1) and at the end of the study relative to pre-treatment (Fig. 2)."
+    },
+    {
+      "id": "camo:edge_4af8274686bd",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
+      "predicate": "causes",
+      "object": "increased density of garlic mustard, dame's rocket, and celandine shoots",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."
+    },
+    {
+      "id": "camo:edge_d725a79ab966",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "glyphosate application",
+      "predicate": "causes",
+      "object": "decreased cover of non-native forbs",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "Prior to and immediately after treatment, non-native forb cover was <5% at all sites and treatments, except significantly lower with glyphosate at Site 1 (Fig. 1)."
+    },
+    {
+      "id": "camo:edge_7ef2e1e59dd8",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
+      "predicate": "causes",
+      "object": "decreased density of garlic mustard, dame's rocket, and celandine shoots",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."
+    },
+    {
+      "id": "camo:edge_63fcc1841c8e",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "glyphosate application",
+      "predicate": "causes",
+      "object": "increased cover of non-native forbs",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "In 2012, non-native forb cover significantly increased with glyphosate at all sites, persisting in 2013 at two sites."
+    },
+    {
+      "id": "camo:edge_b3831f4af80e",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
+      "predicate": "causes",
+      "object": "increased density of garlic mustard, dame's rocket, and celandine seeds",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."
+    },
+    {
+      "id": "camo:edge_d4e906bf61c9",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "glyphosate application",
+      "predicate": "causes",
+      "object": "increased richness of non-native forbs",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "Non-native forb richness was significantly higher with glyphosate at Sites 1 and 2 in 2012 and 2013 (Table 1)."
+    },
+    {
+      "id": "camo:edge_0535e981ca40",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
+      "predicate": "causes",
+      "object": "decreased density of garlic mustard, dame's rocket, and celandine seeds",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."
+    },
+    {
+      "id": "camo:edge_78690b777465",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Glyphosate treatment",
+      "predicate": "causes",
+      "object": "Increased non-native forb cover",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "By the end of the study non-native forb cover was significantly higher with glyphosate than pre-treatment at Sites 1 and 2"
+    },
+    {
+      "id": "camo:edge_2e9da3e08ae5",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Glyphosate treatment",
+      "predicate": "causes",
+      "object": "Decreased flowering and seed set of non-native grasses",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "Flowering and seed set of non-native grasses was significantly reduced with glyphosate at Site 1"
+    },
+    {
+      "id": "camo:edge_1096b0589f2d",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Cutting and glyphosate treatments",
+      "predicate": "causes",
+      "object": "Decreased flowering and seed set of non-native forbs",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "and that of nonnative forbs was significantly reduced with cutting and glyphosate at Site 2 (Fig. 3)."
+    },
+    {
+      "id": "camo:edge_fa7756d677d7",
+      "direction": "unclear",
+      "flipped": false,
+      "subject": "glyphosate application",
+      "predicate": "causes",
+      "object": "Shifted plant community dominance from non-native perennial grasses to non-native forbs",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "Glyphosate shifted communities dominated by non-native perennial grasses to dominance by non-native forbs (Fig. 4a)."
+    },
+    {
+      "id": "camo:edge_c66602275f59",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "glyphosate application",
+      "predicate": "causes",
+      "object": "increased cover of non-native forbs",
+      "paper": "10.1111/avsc.12316",
+      "grade": "moderate",
+      "sentence": "At all sites, non-native forbs significantly increased with glyphosate in 2012"
+    }
+  ]
+}

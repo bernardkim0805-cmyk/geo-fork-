@@ -1,0 +1,22 @@
+# Hand-written questions in the style of the hidden set, for trying the agent.
+questions:
+  - id: D-01
+    question: What effect does herbicide application have on native plant cover and richness?
+  - id: D-02
+    question: What effect does mulch & surface cover have on invasive / non-native species abundance?
+  - id: D-03
+    question: What effect does peatland rewetting have on methane emissions?
+  - id: D-04
+    question: What effect does nursery fertilization have on seedling growth?
+  - id: D-05
+    question: What effect does prescribed burning have on invasive / non-native species abundance?
+  - id: D-06
+    question: What effect does mowing have on bird abundance?
+  - id: D-07
+    question: What effect does seeding native species have on native plant cover?
+  - id: D-08
+    question: What effect does coarse woody debris retention have on small mammal abundance?
+  - id: D-09
+    question: What effect does herbicide application have on invasive / non-native species abundance?
+  - id: D-10
+    question: What effect does livestock grazing have on soil organic carbon?
