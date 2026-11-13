@@ -1,0 +1,26 @@
+# Dev set in the HIDDEN-question shape ("What effect does X have on Y?").
+# Written by us for testing; NOT the organizers' questions. questions.yaml is
+# left untouched. Expected answers are unverified: hand-check and record them
+# in tests/cases.yaml as you go.
+questions:
+  - id: D-001
+    question: What effect does mulch & surface cover have on invasive / non-native species abundance?
+  - id: D-002
+    question: What effect does prescribed burning have on non-native grass cover?
+  - id: D-003
+    question: What effect does tree shelters have on seedling survival?
+  - id: D-004
+    question: What effect does peatland restoration have on water table position?
+  - id: D-005
+    question: What effect does scarification have on seedling density?
+  - id: D-006
+    question: What effect does fertilization have on plant biomass?
+  - id: D-007
+    question: What effect does mowing have on soil organic carbon?
+  - id: D-008
+    question: What effect does beaver reintroduction have on songbird abundance?
+  - id: D-009
+    question: What effect does grazing exclusion have on pollinator diversity?
+  # possible trap: cause and effect reversed
+  - id: D-010
+    question: What effect does water table position have on peatland restoration?
