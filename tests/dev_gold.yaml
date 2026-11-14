@@ -1,0 +1,24 @@
+# Gold answers for dev_questions.yaml, built Nov 14 straight from causal_graph.json
+# WITHOUT looking at any pipeline's answers (rules: HANDOFF.md section 2; papers
+# weighted equally). `also_ok` lists defensible alternatives. Used by tests/score.py.
+gold:
+  D-001: {status: answered, direction: mixed, also_ok: [decrease], note: "1 paper; mulch alone: fewer exotic shoots but no density change; rest bundled with glyphosate/hand-pulling"}
+  D-002: {status: answered, direction: decrease, note: "2 papers, both combined burn+glyphosate treatments"}
+  D-003: {status: answered, direction: increase, note: "1 paper (white pine, deer protection)"}
+  D-004: {status: answered, direction: increase, also_ok: [mixed], note: "2 papers; water table raised toward intact-bog level; 1 of 7 edges says decreased"}
+  D-005: {status: answered, direction: mixed, also_ok: [increase], note: "scarification paper: birch down, other species up; broader site-prep/mounding papers up"}
+  D-006: {status: answered, direction: increase, note: "6 of 7 papers increase, 1 no effect"}
+  D-007: {status: no_evidence, note: "no mowing->soil carbon edges (cutover-site microbial C is not mowing)"}
+  D-008: {status: no_evidence, note: "no beaver or songbird edges"}
+  D-009: {status: no_evidence, note: "no grazing->pollinator edges"}
+  D-010: {status: no_evidence, note: "TRAP: only reverse-oriented edges (restoration -> water table)"}
+  D-01:  {status: answered, direction: increase, also_ok: [mixed], note: "7 papers: 4 up, 2 down, 1 mixed; one 2003 paper has 26 edges"}
+  D-02:  {status: answered, direction: mixed, also_ok: [decrease], note: "same evidence as D-001"}
+  D-03:  {status: answered, direction: increase, note: "1 paper, associational (midday methane flux)"}
+  D-04:  {status: answered, direction: increase, note: "10 papers on fertilization->growth, nearly all up; 'nursery' never stated"}
+  D-05:  {status: answered, direction: decrease, note: "2 papers, combined burn+glyphosate"}
+  D-06:  {status: no_evidence, note: "no mowing->bird edges"}
+  D-07:  {status: answered, direction: increase, also_ok: [mixed], note: "2 papers up, 1 (2003) mostly unchanged"}
+  D-08:  {status: answered, direction: increase, note: "1 paper; abundance up, recruitment unchanged"}
+  D-09:  {status: answered, direction: decrease, also_ok: [mixed], note: "6 papers: 3 down, 2 mixed, 1 up"}
+  D-10:  {status: answered, direction: increase, note: "1 paper, associational"}

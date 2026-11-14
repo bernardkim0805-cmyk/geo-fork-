@@ -1,0 +1,12 @@
+# Gold for heldout_questions.yaml, built from causal_graph.json on Nov 14.
+gold:
+  H-01: {status: answered, direction: increase, note: "2 papers, consistent"}
+  H-02: {status: answered, direction: increase, note: "3 papers"}
+  H-03: {status: answered, direction: increase, note: "1 paper (fencing -> native biomass)"}
+  H-04: {status: answered, direction: increase, note: "2 papers; one bundles neighbour control"}
+  H-05: {status: no_evidence, note: "TRAP: only reverse-oriented edges (liming -> pH)"}
+  H-06: {status: answered, direction: decrease, also_ok: [mixed], note: "TRAP: polarity. Rewetting raises the water table, so depth DEcreases. 'depth of fibric peat' edges are a different attribute"}
+  H-07: {status: no_evidence}
+  H-08: {status: no_evidence}
+  H-09: {status: no_evidence}
+  H-10: {status: no_evidence, also_ok: [decrease], note: "TRAP: only edge has subject 'absence of shelter treatment' (rule 7)"}

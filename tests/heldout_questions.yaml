@@ -1,0 +1,23 @@
+# Held-out questions: never used while building or tuning any pipeline.
+# Same shape as the hidden set. Gold: tests/heldout_gold.yaml. Don't tune on these.
+questions:
+  - id: H-01
+    question: What effect does liming have on soil pH?
+  - id: H-02
+    question: What effect does mechanical release have on conifer seedling growth?
+  - id: H-03
+    question: What effect does fencing have on native plant biomass?
+  - id: H-04
+    question: What effect does straw mulch have on soil moisture?
+  - id: H-05
+    question: What effect does soil pH have on liming?
+  - id: H-06
+    question: What effect does peatland rewetting have on water table depth?
+  - id: H-07
+    question: What effect does beaver dam analogues have on trout abundance?
+  - id: H-08
+    question: What effect does prescribed burning have on soil microbial respiration?
+  - id: H-09
+    question: What effect does mowing have on amphibian abundance?
+  - id: H-10
+    question: What effect does tree shelters have on deer browsing damage?
