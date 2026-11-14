@@ -31,7 +31,7 @@ Signs:
 
 ## 2. Weight each vote
 
-`weight = comparator weight × language weight`
+`weight = comparator weight × language weight × study-design weight (C1) × strength weight (C3)`
 
 | Comparator | Weight |
 | --- | --- |
@@ -48,6 +48,24 @@ Signs:
 | `associational`, or predicate `associated_with` / `correlated_with` | 0.6 |
 | `no_relationship` (null) | 1.0 |
 
+| Study design (`evidential_basis.evidence_types`, C1) | Weight |
+| --- | --- |
+| `randomized_experiment` | 1.0 |
+| `quasi_experiment`, `natural_experiment` | 0.9 |
+| `observational_longitudinal` | 0.8 |
+| `observational_cross_sectional`, `structural_equation_model`, `mechanistic_study`, missing | 0.7 |
+| `modeling_simulation`, `case_study` | 0.5 |
+
+| `strength.qualitative_descriptor` (C3) | Weight |
+| --- | --- |
+| `strong` | 1.0 |
+| `moderate`, `not_specified`, missing | 0.9 |
+| `weak` | 0.75 |
+| `negligible` | 0.5 |
+
+`strength` is used because it does not track `certainty_grade` (strong edges are
+spread across moderate/low/very_low), so it adds information.
+
 ## 3. Combine: count papers, not edges
 
 - Inside each `source_document`, the paper's weighted votes become a share over {increase, decrease, no_effect}. Each paper counts once, at the weight of its strongest edge, so one paper with 10 edges can't outvote four papers.
@@ -62,6 +80,12 @@ Take the best `certainty_grade` in each paper, then the median across papers.
 Drop one level for each of these (never below `very_low`):
 the direction is `mixed`; every voting edge is associational; every paper is head-to-head / reference-only.
 The graph contains no `high` grades.
+
+C2 (drop a level when every paper is observational) is implemented but **off**
+(`observational_certainty_drop`). Measured 2026-11-14: `certainty_grade` already
+encodes design (randomized: 2176 moderate / 165 low; cross-sectional: 1365 low /
+190 very_low; modelling and case studies: all very_low), so the extra drop
+double-counts. Turning it on changed no eval_decide result.
 
 ## 5. Confidence (probability we are right): PLACEHOLDER until tests/cases.yaml exists
 

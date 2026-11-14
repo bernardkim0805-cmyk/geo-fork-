@@ -46,6 +46,21 @@ CONFIG = {
     "conf_no_evidence_miss": 0.55,   # a side grounded to nothing (maybe our miss)
     "conf_parse_failed": 0.3,
     "bad_input_penalty": 0.9,
+    # C1: study design -> vote weight (evidential_basis.evidence_types; max if several)
+    "evidence_weight": {"randomized_experiment": 1.0, "quasi_experiment": 0.9,
+                        "natural_experiment": 0.9, "observational_longitudinal": 0.8,
+                        "observational_cross_sectional": 0.7, "structural_equation_model": 0.7,
+                        "mechanistic_study": 0.7, "modeling_simulation": 0.5, "case_study": 0.5},
+    "evidence_default_weight": 0.7,
+    # C2: drop certainty a level when every paper is observational. OFF: certainty_grade
+    # already encodes design (randomized ~ moderate, cross-sectional ~ low), so this
+    # would double-count. Kept switchable; see docs/decide.md section 4.
+    "observational_certainty_drop": False,
+    "experimental_types": {"randomized_experiment", "quasi_experiment", "natural_experiment"},
+    # C3: reported effect strength -> vote weight (independent of certainty_grade)
+    "strength_weight": {"strong": 1.0, "moderate": 0.9, "not_specified": 0.9,
+                        "weak": 0.75, "negligible": 0.5},
+    "strength_default_weight": 0.9,
     # B1: sign words in a node name, used when the object has no up/down qualifier
     "name_plus": r"\b(increas\w*|higher|greater|more|enhanc\w*|elevat\w*|rais\w*|ris(e|ing)|larger|improv\w*|gain\w*)\b",
     "name_minus": r"\b(decreas\w*|lower|reduc\w*|fewer|less|loss|lost|declin\w*|smaller|diminish\w*)\b",
@@ -67,6 +82,7 @@ class EdgeVote:
     head_to_head: bool = False    # compared to another treatment / reference, not "nothing"
     associative: bool = False
     flipped_subject: bool = False
+    observational: bool = False   # no randomized/quasi/natural experiment behind it (C2)
     grade: Optional[str] = None
     reason: str = ""
     extra: dict = field(default_factory=dict)
@@ -112,7 +128,13 @@ def read_edge(edge: dict, graph, query: Query) -> EdgeVote:
     v.associative = pred in CONFIG["associative_predicates"] or lang == "associational"
     if pred in CONFIG["associative_predicates"]:
         lw = min(lw, CONFIG["associative_weight"])
-    v.weight = round(cw * lw, 3)
+    types = (edge.get("evidential_basis") or {}).get("evidence_types") or []
+    ew = max((CONFIG["evidence_weight"].get(t, CONFIG["evidence_default_weight"]) for t in types),
+             default=CONFIG["evidence_default_weight"])
+    v.observational = not (set(types) & CONFIG["experimental_types"])
+    desc = (edge.get("strength") or {}).get("qualitative_descriptor")
+    sw = CONFIG["strength_weight"].get(desc, CONFIG["strength_default_weight"])
+    v.weight = round(cw * lw * ew * sw, 3)
 
     # R2: null result
     if edge.get("negated") or lang == "no_relationship":
@@ -184,6 +206,7 @@ def _paper_votes(votes: list[EdgeVote]) -> list[dict]:
             "grade": max(grades) if grades else 0,
             "head_to_head": all(v.head_to_head for v in vs),
             "associative": all(v.associative for v in vs),
+            "observational": all(v.observational for v in vs),
         })
     return papers
 
@@ -269,6 +292,9 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
     if all(p["associative"] for p in papers):
         level -= 1
         notes.append("All evidence is associational, not causal.")
+    if CONFIG["observational_certainty_drop"] and all(p["observational"] for p in papers):
+        level -= 1
+        notes.append("Every study is observational (no experiment).")
     if all_h2h:
         level -= 1
         notes.append("Every study compares against another treatment or a reference site, "

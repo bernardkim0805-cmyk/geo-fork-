@@ -25,7 +25,8 @@ class FakeGraph:
         return nid
 
     def edge(self, subj, pred, obj, doc="doc1", negated=False, lang="direct_causal",
-             grade="moderate", comparator="untreated_control", comp_desc="control"):
+             grade="moderate", comparator="untreated_control", comp_desc="control",
+             evidence="randomized_experiment", strength="strong"):
         eid = f"e{len(self.edges) + 1}"
         self.edges[eid] = {
             "id": eid, "subject": subj, "predicate": pred, "object": obj,
@@ -33,6 +34,8 @@ class FakeGraph:
             "causal_language": "no_relationship" if negated else lang,
             "certainty_grade": grade,
             "comparator": [{"comparator_type": comparator, "comparator_description": comp_desc}],
+            "evidential_basis": {"evidence_types": [evidence]},
+            "strength": {"qualitative_descriptor": strength},
         }
         return eid
 
@@ -88,6 +91,28 @@ class ReadEdge(unittest.TestCase):
         e = self.g.edge(rel, "associated_with", self.g.node("sapling height", "increased"))
         v = read_edge(self.g.edges[e], self.g, q("browsing exclusion", "sapling height"))
         self.assertEqual(v.direction, "increase")
+
+    def test_C1_study_design_weights_the_vote(self):
+        up = self.g.node("survival", "increased")
+        rct = self.g.edge(self.treat, "causes", up)
+        obs = self.g.edge(self.treat, "causes", up, evidence="observational_cross_sectional")
+        model = self.g.edge(self.treat, "causes", up, evidence="modeling_simulation")
+        w = [read_edge(self.g.edges[e], self.g, q()).weight for e in (rct, obs, model)]
+        self.assertEqual(w, sorted(w, reverse=True))
+        self.assertEqual(w[0], 1.0)
+
+    def test_C3_weak_or_negligible_strength_weighs_less(self):
+        up = self.g.node("survival", "increased")
+        strong = self.g.edge(self.treat, "causes", up)
+        weak = self.g.edge(self.treat, "causes", up, strength="weak")
+        negl = self.g.edge(self.treat, "causes", up, strength="negligible")
+        w = [read_edge(self.g.edges[e], self.g, q()).weight for e in (strong, weak, negl)]
+        self.assertTrue(w[0] > w[1] > w[2])
+
+    def test_C1_missing_evidential_basis_does_not_throw(self):
+        e = self.g.edge(self.treat, "causes", self.g.node("survival", "increased"))
+        del self.g.edges[e]["evidential_basis"], self.g.edges[e]["strength"]
+        self.assertEqual(read_edge(self.g.edges[e], self.g, q()).direction, "increase")
 
     def test_B1_present_object_without_sign_words_abstains(self):
         e = self.g.edge(self.treat, "causes", self.g.node("distinct composition", "present"))
@@ -197,6 +222,17 @@ class Aggregate(unittest.TestCase):
     def test_B1_only_abstaining_edges_is_unclear(self):
         d = run(self.g, [self.g.edge(self.x, "causes", self.g.node("distinct community", "present"))])
         self.assertEqual((d.status, d.direction), ("answered", "unclear"))
+
+    def test_C2_observational_drop_is_off_by_default(self):
+        from lane2.decide import CONFIG
+        eids = [self.g.edge(self.x, "causes", self.up, doc="a", evidence="observational_cross_sectional")]
+        self.assertFalse(CONFIG["observational_certainty_drop"])
+        self.assertEqual(run(self.g, eids).certainty, "moderate")
+        CONFIG["observational_certainty_drop"] = True
+        try:
+            self.assertEqual(run(self.g, eids).certainty, "low")
+        finally:
+            CONFIG["observational_certainty_drop"] = False
 
     def test_confidence_in_range(self):
         eids = [self.g.edge(self.x, "causes", self.up, doc=f"d{i}") for i in range(20)]
