@@ -95,14 +95,14 @@ class MatchingTests(unittest.TestCase):
         p = PC.validate(copy.deepcopy(PLAN_010), Q010)
         e = G.edge_by_id[E_REWET_TO_PEAT_DEPTH]
         self.assertEqual(G.nodes[e["object"]]["name"], "increased depth of fibric peat")
-        self.assertFalse(G.node_matches(G.side_patterns(p["outcome"]), e["object"], e["id"]),
-                         "an object that only mentions peat must not match 'peatland restoration'")
+        head_ok, _ = G.node_matches(G.side_patterns(p["outcome"]), e["object"], e["id"])
+        self.assertFalse(head_ok, "an object that only mentions peat must not match 'peatland restoration'")
 
     def test_5_orientation(self):
         p004 = PC.validate(copy.deepcopy(PLAN_004), Q004)
         p010 = PC.validate(copy.deepcopy(PLAN_010), Q010)
-        fwd004, _ = G.candidates(p004)
-        fwd010, reversed010 = G.candidates(p010)
+        fwd004, _, _ = G.candidates(p004)
+        fwd010, _, reversed010 = G.candidates(p010)
         self.assertIn(E_RESTORATION_TO_HEIGHT, {e["id"] for e in fwd004})
         self.assertNotIn(E_RESTORATION_TO_HEIGHT, {e["id"] for e in fwd010})
         self.assertGreaterEqual(reversed010, 1)
@@ -137,6 +137,53 @@ class MatchingTests(unittest.TestCase):
         self.assertIsNone(G.second_order(e, "What effect does peatland restoration have on water table variability?"))
         self.assertIsNotNone(G.second_order(G.edge_by_id[E_SIMILAR_A], Q004), "similarity to a reference is a comparison, not a direction")
         self.assertIsNone(G.second_order(G.edge_by_id[E_RESTORATION_TO_HEIGHT], Q004))
+
+
+class RecallGuardTests(unittest.TestCase):
+    """The first rerun lost correct answers (D-003, D-03, D-08). These pin the corrections."""
+
+    def test_11_frame_noun_head_is_promoted_to_the_modifier(self):
+        plan = {"cause": {"label": "coarse woody debris retention", "head": "retention",
+                          "head_terms": ["coarse woody debris retention", "retention"],
+                          "modifier_terms": ["coarse woody debris", "woody debris", "logs"], "exclude": ["removal"]},
+                "outcome": {"label": "small mammal abundance", "head": "abundance",
+                            "head_terms": ["small mammal abundance", "abundance", "density"],
+                            "modifier_terms": ["small mammal", "vole", "mouse"], "exclude": []}}
+        p = PC.validate(plan, "What effect does coarse woody debris retention have on small mammal abundance?")
+        self.assertTrue(p["cause"]["head_promoted_from_modifiers"])
+        self.assertIn("woody debris", p["cause"]["head_terms"])
+        fwd, _, _ = G.candidates(p)
+        self.assertIn("camo:edge_9f68a35a2af5", {e["id"] for e in fwd})   # Woody debris presence -> total small mammals
+        # a negating frame is NOT promoted: grazing exclusion must not search for grazing
+        plan2 = {"cause": {"label": "grazing exclusion", "head": "exclusion", "head_terms": ["grazing exclusion", "exclusion"],
+                           "modifier_terms": ["grazing", "livestock"], "exclude": []},
+                 "outcome": {"label": "pollinator diversity", "head": "diversity", "head_terms": ["pollinator diversity", "diversity"],
+                             "modifier_terms": ["pollinator", "bee"], "exclude": []}}
+        p2 = PC.validate(plan2, "What effect does grazing exclusion have on pollinator diversity?")
+        self.assertFalse(p2["cause"]["head_promoted_from_modifiers"])
+        self.assertNotIn("grazing", p2["cause"]["head_terms"])
+
+    def test_12_unstated_modifier_keeps_the_edge_as_a_candidate(self):
+        plan = {"cause": {"label": "tree shelters", "head": "shelters", "head_terms": ["tree shelters", "shelters", "shelter"],
+                          "modifier_terms": ["tree"], "exclude": []},
+                "outcome": {"label": "seedling survival", "head": "survival", "head_terms": ["seedling survival", "survival", "mortality"],
+                            "modifier_terms": ["seedling", "sapling"], "exclude": []}}
+        p = PC.validate(plan, "What effect does tree shelters have on seedling survival?")
+        fwd, partial, _ = G.candidates(p)
+        self.assertIn("camo:edge_a2985e20a898", {e["id"] for e in fwd})   # shelter treatment -> survival of white pine
+        self.assertIn("camo:edge_a2985e20a898", partial, "the graph never says 'seedling': the filter step must judge it")
+
+    def test_13_attribute_words_are_exempt_from_type_and_umbrella_rules(self):
+        plan = {"cause": {"label": "prescribed burning", "head": "burning", "head_terms": ["prescribed burning", "burning", "fire"],
+                          "modifier_terms": ["prescribed"], "exclude": ["wildfire"]},
+                "outcome": {"label": "non-native grass cover", "head": "cover",
+                            "head_terms": ["non-native grass cover", "cover", "abundance", "density"],
+                            "modifier_terms": ["non-native", "grass", "exotic"], "exclude": ["native"]}}
+        p = PC.validate(plan, "What effect does prescribed burning have on non-native grass cover?")
+        for t in ("cover", "abundance", "density"):
+            self.assertIn(t, p["outcome"]["head_terms"], f"attribute word {t} must survive")
+        self.assertIsNone(G.second_order(G.edge_by_id["camo:edge_d4349eba0a25"], "What effect does rewetting have on methane emissions?"),
+                          "'mean seasonal methane flux' is a seasonal mean, not seasonality")
 
 
 class ConfidenceTests(unittest.TestCase):

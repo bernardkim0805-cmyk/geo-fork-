@@ -37,8 +37,8 @@ INVERSE_PAIRS = [
 # water table does not say whether the water table went up. Keyed by the word a question
 # would have to contain for the property to count as asked about.
 SECOND_ORDER = [
-    ("variability", re.compile(r"variab|varianc|fluctuat|\brange\b")),
-    ("seasonality", re.compile(r"seasonal")),
+    ("variability", re.compile(r"variab|varianc|fluctuat|\b(water[\s-]?table|level|temperature) range\b")),
+    ("seasonality", re.compile(r"seasonality|seasonal (variab|variation|pattern|timing|shift|dynamic|cycle)")),
     ("stability", re.compile(r"stabilit")),
     ("heterogeneity", re.compile(r"heterogen")),
     ("timing", re.compile(r"\btiming\b|\bphenolog")),
@@ -104,34 +104,35 @@ class Graph:
         return head, mods, excl
 
     def node_matches(self, pats, node_id, edge_id):
-        """Fix 2.2: the head must match the node; modifiers may match the node or the edge's
-        context (sentence, ecosystem, paper title); exclusions apply to the node."""
+        """Fix 2.2: (head matched, modifiers matched). The head must match the node text and
+        the exclusions must not. Modifiers may match the node or the edge's context (sentence,
+        ecosystem, paper title); when they do not, the edge is still a candidate but the
+        filter step is told which context word the graph never states."""
         head, mods, excl = pats
         if head is None:
-            return False
+            return False, False
         text = self.text[node_id]
-        if not head.search(text):
-            return False
-        if excl and excl.search(text):
-            return False
-        if mods and not (mods.search(text) or mods.search(self.context[edge_id])):
-            return False
-        return True
+        if not head.search(text) or (excl and excl.search(text)):
+            return False, False
+        mods_ok = mods is None or bool(mods.search(text) or mods.search(self.context[edge_id]))
+        return True, mods_ok
 
     def candidates(self, plan):
-        """Edges whose SUBJECT matches the cause side and whose OBJECT matches the outcome side.
-        Returns (forward edges, number of edges that matched only in the reverse orientation)."""
+        """Edges whose SUBJECT matches the cause side and whose OBJECT matches the outcome side,
+        fully modifier-matched edges first. Returns (forward edges, ids whose modifiers were
+        not found, number of edges that matched only in the reverse orientation)."""
         cp, op = self.side_patterns(plan["cause"]), self.side_patterns(plan["outcome"])
-        found, reversed_n = [], 0
+        full, partial, reversed_n = [], [], 0
         for e in self.edges:
-            fwd = self.node_matches(cp, e["subject"], e["id"]) and self.node_matches(op, e["object"], e["id"])
-            if fwd:
+            s_ok, s_mods = self.node_matches(cp, e["subject"], e["id"])
+            o_ok, o_mods = self.node_matches(op, e["object"], e["id"])
+            if s_ok and o_ok:
                 if NEGATED_SUBJECT.search(self.nodes[e["subject"]]["name"].lower()):
                     continue
-                found.append(e)
-            elif self.node_matches(op, e["subject"], e["id"]) and self.node_matches(cp, e["object"], e["id"]):
+                (full if (s_mods and o_mods) else partial).append(e)
+            elif self.node_matches(op, e["subject"], e["id"])[0] and self.node_matches(cp, e["object"], e["id"])[0]:
                 reversed_n += 1                     # fix 2.3: runs the wrong way for this question
-        return found, reversed_n
+        return full + partial, [e["id"] for e in partial], reversed_n
 
     def spread_by_paper(self, edges, cap):
         """Keep at most `cap` edges, taking them round-robin across papers so one
@@ -177,14 +178,17 @@ class Graph:
 
     # ---------- fix 2.6: second-order attributes ----------
     def second_order(self, e, question):
-        """Reason string if the edge's object measures a second-order property the question
-        did not ask about, else None."""
+        """Reason string if the edge's object measures only second-order properties the
+        question did not ask about, else None. An object that carries an asked-about property
+        ("seasonal variability" for a variability question) counts."""
         obj = self.nodes[e["object"]]["name"].lower() + " | " + str(self.nodes[e["object"]].get("measured_attribute") or "").lower()
         q = question.lower()
-        for name, pat in SECOND_ORDER:
-            if pat.search(obj) and not pat.search(q) and name.split()[0] not in q:
-                return f"object measures {name}, not the asked attribute"
-        return None
+        hits = [name for name, pat in SECOND_ORDER if pat.search(obj)]
+        if not hits:
+            return None
+        if any(pat.search(q) or name.split()[0] in q for name, pat in SECOND_ORDER if name in hits):
+            return None
+        return f"object measures {hits[0]}, not the asked attribute"
 
     # ---------- fix 2.4: dedupe ----------
     @staticmethod
