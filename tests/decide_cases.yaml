@@ -1,0 +1,371 @@
+# Decide-only test cases (docs/decide_tasks.md A1/A2).
+#
+# Each case is ONE question in hidden-set shape ("What effect does X have on Y?")
+# plus the edge_ids retrieve would hand to decide. The harness
+# (tests/eval_decide.py) feeds `edge_ids` straight into decide(), skipping
+# parse/ground/retrieve, and compares the result to `expected`.
+#
+# Fields
+#   id, question, intervention, outcome   -> become the Query
+#   edge_ids        the INPUT to decide (may include edges that should NOT count)
+#   expected:
+#     status        answered | no_evidence
+#     direction     increase | decrease | no_effect | mixed | unclear | null
+#     certainty     high | moderate | low | very_low | null
+#     cited_edges   edges an honest answer may cite (decide's citations must be a subset)
+#   trap            which misreading the case is meant to catch (null = ordinary case)
+#   labeled_by      who wrote the expected answer
+#   checked_by      reviewers who agreed (subagent checks + user sign-off)
+#   status_review   draft | checked | signed_off
+#   notes           why the answer is what it is
+#
+# For empty edge_ids, the label is no_evidence by contract (decide trusts retrieve).
+# Per-case labeled_by / checked_by / status_review fall back to `defaults`.
+
+defaults: {labeled_by: claude, checked_by: [], status_review: draft}
+
+cases:
+
+# ---------------------------------------------------------------- ordinary
+- id: DC-01
+  question: What effect does herbicide application have on native plant cover?
+  intervention: herbicide application
+  outcome: native plant cover
+  edge_ids: [camo:edge_2ebf9473095d, camo:edge_5988918f25b5, camo:edge_73525954fd38,
+             camo:edge_fdb87e11c913, camo:edge_5be82b577166, camo:edge_2d3f3a554991,
+             camo:edge_20dc6a868d10, camo:edge_88183e8dd33d, camo:edge_6e8cc3332878,
+             camo:edge_27324a3c69c5]
+  expected: {status: answered, direction: increase, certainty: moderate, cited_edges: all}
+  trap: null
+  notes: >-
+    Two randomized studies. One reports higher native cover with herbicide in most
+    plot-years, with two null plot-years. The other reports higher total native cover.
+
+- id: DC-02
+  question: What effect does fertilization have on tree seedling growth?
+  intervention: fertilization
+  outcome: tree seedling growth
+  edge_ids: [camo:edge_4ec17738dc6f, camo:edge_ed5dd4b0434b, camo:edge_6b9afb321f2c,
+             camo:edge_624b3855328f, camo:edge_574d67f83afc, camo:edge_d071ab9334cc,
+             camo:edge_fe44dfe5c234, camo:edge_7fd63852f9f5, camo:edge_c19d2f3efe82,
+             camo:edge_43ca4b5132bd, camo:edge_050c8a66dffe, camo:edge_634f67c5a5c9,
+             camo:edge_585dbd6dae83, camo:edge_e17870ec1320, camo:edge_3a741bdb9db7,
+             camo:edge_20a8f4424d68]
+  expected: {status: answered, direction: increase, certainty: moderate, cited_edges: all}
+  trap: null
+  notes: >-
+    Four studies. Two show clear increases. One shows increases for black spruce only
+    (jack pine and tamarack null). One shows a diameter increase but no first-season
+    height effect. Overall: increase, varying by species.
+
+- id: DC-03
+  question: What effect does scarification have on conifer seedling height growth?
+  intervention: scarification
+  outcome: conifer seedling height growth
+  edge_ids: [camo:edge_92cbb0333e50, camo:edge_cb89418dc07a, camo:edge_722c6c4a46b6,
+             camo:edge_d52d471c626a, camo:edge_afe19e1d7d9c, camo:edge_724b9079aff3,
+             camo:edge_d9cb4eae67b9, camo:edge_ebee13655460, camo:edge_109bfc74be3a,
+             camo:edge_13adcfd74b02, camo:edge_06bf63101d92]
+  expected: {status: answered, direction: increase, certainty: moderate, cited_edges: all}
+  trap: null
+  notes: Five studies, all increases. One also has a null vs. a reference site.
+
+- id: DC-04
+  question: What effect does peatland rewetting have on tree and shrub cover?
+  intervention: rewetting
+  outcome: tree and shrub cover
+  edge_ids: [camo:edge_942dc0852392, camo:edge_030568bb3a73, camo:edge_f88bd69f1c65,
+             camo:edge_d9c7509b68c3, camo:edge_86e59f21c9a6, camo:edge_be54e21498df,
+             camo:edge_7fdec902d565, camo:edge_8fae130f876d]
+  expected: {status: answered, direction: decrease, certainty: moderate, cited_edges: all}
+  trap: mislabeled_edge
+  notes: >-
+    Rewetting reduces tree and shrub biomass and cover. edge_942dc0852392 is encoded
+    as 'prevents [decreased tree dominance]', which reads as an increase, but its
+    sentence says restoration reversed the trend toward closed canopies (a decrease).
+    The other study outweighs it. One edge reports shrub biomass rising over time.
+
+- id: DC-05
+  question: What effect does liming have on soil pH?
+  intervention: liming
+  outcome: soil pH
+  edge_ids: [camo:edge_e9e903c9fa3c, camo:edge_9bc527d22542, camo:edge_bdddb93d41c7]
+  expected: {status: answered, direction: increase, certainty: moderate, cited_edges: all}
+  trap: null
+  notes: Two randomized studies; both report higher pH.
+
+- id: DC-06
+  question: What effect does liming have on tree sapling growth?
+  intervention: liming
+  outcome: tree sapling growth
+  edge_ids: [camo:edge_893905927a54, camo:edge_02f366f1c6c7, camo:edge_8cf59e7f1c40,
+             camo:edge_98f30b64c321, camo:edge_bcc6137d71ba, camo:edge_8e72c048bea3,
+             camo:edge_d218e167b9d3, camo:edge_bca77d1739c3, camo:edge_f0ef499b6db2]
+  expected: {status: answered, direction: no_effect, certainty: low, cited_edges: all}
+  trap: null
+  notes: >-
+    Most tests found no growth response (beech, overall height, white/black spruce).
+    Only sugar maple, plus one associational white spruce edge, increased. Mostly null.
+
+- id: DC-07
+  question: What effect does rewetting have on water table level?
+  intervention: rewetting
+  outcome: water table level
+  edge_ids: [camo:edge_1891adf190bf, camo:edge_6d593529c348, camo:edge_c07937cded36,
+             camo:edge_e45a21b0b45c, camo:edge_6f910f66839c, camo:edge_dfaebb0ff36b,
+             camo:edge_44c436b0855d]
+  expected: {status: answered, direction: increase, certainty: moderate, cited_edges: all}
+  trap: null
+  notes: >-
+    One study. The water table rises toward intact-bog levels after ditch blocking.
+    One transect far from a dam went deeper (decreased), and one transect was null.
+
+- id: DC-08
+  question: What effect does grazing have on plant litter and standing crop?
+  intervention: grazing
+  outcome: plant litter and standing crop
+  edge_ids: [camo:edge_d1514f8da3d2, camo:edge_0fdcb55370ac]
+  expected: {status: answered, direction: decrease, certainty: low, cited_edges: all}
+  trap: null
+  notes: One quasi-experimental study; associational wording; both decrease.
+
+- id: DC-09
+  question: What effect does grass-specific herbicide have on exotic grass abundance?
+  intervention: grass-specific herbicide
+  outcome: exotic grass abundance
+  edge_ids: [camo:edge_e0b14f29cd85]
+  expected: {status: answered, direction: decrease, certainty: moderate, cited_edges: all}
+  trap: null
+  notes: >-
+    One randomized edge. The comparator is labeled alternative_treatment, but the
+    description ('without grass-specific herbicide') is really a no-treatment control.
+
+- id: DC-10
+  question: What effect does prescribed burning have on non-native plant cover?
+  intervention: prescribed burning
+  outcome: non-native plant cover
+  edge_ids: [camo:edge_3a398c9a440a, camo:edge_6251d637f955, camo:edge_7508d85e106f]
+  expected: {status: answered, direction: decrease, certainty: moderate, cited_edges: all}
+  trap: null
+  notes: >-
+    One randomized study: burning lowered cover of Hypochaeris, Leucanthemum and
+    non-native Agrostis.
+
+- id: DC-11
+  question: What effect does remediation have on metal concentrations?
+  intervention: remediation
+  outcome: metal concentrations
+  edge_ids: [camo:edge_3801e622aa5e, camo:edge_e05ea548af4c, camo:edge_79baabe22795,
+             camo:edge_cec167e49d39, camo:edge_9b3d87ecd1d3, camo:edge_2bcea4b0a366,
+             camo:edge_9ce65a0140e5, camo:edge_03359b041652, camo:edge_08eaa682aa43]
+  expected: {status: answered, direction: no_effect, certainty: moderate, cited_edges: all}
+  trap: null_result
+  notes: >-
+    Sydney Tar Ponds: two studies, almost all negated (no change in metals in crabs
+    or sediment); copper alone decreased. A null result, not 'no evidence'.
+
+- id: DC-12
+  question: What effect does mulch application have on native seedling density?
+  intervention: mulch application
+  outcome: native seedling density
+  edge_ids: [camo:edge_57a4d330d717, camo:edge_c28b15ab9969, camo:edge_fbb8b192a273,
+             camo:edge_c07e7798cd64, camo:edge_296f1c58ad29]
+  expected: {status: answered, direction: no_effect, certainty: moderate, cited_edges: all}
+  trap: null_result
+  notes: Four of five tests show no effect; one pre/post comparison shows an increase.
+
+- id: DC-13
+  question: What effect does moose browsing have on foliar defence compounds?
+  intervention: moose browsing
+  outcome: foliar defence compounds
+  edge_ids: [camo:edge_5aa1a7a321a8, camo:edge_36c656af6044, camo:edge_dad0b8b77653]
+  expected: {status: answered, direction: increase, certainty: low, cited_edges: all}
+  trap: null
+  notes: One study; associational; phenols and tannins higher where browsed.
+
+# ---------------------------------------------------------------- traps
+- id: DC-14
+  question: What effect does weed removal have on conifer seedling growth?
+  intervention: weed removal
+  outcome: conifer seedling growth
+  edge_ids: [camo:edge_cf3dcfed8798, camo:edge_6c8bc7ff827e, camo:edge_22ae5b45f0c6]
+  expected: {status: answered, direction: increase, certainty: moderate, cited_edges: all}
+  trap: removal_question
+  notes: >-
+    Subject qualifier is 'removed', but the question itself asks about the removal,
+    so there is NO sign flip: weed removal increases growth.
+
+- id: DC-15
+  question: What effect does competing vegetation have on conifer seedling growth?
+  intervention: competing vegetation
+  outcome: conifer seedling growth
+  edge_ids: [camo:edge_cf3dcfed8798, camo:edge_6c8bc7ff827e, camo:edge_22ae5b45f0c6]
+  expected: {status: answered, direction: decrease, certainty: moderate, cited_edges: all}
+  trap: absence_subject
+  notes: >-
+    Same edges as DC-14. The question asks about the vegetation itself, so
+    'weed removal -> more growth' means competing vegetation DECREASES growth.
+
+- id: DC-16
+  question: What effect does tree shelters have on deer browsing damage?
+  intervention: tree shelters
+  outcome: deer browsing damage
+  edge_ids: [camo:edge_3aa4be6d9196]
+  expected: {status: answered, direction: decrease, certainty: moderate, cited_edges: all}
+  trap: absence_subject
+  notes: >-
+    'Absence of shelter -> increased browsing' means shelters DECREASE browsing.
+    Reading only the object's sign would say increase.
+
+- id: DC-17
+  question: What effect does moose browsing exclusion have on sapling height?
+  intervention: moose browsing exclusion
+  outcome: sapling height
+  edge_ids: [camo:edge_f3b94c75b66e]
+  expected: {status: answered, direction: increase, certainty: low, cited_edges: all}
+  trap: removal_question
+  notes: "'Release from moose browsing' [removed] -> increased height; the question is about the exclusion, so no flip."
+
+- id: DC-18
+  question: What effect does exponential fertilization have on seedling growth?
+  intervention: exponential fertilization
+  outcome: seedling growth
+  edge_ids: [camo:edge_9e35062af2b1, camo:edge_1d04058f3b30, camo:edge_4de9efbfec5c]
+  expected: {status: answered, direction: increase, certainty: low, cited_edges: all}
+  trap: head_to_head
+  notes: >-
+    Compared against conventional fertilization, not against no fertilization, so
+    the answer is 'increase relative to the alternative' and certainty drops a level.
+
+- id: DC-19
+  question: What effect does mulch application have on plant species assemblages?
+  intervention: mulch application
+  outcome: plant species assemblages
+  edge_ids: [camo:edge_c88aacee9d96]
+  expected: {status: answered, direction: no_effect, certainty: low, cited_edges: all}
+  trap: unchanged_object
+  notes: >-
+    Object qualifier 'unchanged', not negated. The sentence reports only a borderline
+    (p = 0.06) effect in one month, which reads as no_effect. Checks R3.
+
+- id: DC-20
+  question: What effect does conversion of forest to fallow fields have on soil exchangeable potassium?
+  intervention: conversion of forest to fallow fields
+  outcome: soil exchangeable potassium
+  edge_ids: [camo:edge_07b5d3056850]
+  expected: {status: answered, direction: no_effect, certainty: low, cited_edges: all}
+  trap: unchanged_object
+  notes: "'Remained relatively stable during the chronosequence': R3 is right here."
+
+- id: DC-21
+  question: What effect does proximity to seismic lines have on grizzly bear movement direction?
+  intervention: proximity to seismic lines
+  outcome: grizzly bear movement direction
+  edge_ids: [camo:edge_bbcceb4128a9, camo:edge_6b56f70be790, camo:edge_7cd97147f1f1,
+             camo:edge_10f4712fcd69, camo:edge_744e374065aa, camo:edge_1b61a1f07612]
+  expected: {status: answered, direction: mixed, certainty: very_low, cited_edges: all}
+  trap: unchanged_object
+  notes: >-
+    One modelling study. Bears move toward some line types and away from others,
+    by season and vegetation height. The two 'unchanged' edges are about neutral
+    movement in one season, not a tested null. Overall mixed. R3 is noisy here.
+
+- id: DC-22
+  question: What effect does liming have on soil base saturation?
+  intervention: liming
+  outcome: soil base saturation
+  edge_ids: [camo:edge_a014365d0b38, camo:edge_fcb8f0a9ee5a]
+  expected: {status: answered, direction: increase, certainty: moderate, cited_edges: all}
+  trap: unsigned_object
+  notes: >-
+    edge_a014365d0b38 has no object qualifier and a name containing both
+    'Increased CEC, BS...' and 'decreased H'. The name fallback must not guess.
+    edge_fcb8f0a9ee5a carries the signed increase.
+
+- id: DC-23
+  question: What effect does liming have on hardwood sapling growth?
+  intervention: liming
+  outcome: hardwood sapling growth
+  edge_ids: [camo:edge_893905927a54, camo:edge_02f366f1c6c7, camo:edge_8cf59e7f1c40,
+             camo:edge_98f30b64c321, camo:edge_bcc6137d71ba]
+  expected: {status: answered, direction: mixed, certainty: low, cited_edges: all}
+  trap: single_paper_split
+  notes: >-
+    One study disagrees with itself: sugar maple growth increased, while beech and
+    overall height showed no effect. Mixed, with a single-study penalty.
+
+# ---------------------------------------------------------------- no_evidence
+- id: DC-24
+  question: What effect does mowing have on soil organic carbon?
+  intervention: mowing
+  outcome: soil organic carbon
+  edge_ids: []
+  expected: {status: no_evidence, direction: null, certainty: null, cited_edges: []}
+  trap: null
+  notes: README example of a no_evidence answer.
+
+- id: DC-25
+  question: What effect does beaver reintroduction have on songbird abundance?
+  intervention: beaver reintroduction
+  outcome: songbird abundance
+  edge_ids: []
+  expected: {status: no_evidence, direction: null, certainty: null, cited_edges: []}
+  trap: null
+
+- id: DC-26
+  question: What effect does grazing exclusion have on pollinator diversity?
+  intervention: grazing exclusion
+  outcome: pollinator diversity
+  edge_ids: []
+  expected: {status: no_evidence, direction: null, certainty: null, cited_edges: []}
+  trap: null
+
+- id: DC-27
+  question: What effect does water table position have on peatland restoration?
+  intervention: water table position
+  outcome: peatland restoration
+  edge_ids: []
+  expected: {status: no_evidence, direction: null, certainty: null, cited_edges: []}
+  trap: reversed_cause_effect
+  notes: Cause and effect reversed. Retrieve should pass nothing; decide trusts it.
+
+- id: DC-28
+  question: What effect does prescribed burning have on soil microbial biomass?
+  intervention: prescribed burning
+  outcome: soil microbial biomass
+  edge_ids: []
+  expected: {status: no_evidence, direction: null, certainty: null, cited_edges: []}
+  trap: null
+
+- id: DC-29
+  question: What effect does fertilization with Forest Paks have on seedling ground-level diameter?
+  intervention: fertilization with Forest Paks
+  outcome: seedling ground-level diameter
+  edge_ids: [camo:edge_ee5aa30bcc2d]
+  expected: {status: no_evidence, direction: null, certainty: null, cited_edges: []}
+  trap: only_indirect
+  notes: The only edge is 'moderates' (it changes scarification's effect), which is not a direct effect.
+
+- id: DC-30
+  question: What effect does cutting treatments have on basal area?
+  intervention: cutting treatments
+  outcome: basal area
+  edge_ids: [camo:edge_211b8c6d8ad9, camo:edge_09d768e85a7e, camo:edge_538e4cf032df]
+  expected: {status: no_evidence, direction: null, certainty: null, cited_edges: []}
+  trap: variation_object
+  notes: >-
+    All three objects are 'variation in X' (basal area differed AMONG treatments).
+    They don't say whether cutting raises or lowers basal area.
+
+- id: DC-31
+  question: What effect does scarification have on seedling density?
+  intervention: scarification
+  outcome: seedling density
+  edge_ids: [camo:edge_46927215c07b, camo:edge_c7ae2928e403, camo:edge_cd8e9ccec7a2,
+             camo:edge_dd348e8a86e7]
+  expected: {status: no_evidence, direction: null, certainty: null, cited_edges: []}
+  trap: interaction_subject
+  notes: >-
+    Dev question D-005. Every subject is an interaction (scarification x year,
+    x cutting, 'treatment and time'), and one object is a 'variation in'. None gives
+    scarification's main effect on density.
