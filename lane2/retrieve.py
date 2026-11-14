@@ -160,7 +160,8 @@ _TAXON_WORDS = {
 }
 
 
-def retrieve(query: Query, graph: Graph, debug: bool = False) -> Evidence:
+def retrieve(query: Query, graph: Graph, debug: bool = False,
+             on_grounded=None) -> Evidence:
     """Phrases to edges, in one stage.
 
     Grounding used to be a pipeline stage of its own. It was only ever retrieve's
@@ -170,6 +171,8 @@ def retrieve(query: Query, graph: Graph, debug: bool = False) -> Evidence:
     calls, so there is one place where a phrase becomes a node.
     """
     g = ground(query, graph, debug=debug)
+    if on_grounded:  # progress report only (live viewer)
+        on_grounded(g)
     ev = _edges_for(g, graph)
     ev.grounding = g
     return ev

@@ -16,6 +16,7 @@ import yaml
 from . import llm
 from .decide import LLM_STATS, decide
 from .graph import Graph
+from .live import Live
 from .parse import parse
 from .render import render
 from .retrieve import retrieve
@@ -86,10 +87,11 @@ def _vote_detail(graph: Graph, v) -> dict:
 
 
 def run_pair(x: str, y: str, raw: str, graph: Graph, debug: bool,
-             mode: str = "effect") -> dict:
+             mode: str = "effect", say=None) -> dict:
     """Ground, retrieve and judge one cause->effect pair on its own."""
+    say = say or (lambda *a, **k: None)
     sub = Query(x, y, raw=raw, parse_method="pair", mode=mode)
-    ev = retrieve(sub, graph)
+    ev = retrieve(sub, graph, on_grounded=lambda g: say("retrieve"))
     g = ev.grounding
     d, dtok = decide_counted(sub, g, ev, graph)
     if debug:
@@ -177,8 +179,18 @@ def pair_sentences(pairs: list[dict], base: str) -> str:
 
 
 def answer_one(q: Question, graph: Graph, debug: bool,
-               check_uncertainty: bool = False) -> tuple[dict, dict]:
+               check_uncertainty: bool = False, live: Live | None = None) -> tuple[dict, dict]:
+    def say(stage, **info):  # progress for the live viewer; no-op without --live
+        if live:
+            live.stage(q.id, stage, **info)
+
+    say("parse")
     query = parse(q, debug=debug)
+    parse_trace = {"method": query.parse_method, "intervention": query.intervention,
+                   "outcome": query.outcome, "tokens": query.tokens,
+                   "interventions": query.interventions, "outcomes": query.outcomes,
+                   "pairs": [list(p) for p in query.pairs],
+                   "mode": query.mode, "presumed": query.presumed}
     d2_before = dict(LLM_STATS)
     # Advisory only: scores the parse, never changes it. Off unless --uncertainty.
     if check_uncertainty:
@@ -188,8 +200,20 @@ def answer_one(q: Question, graph: Graph, debug: bool,
     # One search per cause->effect pair. "herbicides such as glyphosate" is two
     # questions: a finding can hold for glyphosate and not for herbicides
     # generally, and a single merged search cannot tell them apart.
-    pairs = [run_pair(x, y, query.raw, graph, debug, query.mode)
-             for x, y in query.pairs]
+    say("ground", parse=parse_trace, pair=None)
+    pairs = []
+    for i, (x, y) in enumerate(query.pairs):
+        say("ground", pair=i)
+        pr = run_pair(x, y, query.raw, graph, debug, query.mode, say)
+        pairs.append(pr)
+        if live:
+            live.pair_done(q.id, {"intervention": x, "outcome": y,
+                                  "nodes": [len(pr["grounding"].intervention_nodes),
+                                            len(pr["grounding"].outcome_nodes)],
+                                  "edges": len(pr["evidence"].edge_ids),
+                                  "status": pr["decision"].status,
+                                  "direction": pr["decision"].direction})
+    say("decide", pair=None)
     g = combine_groundings([p["grounding"] for p in pairs], query)
     ev = combine_evidence([p["evidence"] for p in pairs])
     d, dtok = decide_counted(query, g, ev, graph)
@@ -207,11 +231,7 @@ def answer_one(q: Question, graph: Graph, debug: bool,
         "id": q.id,
         "question": q.text,
         "kind": q.kind,
-        "parse": {"method": query.parse_method, "intervention": query.intervention,
-                  "outcome": query.outcome, "tokens": query.tokens,
-                  "interventions": query.interventions, "outcomes": query.outcomes,
-                  "pairs": [list(p) for p in query.pairs],
-                  "mode": query.mode, "presumed": query.presumed},
+        "parse": parse_trace,
         # one entry per cause->effect sub-question, judged on its own
         "pairs": [{
             "intervention": p["intervention"], "outcome": p["outcome"],
@@ -275,6 +295,8 @@ def main(argv=None) -> int:
     ap.add_argument("--trace", type=Path, default=None, help="write per-question trace JSON for the UI")
     ap.add_argument("--uncertainty", action="store_true",
                     help="DEV ONLY: score each parse 0-100 with the LLM (one extra call per question)")
+    ap.add_argument("--live", action="store_true",
+                    help="write ANSWERS.live.json after every stage so ui.html can show progress")
     ap.add_argument("--only", default=None,
                     help="comma-separated question ids to run (e.g. b3,c7); others are skipped")
     args = ap.parse_args(argv)
@@ -288,12 +310,15 @@ def main(argv=None) -> int:
         questions = [q for q in questions if q.id in wanted]
 
     graph = Graph()
+    live = Live(args.answers.with_suffix(".live.json"), questions) if args.live else None
     answers, traces = [], []
     for q in questions:
         try:
-            out, trace = answer_one(q, graph, args.debug, args.uncertainty)
+            out, trace = answer_one(q, graph, args.debug, args.uncertainty, live)
             answers.append(out)
             traces.append(trace)
+            if live:
+                live.finish(q.id, trace)
         except Exception:
             traceback.print_exc()
             err = {"id": q.id, "status": "no_evidence",
@@ -302,6 +327,8 @@ def main(argv=None) -> int:
                    "edge_ids": [], "searched_for": "pipeline error before search completed"}
             answers.append(err)
             traces.append({"id": q.id, "question": q.text, "error": traceback.format_exc()})
+            if live:
+                live.finish(q.id, traces[-1], error=True)
 
     args.answers.write_text(json.dumps({"team": TEAM, "answers": answers}, indent=2), encoding="utf-8")
     print(f"wrote {len(answers)} answers to {args.answers}", file=sys.stderr)
@@ -309,6 +336,8 @@ def main(argv=None) -> int:
     trace_path = args.trace or args.answers.with_suffix(".trace.json")
     trace_path.write_text(json.dumps(traces, indent=2), encoding="utf-8")
     print(f"wrote trace to {trace_path}", file=sys.stderr)
+    if live:
+        live.close()
     return 0
 
 

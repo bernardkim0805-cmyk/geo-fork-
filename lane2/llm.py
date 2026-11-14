@@ -21,6 +21,16 @@ PLACEHOLDER = re.compile(r"^\s*(your[_ -]|<|xxx|changeme|replace)", re.I)
 
 # Running totals (energy is scored on tokens).
 USAGE = {"calls": 0, "prompt_tokens": 0, "completion_tokens": 0}
+# Called with "start" / "end" around every request (the live viewer uses this).
+HOOKS: list = []
+
+
+def _hook(event: str) -> None:
+    for h in list(HOOKS):
+        try:
+            h(event)
+        except Exception:
+            pass
 
 
 def _ssl_context():
@@ -88,8 +98,12 @@ def _post(messages: list[dict], params: dict) -> dict:
         headers={"Content-Type": "application/json",
                  "Authorization": f"Bearer {s['BRINE_API_KEY']}"},
     )
-    with urllib.request.urlopen(req, timeout=120, context=_ssl_context()) as r:
-        resp = json.load(r)
+    _hook("start")
+    try:
+        with urllib.request.urlopen(req, timeout=120, context=_ssl_context()) as r:
+            resp = json.load(r)
+    finally:
+        _hook("end")
     USAGE["calls"] += 1
     u = resp.get("usage") or {}
     USAGE["prompt_tokens"] += u.get("prompt_tokens", 0)
