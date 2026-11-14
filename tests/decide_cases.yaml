@@ -17,12 +17,15 @@
 #   labeled_by      who wrote the expected answer
 #   checked_by      reviewers who agreed (subagent checks + user sign-off)
 #   status_review   draft | checked | signed_off
+#   decided_by      set when reviewers disagreed and the user picked the label
 #   notes           why the answer is what it is
 #
 # For empty edge_ids, the label is no_evidence by contract (decide trusts retrieve).
 # Per-case labeled_by / checked_by / status_review fall back to `defaults`.
 
-defaults: {labeled_by: claude, checked_by: [], status_review: draft}
+defaults: {labeled_by: claude, checked_by: [subagent-1, subagent-2, subagent-3, user], status_review: signed_off}
+# known_limit: the signed-off answer needs reading the sentence (the encoding hides it);
+#   decide is expected to miss these, and the harness reports them separately.
 
 cases:
 
@@ -57,6 +60,7 @@ cases:
     Four studies. Two show clear increases. One shows increases for black spruce only
     (jack pine and tamarack null). One shows a diameter increase but no first-season
     height effect. Overall: increase, varying by species.
+  decided_by: user  # reviewers 2 & 3 said mixed
 
 - id: DC-03
   question: What effect does scarification have on conifer seedling height growth?
@@ -64,11 +68,11 @@ cases:
   outcome: conifer seedling height growth
   edge_ids: [camo:edge_92cbb0333e50, camo:edge_cb89418dc07a, camo:edge_722c6c4a46b6,
              camo:edge_d52d471c626a, camo:edge_afe19e1d7d9c, camo:edge_724b9079aff3,
-             camo:edge_d9cb4eae67b9, camo:edge_ebee13655460, camo:edge_109bfc74be3a,
+             camo:edge_ebee13655460, camo:edge_109bfc74be3a,
              camo:edge_13adcfd74b02, camo:edge_06bf63101d92]
   expected: {status: answered, direction: increase, certainty: moderate, cited_edges: all}
   trap: null
-  notes: Five studies, all increases. One also has a null vs. a reference site.
+  notes: "Studies all report increases; one also has a null vs. a reference site. (edge_d9cb4eae67b9 removed: 3/3 reviewers said it doesn't bear on the question.)"
 
 - id: DC-04
   question: What effect does peatland rewetting have on tree and shrub cover?
@@ -79,6 +83,7 @@ cases:
              camo:edge_7fdec902d565, camo:edge_8fae130f876d]
   expected: {status: answered, direction: decrease, certainty: moderate, cited_edges: all}
   trap: mislabeled_edge
+  known_limit: true
   notes: >-
     Rewetting reduces tree and shrub biomass and cover. edge_942dc0852392 is encoded
     as 'prevents [decreased tree dominance]', which reads as an increase, but its
@@ -101,11 +106,12 @@ cases:
   edge_ids: [camo:edge_893905927a54, camo:edge_02f366f1c6c7, camo:edge_8cf59e7f1c40,
              camo:edge_98f30b64c321, camo:edge_bcc6137d71ba, camo:edge_8e72c048bea3,
              camo:edge_d218e167b9d3, camo:edge_bca77d1739c3, camo:edge_f0ef499b6db2]
-  expected: {status: answered, direction: no_effect, certainty: low, cited_edges: all}
+  expected: {status: answered, direction: mixed, certainty: moderate, cited_edges: all}
   trap: null
+  decided_by: user  # all 3 reviewers said mixed/moderate (draft was no_effect/low)
   notes: >-
     Most tests found no growth response (beech, overall height, white/black spruce).
-    Only sugar maple, plus one associational white spruce edge, increased. Mostly null.
+    Sugar maple (and one associational white spruce edge) increased: species-dependent, so mixed.
 
 - id: DC-07
   question: What effect does rewetting have on water table level?
@@ -158,8 +164,9 @@ cases:
   edge_ids: [camo:edge_3801e622aa5e, camo:edge_e05ea548af4c, camo:edge_79baabe22795,
              camo:edge_cec167e49d39, camo:edge_9b3d87ecd1d3, camo:edge_2bcea4b0a366,
              camo:edge_9ce65a0140e5, camo:edge_03359b041652, camo:edge_08eaa682aa43]
-  expected: {status: answered, direction: no_effect, certainty: moderate, cited_edges: all}
+  expected: {status: answered, direction: no_effect, certainty: low, cited_edges: all}
   trap: null_result
+  decided_by: user  # reviewers said mixed/low; user: no_effect, low (before/after, no control)
   notes: >-
     Sydney Tar Ponds: two studies, almost all negated (no change in metals in crabs
     or sediment); copper alone decreased. A null result, not 'no evidence'.
@@ -168,20 +175,20 @@ cases:
   question: What effect does mulch application have on native seedling density?
   intervention: mulch application
   outcome: native seedling density
-  edge_ids: [camo:edge_57a4d330d717, camo:edge_c28b15ab9969, camo:edge_fbb8b192a273,
+  edge_ids: [camo:edge_57a4d330d717, camo:edge_c28b15ab9969,
              camo:edge_c07e7798cd64, camo:edge_296f1c58ad29]
   expected: {status: answered, direction: no_effect, certainty: moderate, cited_edges: all}
   trap: null_result
-  notes: Four of five tests show no effect; one pre/post comparison shows an increase.
+  notes: "All four tests show no effect. (A pre/post edge was removed: 3/3 reviewers said it doesn't bear on the question.)"
 
 - id: DC-13
   question: What effect does moose browsing have on foliar defence compounds?
   intervention: moose browsing
   outcome: foliar defence compounds
-  edge_ids: [camo:edge_5aa1a7a321a8, camo:edge_36c656af6044, camo:edge_dad0b8b77653]
+  edge_ids: [camo:edge_5aa1a7a321a8, camo:edge_dad0b8b77653]
   expected: {status: answered, direction: increase, certainty: low, cited_edges: all}
   trap: null
-  notes: One study; associational; phenols and tannins higher where browsed.
+  notes: "One study; associational; phenols higher where browsed. (Tannin edge removed: 2/3 reviewers said it doesn't bear on the question.)"
 
 # ---------------------------------------------------------------- traps
 - id: DC-14
@@ -211,10 +218,15 @@ cases:
   intervention: tree shelters
   outcome: deer browsing damage
   edge_ids: [camo:edge_3aa4be6d9196]
-  expected: {status: answered, direction: decrease, certainty: moderate, cited_edges: all}
+  expected: {status: no_evidence, direction: null, certainty: null, cited_edges: []}
   trap: absence_subject
+  known_limit: true
+  decided_by: user  # reviewer 2's reading; reviewers 1 & 3 said decrease/low
   notes: >-
-    'Absence of shelter -> increased browsing' means shelters DECREASE browsing.
+    The sentence compares deer browsing between SPECIES among unprotected trees; it never
+    compares sheltered vs unsheltered trees, so it says nothing about shelters. The encoding
+    ('absence of shelter -> increased browsing') suggests a decrease, which decide will output.
+    Originally drafted as the absence-subject flip: -> increased browsing' means shelters DECREASE browsing.
     Reading only the object's sign would say increase.
 
 - id: DC-17
@@ -247,6 +259,7 @@ cases:
   notes: >-
     Object qualifier 'unchanged', not negated. The sentence reports only a borderline
     (p = 0.06) effect in one month, which reads as no_effect. Checks R3.
+  decided_by: user  # reviewers 1 & 3 said unclear
 
 - id: DC-20
   question: What effect does conversion of forest to fallow fields have on soil exchangeable potassium?
@@ -356,6 +369,7 @@ cases:
   notes: >-
     All three objects are 'variation in X' (basal area differed AMONG treatments).
     They don't say whether cutting raises or lowers basal area.
+  decided_by: user  # all 3 reviewers read the sentence as decrease; user kept no_evidence
 
 - id: DC-31
   question: What effect does scarification have on seedling density?
@@ -363,9 +377,14 @@ cases:
   outcome: seedling density
   edge_ids: [camo:edge_46927215c07b, camo:edge_c7ae2928e403, camo:edge_cd8e9ccec7a2,
              camo:edge_dd348e8a86e7]
-  expected: {status: no_evidence, direction: null, certainty: null, cited_edges: []}
+  expected: {status: answered, direction: mixed, certainty: low, cited_edges: all}
   trap: interaction_subject
+  known_limit: true
+  decided_by: user  # reviewers 1 & 3 said mixed/low; reviewer 2 said no_evidence
   notes: >-
     Dev question D-005. Every subject is an interaction (scarification x year,
-    x cutting, 'treatment and time'), and one object is a 'variation in'. None gives
-    scarification's main effect on density.
+    x cutting, 'treatment and time'), and one object is a 'variation in'. The study IS about
+    scarification (rehabilitating high-graded mixedwoods): conifer density lower with
+    scarification under some cuts; birch/hardwoods/non-commercial higher after 15 years
+    (edge_c7ae2928e403 is mis-encoded as 'decreased'). Ecologist answer: mixed. Decide excludes
+    interactions (B3), so it is expected to miss this.
