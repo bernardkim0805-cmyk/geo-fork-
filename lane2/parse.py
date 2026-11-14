@@ -20,26 +20,28 @@ PATTERNS = [
 
 _PARSE_SYSTEM = """\
 You are parsing ecological research questions for a causal graph search.
-Extract exactly two short phrases:
-  "intervention": the cause, treatment, or action being studied (what is done or what changes)
-  "outcome": the ecological response or effect being measured (what is affected)
+Extract every cause and every effect the question asks about:
+  "interventions": the causes, treatments or actions studied (what is done or changes)
+  "outcomes": the ecological responses or effects measured (what is affected)
 
 Rules:
-- Keep phrases short (2-5 words). Drop articles, conjunctions, filler.
-- If multiple interventions or outcomes are listed, pick the most specific/central one.
-- Do NOT include "and richness" or "and growth" as part of the outcome if the main outcome is clear.
-- Return ONLY valid JSON: {"intervention": "...", "outcome": "..."}
-- If the question has no clear intervention→outcome structure, return {"intervention": null, "outcome": null}
+- Each phrase is short (2-4 words). Drop articles, conjunctions, filler.
+- List EVERY distinct cause and EVERY distinct effect. "cover and richness" is
+  two outcomes, not one. Five listed treatments are five interventions.
+- "X such as Y" means the subject is X in general, not just Y. Use the general term.
+- Do not invent phrases the question does not ask about.
+- Return ONLY valid JSON: {"interventions": [...], "outcomes": [...]}
+- If there is no cause/effect structure at all, return {"interventions": [], "outcomes": []}
 
 Examples:
 Q: "When herbicides such as glyphosate are used against invasive plants, do they also reduce native plant cover and richness?"
-A: {"intervention": "glyphosate herbicide", "outcome": "native plant cover"}
+A: {"interventions": ["herbicides"], "outcomes": ["native plant cover", "native plant richness"]}
+
+Q: "How do seedling size, nursery fertilization and mycorrhizal inoculation affect survival and growth?"
+A: {"interventions": ["seedling size", "nursery fertilization", "mycorrhizal inoculation"], "outcomes": ["seedling survival", "seedling growth"]}
 
 Q: "Which forestry practices maintain biodiversity in Canadian forests?"
-A: {"intervention": "forestry practices", "outcome": "biodiversity"}
-
-Q: "How long do created marshes take to reach biodiversity comparable to natural wetlands?"
-A: {"intervention": "wetland creation", "outcome": "biodiversity"}
+A: {"interventions": ["forestry practices"], "outcomes": ["biodiversity"]}
 """
 
 
@@ -58,21 +60,35 @@ def _looks_bad(phrase: str) -> bool:
     return False
 
 
-def _llm_parse(text: str) -> tuple[str | None, str | None, int]:
+def _as_phrases(value) -> list[str]:
+    """Accept a list or a lone string, and drop blanks and duplicates."""
+    if value is None:
+        return []
+    items = value if isinstance(value, list) else [value]
+    out = []
+    for v in items:
+        s = str(v).strip()
+        if s and s.lower() not in {p.lower() for p in out}:
+            out.append(s)
+    return out
+
+
+def _llm_parse(text: str) -> tuple[list[str], list[str], int]:
     try:
         raw, tokens = chat_counted(
             [{"role": "system", "content": _PARSE_SYSTEM},
              {"role": "user", "content": text}],
-            max_tokens=200,
+            max_tokens=400,
             temperature=0,
         )
         raw = re.sub(r"```(?:json)?|```", "", raw).strip()
         obj = json.loads(raw)
-        x = obj.get("intervention") or None
-        y = obj.get("outcome") or None
-        return x, y, tokens
+        # tolerate the older singular keys in case the model falls back to them
+        xs = _as_phrases(obj.get("interventions") or obj.get("intervention"))
+        ys = _as_phrases(obj.get("outcomes") or obj.get("outcome"))
+        return xs, ys, tokens
     except Exception:
-        return None, None, 0
+        return [], [], 0
 
 
 def parse(q: Question, debug: bool = False) -> Query:
@@ -84,9 +100,10 @@ def parse(q: Question, debug: bool = False) -> Query:
             if not _looks_bad(x) and not _looks_bad(y):
                 return Query(x, y, raw=text, parse_method="regex")
             break
-    x, y, tokens = _llm_parse(text)
+    xs, ys, tokens = _llm_parse(text)
     if debug:
-        print(f"  [parse llm] tokens={tokens}", file=sys.stderr)
-    if x and y:
-        return Query(x, y, raw=text, parse_method="llm", tokens=tokens)
+        print(f"  [parse llm] tokens={tokens} X={xs} Y={ys}", file=sys.stderr)
+    if xs and ys:
+        return Query(None, None, raw=text, parse_method="llm", tokens=tokens,
+                     interventions=xs, outcomes=ys)
     return Query(None, None, raw=text, parse_method="failed", tokens=tokens)

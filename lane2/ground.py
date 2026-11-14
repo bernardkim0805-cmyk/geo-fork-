@@ -104,16 +104,32 @@ def _expand_terms(terms: list[str]) -> list[str]:
     return list(dict.fromkeys(expanded))
 
 
-def _match(graph: Graph, terms: list[str], allowed_types: set[str]) -> list[str]:
+def _match(graph: Graph, terms: list[str], allowed_types: set[str],
+           stats: dict | None = None) -> list[str]:
+    """Nodes whose text matches any term. `stats` records what the type filter
+    removed, so the UI can show the funnel instead of only the survivors."""
     effective = _expand_terms(terms)
     pats = [re.compile(r"\b" + re.escape(t).replace(r"\ ", r"[\s_-]+") + r"\w*", re.I) for t in effective]
-    hits = []
+    hits, wrong_type = [], 0
     for nid, n in graph.nodes.items():
-        if n.get("entity_type") not in allowed_types:
-            continue
         text = graph.node_text(nid)
-        if any(p.search(text) for p in pats):
-            hits.append(nid)
+        if not any(p.search(text) for p in pats):
+            continue
+        if n.get("entity_type") not in allowed_types:
+            wrong_type += 1
+            continue
+        hits.append(nid)
+    if stats is not None:
+        stats["expanded_terms"] = effective
+        stats["text_matched"] = len(hits) + wrong_type
+        stats["dropped_wrong_type"] = wrong_type
+        stats["kept"] = len(hits)
+        # which single term is responsible for the most hits — the usual culprit
+        # when grounding explodes to hundreds of nodes
+        per_term = {}
+        for t, p in zip(effective, pats):
+            per_term[t] = sum(1 for nid in hits if p.search(graph.node_text(nid)))
+        stats["per_term"] = dict(sorted(per_term.items(), key=lambda kv: -kv[1]))
     return hits
 
 
@@ -157,19 +173,79 @@ def _embed_match(graph: Graph, phrase: str, allowed_types: set[str], top_k: int 
         return [], 0
 
 
+# Words a question uses mapped to the word that appears in ecosystem_context
+# labels. Only needed where the question's word is not already in the label.
+_CONTEXT_SYNONYMS = {
+    "peatland": "peat", "peatlands": "peat", "bog": "peat", "bogs": "peat",
+    "prairie": "grassland", "prairies": "grassland", "meadow": "grassland",
+    "meadows": "grassland", "steppe": "grassland",
+    "woodland": "woodland", "forested": "forest", "forestry": "forest",
+    "saltmarsh": "saltmarsh", "salt": "saltmarsh",
+    "riparian": "river", "riverine": "river", "streams": "stream",
+    "agricultural": "cropland", "agriculture": "cropland", "farmland": "cropland",
+    "crop": "cropland", "crops": "cropland",
+    "alpine": "alpine", "montane": "montane", "boreal": "boreal",
+    "coastal": "coastal", "shoreline": "shoreline", "estuary": "estuarie",
+    "reef": "reef", "seagrass": "seagrass", "tundra": "tundra",
+    "pasture": "pasture", "oldfield": "oldfield", "plantation": "plantation",
+}
+
+# Words that name a habitat only when qualified: "meadow" alone must not pull in
+# seagrass_meadows, nor "forest" subtropical_temperate_forested_wetlands.
+_CONTEXT_QUALIFIED_ONLY = {"meadow", "reedbed", "shrubland", "woodland", "wetland"}
+
+_CONTEXT_MIN_WORD_LEN = 4
+
+
+def _singular(w: str) -> str:
+    if w.endswith("ies") and len(w) > 4:
+        return w[:-3] + "y"
+    for suffix in ("es", "s"):
+        if w.endswith(suffix) and len(w) - len(suffix) >= 4:
+            return w[: -len(suffix)]
+    return w
+
+
+def _match_contexts(text: str, graph: Graph) -> list[str]:
+    """Which ecosystem_context labels does this question restrict itself to?
+
+    Keyword match against the label's own words, so it costs no tokens. An empty
+    result means 'no restriction' — retrieve then accepts any context.
+    """
+    raw = set(re.findall(r"[a-z]+", text.lower()))
+    raw |= {_CONTEXT_SYNONYMS[w] for w in raw if w in _CONTEXT_SYNONYMS}
+    words = {_singular(w) for w in raw}
+
+    hits = []
+    for label in graph.contexts:
+        parts = [p for p in label.split("_") if len(p) >= _CONTEXT_MIN_WORD_LEN]
+        singles = {_singular(p) for p in parts}
+        # a generic habitat word only counts when the question also names one of
+        # the label's qualifiers, so "meadow" does not match seagrass_meadows
+        distinctive = singles - _CONTEXT_QUALIFIED_ONLY
+        if distinctive & words or (singles & words and not distinctive):
+            hits.append(label)
+    return sorted(hits)
+
+
 def ground(query: Query, graph: Graph, debug: bool = False) -> Grounding:
     if not query.intervention or not query.outcome:
         return Grounding()
 
     strategy = os.environ.get("GROUND_STRATEGY", "A").upper()
     total_tokens = 0
+    contexts = _match_contexts(query.raw, graph)
+    if debug:
+        print(f"  [ground] contexts={contexts or '(unrestricted)'}", file=sys.stderr)
 
     if strategy == "B":
-        x_nodes, tx = _embed_match(graph, query.intervention, CAUSE_TYPES)
-        y_nodes, ty = _embed_match(graph, query.outcome, OUTCOME_TYPES)
+        x_nodes = list(dict.fromkeys(
+            n for p in query.interventions for n in _embed_match(graph, p, CAUSE_TYPES)[0]))
+        y_nodes = list(dict.fromkeys(
+            n for p in query.outcomes for n in _embed_match(graph, p, OUTCOME_TYPES)[0]))
         total_tokens = 0
-        it = terms_for(query.intervention)
-        ot = terms_for(query.outcome)
+        it = [t for p in query.interventions for t in terms_for(p)]
+        ot = [t for p in query.outcomes for t in terms_for(p)]
         if debug:
             x_names = [graph.nodes[n]["name"] for n in x_nodes[:5]]
             y_names = [graph.nodes[n]["name"] for n in y_nodes[:5]]
@@ -182,24 +258,34 @@ def ground(query: Query, graph: Graph, debug: bool = False) -> Grounding:
             intervention_terms=it,
             outcome_terms=ot,
             tokens=0,
+            contexts=contexts,
         )
 
-    # Strategy A: one batched LLM call for both synonym expansions
-    it = terms_for(query.intervention)
-    ot = terms_for(query.outcome)
-    x_synonyms, y_synonyms, total_tokens = _llm_synonyms_batch(query.intervention, query.outcome)
-    all_it = list(dict.fromkeys(it + x_synonyms))
-    all_ot = list(dict.fromkeys(ot + y_synonyms))
+    # Strategy A: one batched LLM call for both synonym expansions.
+    # A question may name several causes or effects, so expand every phrase and
+    # take the union -- b3 asks about cover AND richness.
+    it = [t for phrase in query.interventions for t in terms_for(phrase)]
+    ot = [t for phrase in query.outcomes for t in terms_for(phrase)]
+    x_synonyms, y_synonyms, total_tokens = _llm_synonyms_batch(
+        " ; ".join(query.interventions), " ; ".join(query.outcomes))
+    all_it = list(dict.fromkeys(query.interventions + it + x_synonyms))
+    all_ot = list(dict.fromkeys(query.outcomes + ot + y_synonyms))
 
     if debug:
         print(f"  [ground A] X terms={all_it}", file=sys.stderr)
         print(f"  [ground A] Y terms={all_ot}", file=sys.stderr)
         print(f"  [ground A] total_tokens={total_tokens}", file=sys.stderr)
 
+    x_stats, y_stats = {}, {}
+    x_nodes = _match(graph, all_it, CAUSE_TYPES, x_stats)
+    y_nodes = _match(graph, all_ot, OUTCOME_TYPES, y_stats)
+
     return Grounding(
-        intervention_nodes=_match(graph, all_it, CAUSE_TYPES),
-        outcome_nodes=_match(graph, all_ot, OUTCOME_TYPES),
+        intervention_nodes=x_nodes,
+        outcome_nodes=y_nodes,
         intervention_terms=all_it,
         outcome_terms=all_ot,
         tokens=total_tokens,
+        contexts=contexts,
+        stats={"intervention": x_stats, "outcome": y_stats},
     )

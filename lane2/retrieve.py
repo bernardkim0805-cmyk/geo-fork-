@@ -1,18 +1,26 @@
 """Stage 2b: grounded node sets -> edges linking them.
 
-Three passes, tried in order, stopping as soon as edges are found:
-  1. Direct match: subject ∈ intervention_nodes AND object ∈ outcome_nodes.
-     Direction is enforced — an object→subject edge is a trap, excluded here.
-  2. Outcome fallback: intervention nodes are grounded but outcome grounding was
-     too sparse.  Scan all edges from intervention_nodes; include any edge whose
-     object node's embedding_text keyword-matches the outcome_terms (which
-     include LLM synonyms when the LLM ran).
-  3. Intervention fallback (symmetric): outcome nodes are grounded but
-     intervention grounding failed.  Walk edges_by_object for outcome_nodes;
-     include any edge whose subject matches intervention_terms.
+Every pass runs, and their results are unioned. An earlier design stopped at the
+first pass that found anything, which meant a question answered by three direct
+edges never saw the forty the text-match passes would have found.
 
-Multi-hop (X -> mediator -> Y) was considered but the graph has only ~112 such
-paths vs 2 816 direct ones, so the signal/cost ratio doesn't justify it.
+  direct              subject in intervention_nodes AND object in outcome_nodes.
+                      The strongest evidence: both sides grounded to real nodes.
+  outcome_text        subject grounded, object only keyword-matches outcome_terms.
+                      Catches outcomes whose node text the grounding stage missed.
+  intervention_text   the mirror image: object grounded, subject keyword-matched.
+  reverse             object in intervention_nodes AND subject in outcome_nodes,
+                      i.e. the claim points Y->X. Reported separately and never
+                      merged into edge_ids, since asserting X->Y from it would
+                      invert the causal direction.
+
+Edges are not filtered by ecosystem. Measuring it on b3 showed a hard filter
+removing 21 of 27 edges, including every `decreased` one, which turned a correct
+"mixed" into a confident wrong "increase". The ecosystem match is reported per
+edge instead, so the decide stage can down-weight rather than discard.
+
+Multi-hop (X -> mediator -> Y) stays out: the graph holds ~112 such paths against
+2,816 direct ones.
 """
 from __future__ import annotations
 
@@ -36,40 +44,102 @@ def _text_matches(text: str, pats: list[re.Pattern[str]]) -> bool:
     return any(p.search(text) for p in pats)
 
 
-def retrieve(g: Grounding, graph: Graph) -> Evidence:
-    outcomes = set(g.outcome_nodes)
-
-    # Pass 1: direct edges (subject=intervention, object=outcome)
-    edge_ids: list[str] = []
+def _direct(g: Grounding, graph: Graph, outcomes: set[str]) -> list[str]:
+    hits = []
     for nid in g.intervention_nodes:
         for eid in graph.edges_by_subject.get(nid, []):
             if graph.edges[eid]["object"] in outcomes:
+                hits.append(eid)
+    return hits
+
+
+def _outcome_text(g: Grounding, graph: Graph) -> list[str]:
+    if not (g.intervention_nodes and g.outcome_terms):
+        return []
+    pats = _build_pats(g.outcome_terms)
+    if not pats:
+        return []
+    hits = []
+    for nid in g.intervention_nodes:
+        for eid in graph.edges_by_subject.get(nid, []):
+            if _text_matches(graph.node_text(graph.edges[eid]["object"]), pats):
+                hits.append(eid)
+    return hits
+
+
+def _intervention_text(g: Grounding, graph: Graph) -> list[str]:
+    if not (g.outcome_nodes and g.intervention_terms):
+        return []
+    pats = _build_pats(g.intervention_terms)
+    if not pats:
+        return []
+    hits = []
+    for nid in g.outcome_nodes:
+        for eid in graph.edges_by_object.get(nid, []):
+            if _text_matches(graph.node_text(graph.edges[eid]["subject"]), pats):
+                hits.append(eid)
+    return hits
+
+
+def _reverse(g: Grounding, graph: Graph, interventions: set[str]) -> list[str]:
+    """Claims pointing Y->X. Kept out of edge_ids: citing one as evidence for
+    X->Y would reverse the causal direction. Surfaced so it is visible."""
+    hits = []
+    for nid in g.outcome_nodes:
+        for eid in graph.edges_by_subject.get(nid, []):
+            if graph.edges[eid]["object"] in interventions:
+                hits.append(eid)
+    return hits
+
+
+def retrieve(g: Grounding, graph: Graph) -> Evidence:
+    outcomes, interventions = set(g.outcome_nodes), set(g.intervention_nodes)
+    allowed = set(g.contexts)
+
+    passes = {
+        "direct": _direct(g, graph, outcomes),
+        "outcome_text": _outcome_text(g, graph),
+        "intervention_text": _intervention_text(g, graph),
+    }
+    by_pass = {name: sorted(set(ids)) for name, ids in passes.items()}
+    reverse = sorted(set(_reverse(g, graph, interventions)))
+
+    # union, strongest pass first so `found_by` reads in priority order
+    edge_ids, found_by = [], {}
+    for name in ("direct", "outcome_text", "intervention_text"):
+        for eid in by_pass[name]:
+            if eid not in found_by:
+                found_by[eid] = []
                 edge_ids.append(eid)
+            found_by[eid].append(name)
 
-    if edge_ids:
-        return Evidence(edge_ids=sorted(set(edge_ids)))
+    def ctx_ok(eid: str) -> bool:
+        """Edges carrying no ecosystem_context at all count as in-context:
+        5% of the graph has none, and treating those as foreign loses evidence."""
+        if not allowed:
+            return True
+        ctx = graph.edges[eid].get("ecosystem_context")
+        return not ctx or ctx in allowed
 
-    # Pass 2: outcome grounding too sparse — text-match the object node
-    if g.intervention_nodes and g.outcome_terms:
-        pats = _build_pats(g.outcome_terms)
-        if pats:
-            for nid in g.intervention_nodes:
-                for eid in graph.edges_by_subject.get(nid, []):
-                    obj_text = graph.node_text(graph.edges[eid]["object"])
-                    if _text_matches(obj_text, pats):
-                        edge_ids.append(eid)
+    out_of_context = sorted(e for e in edge_ids if not ctx_ok(e))
 
-    if edge_ids:
-        return Evidence(edge_ids=sorted(set(edge_ids)))
+    stats = {
+        "contexts": sorted(allowed),
+        "passes": [
+            {"name": name, "found": len(by_pass[name]),
+             "new": sum(1 for e in by_pass[name] if found_by.get(e, [None])[0] == name)}
+            for name in ("direct", "outcome_text", "intervention_text")
+        ],
+        "reverse_found": len(reverse),
+        "out_of_context": len(out_of_context),
+        "total": len(edge_ids),
+    }
 
-    # Pass 3: intervention grounding too sparse — text-match the subject node
-    if g.outcome_nodes and g.intervention_terms:
-        pats = _build_pats(g.intervention_terms)
-        if pats:
-            for nid in g.outcome_nodes:
-                for eid in graph.edges_by_object.get(nid, []):
-                    sub_text = graph.node_text(graph.edges[eid]["subject"])
-                    if _text_matches(sub_text, pats):
-                        edge_ids.append(eid)
-
-    return Evidence(edge_ids=sorted(set(edge_ids)))
+    return Evidence(
+        edge_ids=sorted(edge_ids),
+        stats=stats,
+        by_pass=by_pass,
+        found_by=found_by,
+        out_of_context=out_of_context,
+        reverse_edge_ids=reverse,
+    )
