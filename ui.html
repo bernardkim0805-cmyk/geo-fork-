@@ -363,6 +363,35 @@ table.dv .n{text-align:right;font-family:'JetBrains Mono',monospace;white-space:
 details.raw{border-top:1px solid var(--border)}
 details.raw summary{padding:9px 14px;font-size:11px;color:var(--muted);cursor:pointer}
 details.raw pre{margin:0;padding:12px 14px;background:var(--code-bg);color:var(--code-fg);font-family:'JetBrains Mono',monospace;font-size:11px;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+
+/* Live mode */
+#live-bar{border:1px solid var(--accent);border-radius:8px;padding:9px 10px;background:var(--accent-bg);font-size:11px;display:flex;flex-direction:column;gap:6px}
+.lv-top{display:flex;align-items:center;gap:7px}
+.lv-top b{font-family:'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--accent)}
+.lv-count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-weight:700}
+.lv-dot{width:8px;height:8px;border-radius:50%;background:var(--dec);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.lv-prog{height:6px;background:var(--surface);border-radius:3px;overflow:hidden}
+.lv-prog div{height:100%;background:var(--accent);transition:width .4s}
+.lv-stats{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px}
+.lv-llm{color:var(--muted);font-size:11px;display:flex;align-items:center;gap:6px}
+.lv-llm.busy{color:var(--warn)}
+.lv-follow{display:flex;gap:6px;align-items:center;color:var(--muted);cursor:pointer}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:rot .8s linear infinite;vertical-align:-2px;margin-right:6px}
+.spin.sm{width:8px;height:8px;border-width:1.5px;margin-right:4px;vertical-align:-1px}
+@keyframes rot{to{transform:rotate(360deg)}}
+.lq-queued .q-text{opacity:.55}
+.lsteps{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lstep{display:flex;align-items:center;gap:7px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-weight:600;font-size:13px}
+.lstep-n{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);color:var(--muted)}
+.lstep.done .lstep-n{background:var(--accent);color:#fff}
+.lstep.active{border-color:var(--warn);color:var(--warn);background:var(--warn-bg)}
+.lstep.active .lstep-n{background:var(--warn);color:#fff}
+.lstep.pending{color:var(--muted)}
+.lstep-arrow{color:var(--border);font-size:11px}
+.lv-wait{border-color:var(--warn)}
+.lv-wait .answer-box{color:var(--warn)}
+@media (prefers-reduced-motion: reduce){.spin,.lv-dot{animation:none}}
 </style>
 </head>
 <body>
@@ -556,10 +585,219 @@ function autoLoad(data) {
   return true;
 }
 
+// --- Live mode -------------------------------------------------------------
+// `python -m lane2.cli Q.yaml answers.json --live` rewrites answers.live.json
+// after every stage. While a run is going we poll it once a second; between
+// runs, every 3 s, so starting a run while this page is open switches it to
+// live on its own. When the run ends we fall back to the normal trace view.
+let mode = 'trace';          // 'trace' | 'live'
+let live = null;             // last answers.live.json
+let liveSel = null;          // selected question id in live mode
+let follow = true;           // auto-select whichever question is running
+let lastMainSig = '', lastSideSig = '';
+
+async function pollLive() {
+  let data = null;
+  try {
+    const r = await fetch('answers.live.json', {cache: 'no-store'});
+    if (r.ok) data = await r.json();
+  } catch (e) { /* no live file, or opened from disk */ }
+  if (data && data.kind === 'live') {
+    if (data.running) renderLive(data);
+    else if (mode === 'live') finishLive(data);
+  }
+  setTimeout(pollLive, mode === 'live' ? 1000 : 3000);
+}
+
+function fmtDur(s) {
+  s = Math.max(0, Math.round(s));
+  return s >= 60 ? `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, '0')}s` : `${s}s`;
+}
+
+function runningQ(d) { return d.questions.find(q => q.status === 'running'); }
+
+function renderLive(d) {
+  const entering = mode !== 'live';
+  mode = 'live'; live = d;
+  if (entering) { lastMainSig = lastSideSig = ''; follow = true; }
+  document.getElementById('drop-zone').style.display = 'none';
+  document.querySelector('.upload-btn').style.display = 'none';
+  const cur = runningQ(d);
+  if (follow && cur) liveSel = cur.id;
+  if (!liveSel || !d.questions.some(q => q.id === liveSel)) liveSel = (cur || d.questions[0] || {}).id;
+  renderLiveBar(d);
+  renderLiveSidebar(d);
+  renderLiveMain(d);
+}
+
+function renderLiveBar(d) {
+  let bar = document.getElementById('live-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'live-bar';
+    document.querySelector('.sidebar-head').appendChild(bar);
+  }
+  const now = Date.now() / 1000;
+  const end = d.running ? now : (d.finished || now);
+  const pct = d.total ? Math.round(100 * d.done / d.total) : 0;
+  const L = d.llm || {};
+  bar.innerHTML = `
+    <div class="lv-top">
+      ${d.running ? '<span class="lv-dot"></span><b>LIVE</b>' : '<b class="lv-done">✓ FINISHED</b>'}
+      <span class="lv-count">${d.done} / ${d.total}</span>
+    </div>
+    <div class="lv-prog"><div style="width:${pct}%"></div></div>
+    <div class="lv-stats">
+      <span>${fmtDur(end - d.started)} elapsed</span>
+      <span>${(d.tokens || 0).toLocaleString()} tok</span>
+      <span>${L.calls || 0} LLM calls</span>
+    </div>
+    ${d.running ? `<div class="lv-llm ${L.busy ? 'busy' : ''}">${L.busy
+        ? `<span class="spin"></span>waiting on the LLM · ${fmtDur(now - L.since)}`
+        : 'LLM idle · local work'}</div>
+      <label class="lv-follow"><input type="checkbox" ${follow ? 'checked' : ''}
+        onchange="follow=this.checked; if (live) renderLive(live)"> follow the running question</label>` : ''}`;
+}
+
+const STAGE_LABEL = {parse: 'parsing', ground: 'grounding', retrieve: 'retrieving', decide: 'deciding'};
+
+function liveBadge(q, d) {
+  if (q.status === 'queued') return '<span class="badge badge-grey">queued</span>';
+  if (q.status === 'error') return '<span class="badge badge-red">error</span>';
+  if (q.status === 'running') {
+    const pr = q.parse && q.parse.pairs && q.parse.pairs.length > 1 && q.pair != null
+      ? ` ${q.pair + 1}/${q.parse.pairs.length}` : '';
+    return `<span class="badge badge-orange"><span class="spin sm"></span>${STAGE_LABEL[q.stage] || q.stage}${pr}</span>`;
+  }
+  const a = ((d.traces || {})[q.id] || {}).answer || {};
+  return statusBadge(a.status) + (a.direction ? ' ' + dirBadge(a.direction) : '');
+}
+
+function renderLiveSidebar(d) {
+  const sig = JSON.stringify(d.questions.map(q => [q.id, q.status, q.stage, q.pair])) + liveSel;
+  if (sig === lastSideSig) return;
+  lastSideSig = sig;
+  document.getElementById('q-list').innerHTML = d.questions.map(q => `
+    <div class="q-item ${q.id === liveSel ? 'active' : ''} lq-${q.status}" onclick="selectLive('${esc(q.id)}')">
+      <div class="q-id">${esc(q.id)}</div>
+      <div class="q-text">${esc(q.question)}</div>
+      <div class="q-status">${liveBadge(q, d)}</div>
+    </div>`).join('');
+  document.querySelector('.app-sub').textContent = `live run · ${d.total} questions`;
+}
+
+function selectLive(id) {
+  liveSel = id;
+  const cur = live && runningQ(live);
+  follow = !!(cur && cur.id === id);   // clicking away from the running one stops following
+  lastMainSig = lastSideSig = '';
+  renderLive(live);
+}
+
+function renderLiveMain(d) {
+  const q = d.questions.find(x => x.id === liveSel);
+  if (!q) return;
+  const tr = (d.traces || {})[q.id];
+  // a finished question: the normal full view, drawn once (keeps scroll and toggles)
+  if (tr) {
+    const sig = 'done:' + q.id;
+    if (sig !== lastMainSig) { lastMainSig = sig; tr.error ? renderError(tr) : renderMain(tr); }
+    return;
+  }
+  const busy = q.status === 'running' && d.llm && d.llm.busy;
+  const sig = JSON.stringify([q, busy, busy ? Math.floor(Date.now() / 1000 - d.llm.since) : 0,
+    q.status === 'queued' ? d.done : 0]);
+  if (sig === lastMainSig) return;
+  lastMainSig = sig;
+  document.getElementById('main').innerHTML = renderLiveQuestion(q, d);
+}
+
+function renderError(t) {
+  document.getElementById('main').innerHTML = `<div class="card">
+    <div class="card-head"><span class="card-head-label" style="color:var(--dec)">Pipeline error · ${esc(t.id)}</span></div>
+    <div class="answer-box"><pre style="white-space:pre-wrap;font-size:11px">${esc(t.error)}</pre></div></div>`;
+}
+
+function renderLiveQuestion(q, d) {
+  const order = ['parse', 'ground', 'retrieve', 'decide'];
+  const at = q.status === 'queued' ? -1 : order.indexOf(q.stage);
+  const names = ['Parse', 'Ground', 'Retrieve', 'Decide', 'Answer'];
+  const step = (n, i) => {
+    const st = i < at ? 'done' : i === at ? 'active' : 'pending';
+    return `<div class="lstep ${st}"><span class="lstep-n">${st === 'done' ? '✓' : i + 1}</span>
+      <span>${n}</span>${st === 'active' ? '<span class="spin sm"></span>' : ''}</div>`;
+  };
+  const ahead = d.questions.filter(x => x.status === 'queued' || x.status === 'running')
+    .findIndex(x => x.id === q.id);
+  const busy = q.status === 'running' && d.llm && d.llm.busy;
+  const p = q.parse;
+  const pairs = (p && p.pairs) || [];
+
+  return `
+    <div class="card">
+      <div class="card-head"><span class="card-head-label">Question</span>
+        <span class="card-head-tag badge badge-grey">${esc(q.id)}</span>
+        ${q.kind ? `<span class="card-head-tag badge badge-grey">${esc(q.kind)}</span>` : ''}
+        <span class="ch-note">${q.status === 'running' ? `running · ${fmtDur(Date.now() / 1000 - q.started)}` : ''}</span></div>
+      <div class="q-full">${esc(q.question)}</div>
+    </div>
+
+    <div class="lsteps">${names.map(step).join('<span class="lstep-arrow">▶</span>')}</div>
+
+    ${q.status === 'queued' ? `<div class="card"><div class="answer-box muted">
+        Queued: ${ahead} question${ahead === 1 ? '' : 's'} ahead of it.</div></div>` : ''}
+
+    ${busy ? `<div class="card lv-wait"><div class="answer-box"><span class="spin"></span>
+        Waiting on the LLM for ${STAGE_LABEL[q.stage] || q.stage} · ${fmtDur(Date.now() / 1000 - d.llm.since)}
+        <div class="muted" style="font-size:12px;margin-top:4px">${{
+          parse: 'Turning the question into cause and effect phrases.',
+          ground: 'Expanding the phrases into search terms.',
+          decide: 'Checking whether a “removal of …” edge is the intervention or its opposite.',
+        }[q.stage] || ''}</div></div></div>` : ''}
+
+    ${p ? stageHead('parse', 1, 'Parse', 'done') + parseCard(p, q.kind) : ''}
+
+    ${pairs.length ? `
+    <div class="card">
+      <div class="card-head"><span class="card-head-label">Sub-questions</span>
+        <span class="card-head-tag badge badge-grey">${q.pairs.length} of ${pairs.length} searched</span>
+        <span class="ch-note">each cause → effect pair is grounded, retrieved and decided on its own</span></div>
+      <table class="pr">
+        <tr><th>Cause</th><th></th><th>Effect</th><th class="pr-n">nodes</th><th class="pr-n">edges</th><th>result</th></tr>
+        ${pairs.map((pp, i) => {
+          const r = q.pairs[i];
+          const now = !r && q.pair === i && q.status === 'running';
+          return `<tr class="${r || now ? '' : 'dead'}">
+            <td class="pr-x">${esc(pp[0])}</td><td class="pr-arrow">→</td><td class="pr-y">${esc(pp[1])}</td>
+            <td class="pr-n">${r ? r.nodes.join(' × ') : '–'}</td>
+            <td class="pr-n">${r ? r.edges : '–'}</td>
+            <td class="pr-d ${r ? 'live' : ''}">${r ? (r.status === 'answered' ? dirBadge(r.direction) : statusBadge(r.status))
+              : now ? `<span class="spin sm"></span>${STAGE_LABEL[q.stage] || ''}` : 'waiting'}</td>
+          </tr>`;
+        }).join('')}
+      </table>
+    </div>` : ''}
+
+    ${q.stage === 'decide' ? `<div class="card"><div class="answer-box"><span class="spin"></span>
+      Combining ${q.pairs.length} sub-question${q.pairs.length === 1 ? '' : 's'} into one answer…</div></div>` : ''}`;
+}
+
+function finishLive(d) {
+  live = d;
+  renderLiveBar(d);
+  traces = d.questions.map(q => d.traces[q.id] || {id: q.id, question: q.question, error: 'no trace'});
+  mode = 'trace';
+  renderSidebar();
+  const i = Math.max(0, traces.findIndex(t => t.id === liveSel));
+  selectTrace(i);
+}
+
 fetch('answers.trace.json')
   .then(r => r.ok ? r.json() : Promise.reject())
-  .then(autoLoad)
+  .then(d => { if (mode !== 'live') autoLoad(d); })
   .catch(() => {});
+// after the whole script has run, so every const below is initialised
+setTimeout(pollLive, 0);
 
 function dirBadge(d) {
   if (!d) return `<span class="badge badge-grey">no_evidence</span>`;
@@ -1113,21 +1351,7 @@ function renderMainInner(t) {
 
     <!-- 1. Parse -->
     ${stageHead('parse', 1, 'Parse', 'Question text → cause (X) and effect (Y) phrases')}
-    <div class="card">
-      <div class="card-head">
-        <span class="card-head-label">Parse detail</span>
-        <span class="card-head-tag badge badge-grey">${esc(p.method || '?')}</span>
-      </div>
-      <div class="kv">
-        <div><span>mode</span><b>${esc(p.mode || 'effect')}</b></div>
-        ${t.kind ? `<div><span>kind (from yaml)</span><b>${esc(t.kind)}</b></div>` : ''}
-        <div><span>interventions (X)</span><b>${(p.interventions || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
-        <div><span>outcomes (Y)</span><b>${(p.outcomes || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
-        <div><span>pairs</span><b>${(p.pairs || []).map(pr => `<i>${esc(pr[0])} → ${esc(pr[1])}</i>`).join(' ') || '—'}</b></div>
-        ${p.presumed && Object.keys(p.presumed).length
-          ? `<div><span>presumed direction</span><b>${esc(JSON.stringify(p.presumed))}</b></div>` : ''}
-      </div>
-    </div>
+    ${parseCard(p, t.kind)}
     ${renderParseCheck(t)}
 
     <!-- 2. Ground -->
@@ -1187,6 +1411,24 @@ function renderMainInner(t) {
     ${stageHead('answer', 5, 'Answer', 'What goes into answers.json')}
     ${renderAnswer(ans, tok)}
   `;
+}
+
+function parseCard(p, kind) {
+  return `<div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Parse detail</span>
+        <span class="card-head-tag badge badge-grey">${esc(p.method || '?')}</span>
+      </div>
+      <div class="kv">
+        <div><span>mode</span><b>${esc(p.mode || 'effect')}</b></div>
+        ${kind ? `<div><span>kind (from yaml)</span><b>${esc(kind)}</b></div>` : ''}
+        <div><span>interventions (X)</span><b>${(p.interventions || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
+        <div><span>outcomes (Y)</span><b>${(p.outcomes || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
+        <div><span>pairs</span><b>${(p.pairs || []).map(pr => `<i>${esc(pr[0])} → ${esc(pr[1])}</i>`).join(' ') || '—'}</b></div>
+        ${p.presumed && Object.keys(p.presumed).length
+          ? `<div><span>presumed direction</span><b>${esc(JSON.stringify(p.presumed))}</b></div>` : ''}
+      </div>
+    </div>`;
 }
 
 function stageHead(id, n, name, sub) {

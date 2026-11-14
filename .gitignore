@@ -17,3 +17,5 @@ questions_answers_lane3/
 archive/
 answers_lane3*.json
 questions_lane3.yaml
+# live viewer progress file writes here first, then renames
+*.live.json.tmp
