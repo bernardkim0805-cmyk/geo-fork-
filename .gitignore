@@ -1,6 +1,9 @@
 .venv/
+.env
+.env.*
 __pycache__/
 *.pyc
 .DS_Store
 answers*.json
 outputs/
+ui.html
