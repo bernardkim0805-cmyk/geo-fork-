@@ -3,54 +3,87 @@
   "question": "What effect does mowing have on bird abundance?",
   "plan": {
     "cause": {
-      "label": "Mowing",
-      "terms": [
-        "mow",
+      "label": "mowing",
+      "head": "mowing",
+      "head_terms": [
         "mowing",
-        "cut",
         "cutting",
-        "grazing",
-        "clippings"
+        "defoliation"
       ],
-      "exclude": [
-        "harvest",
-        "burn",
-        "fire",
-        "till",
-        "plow"
+      "modifier_terms": [],
+      "exclude": [],
+      "low_grounding": false,
+      "phrase": "mowing",
+      "dropped": [
+        {
+          "term": "grazing",
+          "reason": "names a different intervention category"
+        },
+        {
+          "term": "harvesting",
+          "reason": "names a different intervention category"
+        },
+        {
+          "term": "sward management",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        }
+      ],
+      "head_promoted_from_modifiers": false,
+      "terms": [
+        "mowing",
+        "cutting",
+        "defoliation"
       ]
     },
     "outcome": {
-      "label": "Bird abundance",
-      "terms": [
-        "bird",
-        "avian",
-        "passerine",
-        "raptor",
-        "nesting",
-        "breeding"
-      ],
-      "attributes": [
+      "label": "bird abundance",
+      "head": "abundance",
+      "head_terms": [
+        "bird abundance",
         "abundance",
         "density",
+        "richness",
         "population",
-        "count",
-        "richness"
+        "occurrence"
       ],
-      "exclude": [
-        "insect",
-        "reptile",
-        "mammal",
-        "fish"
+      "modifier_terms": [
+        "bird",
+        "avian",
+        "avifauna",
+        "passerine"
+      ],
+      "exclude": [],
+      "low_grounding": false,
+      "phrase": "bird abundance",
+      "dropped": [
+        {
+          "term": "count",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        }
+      ],
+      "head_promoted_from_modifiers": false,
+      "terms": [
+        "bird abundance",
+        "abundance",
+        "density",
+        "richness",
+        "population",
+        "occurrence",
+        "bird",
+        "avian",
+        "avifauna",
+        "passerine"
       ]
     }
   },
-  "n_candidates": 2,
+  "n_candidates": 0,
+  "modifier_unmatched": [],
+  "reversed_rejected": 0,
+  "llm_rejected": [],
+  "excluded": [],
+  "asked_attribute": null,
+  "duplicates_removed": [],
   "kept": [],
-  "flipped": [],
-  "rejected": [
-    "camo:edge_3de0c6aceebc",
-    "camo:edge_02e52c08fc5c"
-  ],
+  "papers": [],
   "edges": []
 }

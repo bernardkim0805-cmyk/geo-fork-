@@ -3,76 +3,134 @@
   "question": "What effect does mulch & surface cover have on invasive / non-native species abundance?",
   "plan": {
     "cause": {
-      "label": "Mulch & surface cover",
-      "terms": [
+      "label": "mulch & surface cover",
+      "head": "cover",
+      "head_terms": [
+        "mulch & surface cover",
         "mulch",
-        "straw",
-        "wood chip",
         "surface cover",
+        "cover",
+        "mulching",
         "ground cover",
-        "litter",
-        "organic matter",
-        "fabric"
+        "organic mulch",
+        "straw",
+        "wood chip"
       ],
-      "exclude": [
-        "herbicide",
-        "tilling",
-        "mowing"
+      "modifier_terms": [
+        "mulch"
+      ],
+      "exclude": [],
+      "low_grounding": true,
+      "phrase": "mulch & surface cover",
+      "dropped": [
+        {
+          "term": "surface treatment",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        }
+      ],
+      "head_promoted_from_modifiers": false,
+      "terms": [
+        "mulch & surface cover",
+        "mulch",
+        "surface cover",
+        "cover",
+        "mulching",
+        "ground cover",
+        "organic mulch",
+        "straw",
+        "wood chip"
       ]
     },
     "outcome": {
-      "label": "Invasive / non-native species abundance",
-      "terms": [
+      "label": "invasive / non-native species abundance",
+      "head": "abundance",
+      "head_terms": [
+        "invasive / non-native species abundance",
+        "abundance",
+        "density",
+        "frequency",
+        "biomass",
+        "richness"
+      ],
+      "modifier_terms": [
         "invasive",
         "non-native",
         "exotic",
         "alien",
-        "weedy",
         "weed"
       ],
-      "attributes": [
+      "exclude": [
+        "native"
+      ],
+      "low_grounding": true,
+      "phrase": "invasive / non-native species abundance",
+      "dropped": [
+        {
+          "term": "cover",
+          "reason": "also on the cause side as 'cover'"
+        }
+      ],
+      "head_promoted_from_modifiers": false,
+      "terms": [
+        "invasive / non-native species abundance",
         "abundance",
         "density",
-        "cover",
         "frequency",
-        "biomass"
-      ],
-      "exclude": [
-        "native",
-        "indigenous"
+        "biomass",
+        "richness",
+        "invasive",
+        "non-native",
+        "exotic",
+        "alien",
+        "weed"
       ]
     }
   },
-  "n_candidates": 6,
+  "n_candidates": 7,
+  "modifier_unmatched": [
+    "camo:edge_8eb1df917874",
+    "camo:edge_8333bc5f527e",
+    "camo:edge_e16a8107a3b9"
+  ],
+  "reversed_rejected": 5,
+  "llm_rejected": [
+    "camo:edge_8eb1df917874",
+    "camo:edge_8333bc5f527e",
+    "camo:edge_e16a8107a3b9"
+  ],
+  "excluded": [],
+  "asked_attribute": null,
+  "duplicates_removed": [],
   "kept": [
     "camo:edge_4af8274686bd",
     "camo:edge_7ef2e1e59dd8",
     "camo:edge_b3831f4af80e",
-    "camo:edge_0535e981ca40",
-    "camo:edge_18ac0bfc5067"
+    "camo:edge_0535e981ca40"
   ],
-  "flipped": [],
-  "rejected": [
-    "camo:edge_eab8132a3509"
+  "papers": [
+    "10.3368/er.25.2.85"
   ],
   "aggregate": {
     "direction": "mixed",
     "certainty": "very_low",
-    "confidence": 0.53,
+    "confidence": 0.57,
     "papers": {
       "10.3368/er.25.2.85": "mixed"
     },
     "paper_counts": {
       "mixed": 1
     },
-    "agreement": 0.0,
-    "n_papers": 1
+    "agreement": 1.0,
+    "n_papers": 1,
+    "n_edges": 4
   },
   "edges": [
     {
       "id": "camo:edge_4af8274686bd",
+      "direction_raw": "increase",
       "direction": "increase",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
       "predicate": "causes",
       "object": "increased density of garlic mustard, dame's rocket, and celandine shoots",
@@ -82,8 +140,10 @@
     },
     {
       "id": "camo:edge_7ef2e1e59dd8",
+      "direction_raw": "decrease",
       "direction": "decrease",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
       "predicate": "causes",
       "object": "decreased density of garlic mustard, dame's rocket, and celandine shoots",
@@ -93,8 +153,10 @@
     },
     {
       "id": "camo:edge_b3831f4af80e",
+      "direction_raw": "increase",
       "direction": "increase",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
       "predicate": "causes",
       "object": "increased density of garlic mustard, dame's rocket, and celandine seeds",
@@ -104,25 +166,16 @@
     },
     {
       "id": "camo:edge_0535e981ca40",
+      "direction_raw": "decrease",
       "direction": "decrease",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
       "predicate": "causes",
       "object": "decreased density of garlic mustard, dame's rocket, and celandine seeds",
       "paper": "10.3368/er.25.2.85",
       "grade": "moderate",
       "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."
-    },
-    {
-      "id": "camo:edge_18ac0bfc5067",
-      "direction": "decrease",
-      "flipped": false,
-      "subject": "one-time mulching",
-      "predicate": "causes",
-      "object": "decreased shoot numbers of the three exotic species by 2006",
-      "paper": "10.3368/er.25.2.85",
-      "grade": "moderate",
-      "sentence": "Mulching significantly reduced shoot numbers of the three exotic species by 2006 and it did not affect native species."
     }
   ]
 }
