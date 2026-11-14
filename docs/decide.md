@@ -89,10 +89,23 @@ encodes design (randomized: 2176 moderate / 165 low; cross-sectional: 1365 low /
 190 very_low; modelling and case studies: all very_low), so the extra drop
 double-counts. Turning it on changed no eval_decide result.
 
-## 5. Confidence (probability we are right): PLACEHOLDER until tests/cases.yaml exists
+## 5. Confidence (calibrated 2026-11-14)
 
-- answered: `base + per_paper × agreeing papers` (capped), scaled by the top share; `mixed` and `unclear` get flat low values; × `head_to_head_penalty` when every paper is head-to-head.
-- no_evidence (D3): zero usable edges from retrieve → trust it. One value, `conf_no_evidence`. The Grounding split was dropped: ground is being folded into retrieve, and the retrieve → decide contract is edge ids only. `searched_for` is built from the Query ("edges whose subject (cause) is 'X' and whose object (effect) is 'Y', in that direction"), plus a note when edges existed but were all excluded or missing.
+"Correct" (E1) = status + direction + exact certainty, the reference being an
+ecologist's answer (our signed-off `tests/decide_cases.yaml`).
+
+- answered with a direction: `min(conf_cap, conf_base + conf_per_paper × agreeing papers) × top share`, then × `head_to_head_penalty` when every paper is head-to-head, × `single_study_mixed_penalty` (D1), × `bad_input_penalty` (F1).
+- `mixed` → `conf_mixed`; `unclear` → `conf_unclear`; no_evidence → `conf_no_evidence` (D3).
+- Everything is clamped to [`conf_floor`, `conf_ceiling`] = [0.2, 0.9] (E3).
+
+Values come from `.venv/bin/python -m tests.calibrate_decide` (E2): a grid search of
+the formula with a ridge toward 0.5, and flat groups set to observed accuracy shrunk
+toward 0.5 with 4 pseudo-cases (E3). `unclear` has no cases yet, so its prior (0.3)
+is kept. Re-run after adding cases or changing rules, and copy the printed values
+into `CONFIG`.
+
+Result on the 31 cases: Brier 0.225 → 0.187 (always-0.5 = 0.250). This is an
+in-sample fit on a small set; expect some optimism.
 
 ## 5b. One study that disagrees with itself (D1)
 

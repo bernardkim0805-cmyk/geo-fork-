@@ -255,6 +255,19 @@ class Aggregate(unittest.TestCase):
         eids = [self.g.edge(self.x, "causes", self.up, doc=f"d{i}") for i in range(20)]
         self.assertLessEqual(run(self.g, eids).confidence, 0.95)
 
+    def test_E3_confidence_is_clamped(self):
+        from lane2.decide import CONFIG
+        eids = [self.g.edge(self.x, "causes", self.up, doc=f"d{i}") for i in range(20)]
+        self.assertLessEqual(run(self.g, eids).confidence, CONFIG["conf_ceiling"])
+        saved = CONFIG["conf_mixed"]
+        CONFIG["conf_mixed"] = 0.01
+        try:
+            d = run(self.g, [self.g.edge(self.x, "causes", self.up, doc="a"),
+                             self.g.edge(self.x, "causes", self.down, doc="b")])
+            self.assertEqual(d.confidence, CONFIG["conf_floor"])
+        finally:
+            CONFIG["conf_mixed"] = saved
+
 
 class RemovalCheck(unittest.TestCase):
     """D2: LLM decides whether a removal subject is the intervention or its opposite."""

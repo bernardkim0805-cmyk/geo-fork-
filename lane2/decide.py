@@ -47,11 +47,15 @@ CONFIG = {
                         "associational": 0.6, "no_relationship": 1.0},
     "associative_predicates": {"associated_with", "correlated_with"},
     "associative_weight": 0.6,
-    # confidence placeholders (calibrate against tests/cases.yaml)
-    "conf_base": 0.45, "conf_per_paper": 0.08, "conf_cap": 0.9,
-    "conf_mixed": 0.45, "conf_unclear": 0.3, "head_to_head_penalty": 0.85,
+    # confidence: fitted by tests/calibrate_decide.py on tests/decide_cases.yaml
+    # (2026-11-14, 31 signed-off cases; correct = status + direction + exact certainty)
+    "conf_base": 0.55, "conf_per_paper": 0.125, "conf_cap": 0.9,
+    "conf_mixed": 0.57,              # 2/3 right, shrunk toward 0.5 (K=4)
+    "conf_unclear": 0.3,             # no cases yet: prior kept
+    "conf_floor": 0.2, "conf_ceiling": 0.9,  # E3 clamp
+    "head_to_head_penalty": 0.85,
     "single_study_mixed_penalty": 0.85,  # D1: one paper that disagrees with itself
-    "conf_no_evidence": 0.75,        # D3: zero usable edges -> trust retrieve; one value
+    "conf_no_evidence": 0.75,        # D3: 7/8 right, shrunk toward 0.5 (K=4)
     "conf_parse_failed": 0.3,
     "bad_input_penalty": 0.9,
     # C1: study design -> vote weight (evidential_basis.evidence_types; max if several)
@@ -287,9 +291,14 @@ def describe_search(query: Query, g: Grounding = None) -> str:
             f"(effect) is '{query.outcome}', in that direction")
 
 
+def _clamp(conf: float) -> float:
+    """E3: never more certain than conf_ceiling nor less than conf_floor."""
+    return round(min(CONFIG["conf_ceiling"], max(CONFIG["conf_floor"], conf)), 2)
+
+
 def _no_evidence(query: Query, g: Grounding = None, extra_note: str = "") -> Decision:
     """D3: retrieve returned nothing usable; trust it."""
-    return Decision(status="no_evidence", confidence=CONFIG["conf_no_evidence"],
+    return Decision(status="no_evidence", confidence=_clamp(CONFIG["conf_no_evidence"]),
                     searched_for=describe_search(query) + extra_note)
 
 
@@ -401,5 +410,5 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
         tally[_paper_label(p)] += 1
 
     return Decision(status="answered", direction=direction, certainty=certainty,
-                    confidence=round(conf, 2), edge_ids=[v.edge_id for v in voting],
+                    confidence=_clamp(conf), edge_ids=[v.edge_id for v in voting],
                     tally=dict(tally), notes=notes, votes=votes)
