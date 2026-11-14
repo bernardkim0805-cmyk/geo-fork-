@@ -1,0 +1,304 @@
+{
+ "version": 2,
+ "frames": [
+  {
+   "frame": "Which mechanisms most strongly determine {A}, and how do their relative effects change across environmental gradients?",
+   "template": {
+    "kind": "drivers",
+    "triples": [
+     {
+      "s": "?x",
+      "s_type": "mechanism",
+      "p": "any",
+      "o": {
+       "\u0000blank": "A"
+      },
+      "moderators": [
+       "environmental gradients"
+      ]
+     }
+    ],
+    "camo_fields": [
+     "moderation",
+     "context_dependence"
+    ]
+   },
+   "recompute": [],
+   "status": "active"
+  },
+  {
+   "frame": "How do {B} shape {A}, and which interactions have the largest consequences for {C}?",
+   "template": {
+    "kind": "interactions",
+    "triples": [
+     {
+      "s": {
+       "\u0000blank": "B"
+      },
+      "p": "any",
+      "o": {
+       "\u0000blank": "A"
+      }
+     },
+     {
+      "s": "?x",
+      "s_type": "species interaction",
+      "p": "any",
+      "o": {
+       "\u0000blank": "C"
+      },
+      "rank_by": "strength"
+     }
+    ],
+    "camo_fields": [
+     "strength"
+    ]
+   },
+   "recompute": [],
+   "status": "active"
+  },
+  {
+   "frame": "Which physical and chemical conditions best predict variation in {A} across sites?",
+   "template": {
+    "kind": "drivers",
+    "triples": [
+     {
+      "s": "?x",
+      "s_type": "physical or chemical condition",
+      "p": "associated_with",
+      "o": {
+       "\u0000blank": "A"
+      }
+     }
+    ],
+    "context": [
+     {
+      "text": "across sites",
+      "role": "setting"
+     }
+    ],
+    "camo_fields": [
+     "ecosystem_context"
+    ]
+   },
+   "recompute": [],
+   "status": "active"
+  },
+  {
+   "frame": "How does {A} vary across {B}, from local patches to whole landscapes or regions?",
+   "template": {
+    "kind": "scale_dependence",
+    "triples": [
+     {
+      "s": {
+       "\u0000blank": "B"
+      },
+      "p": "moderates",
+      "o": {
+       "\u0000blank": "A"
+      }
+     }
+    ],
+    "camo_fields": [
+     "moderation",
+     "study_coordinates"
+    ]
+   },
+   "recompute": [],
+   "status": "active"
+  },
+  {
+   "frame": "What temporal patterns characterize {A}, and do short-term observations capture long-term dynamics?",
+   "template": {
+    "kind": "trajectories",
+    "triples": [
+     {
+      "s": "?time",
+      "p": "any",
+      "o": {
+       "\u0000blank": "A"
+      }
+     }
+    ],
+    "camo_fields": [
+     "time_since_intervention_months",
+     "study_duration_months"
+    ]
+   },
+   "recompute": [],
+   "status": "active"
+  },
+  {
+   "frame": "Which study designs can distinguish the causes of observed patterns in {A} from correlated environmental effects?",
+   "template": {
+    "kind": "methods_causal",
+    "triples": [
+     {
+      "s": "?x",
+      "p": "causes",
+      "o": {
+       "\u0000blank": "A"
+      }
+     }
+    ],
+    "camo_fields": [
+     "evidential_basis",
+     "comparator",
+     "causal_language"
+    ]
+   },
+   "recompute": [],
+   "status": "active"
+  },
+  {
+   "frame": "How should researchers measure {A}, and what are the main sources of uncertainty or sampling bias?",
+   "template": {
+    "kind": "measurement",
+    "topic": {
+     "\u0000blank": "A"
+    },
+    "triples": [],
+    "camo_fields": [
+     "measured_attribute",
+     "sample_size_value",
+     "sampling_effort_protocol"
+    ]
+   },
+   "recompute": [],
+   "status": "active"
+  },
+  {
+   "frame": "How do {B} alter {A}, and which effects persist after the disturbance or pressure is reduced?",
+   "template": {
+    "kind": "intervention_outcomes",
+    "triples": [
+     {
+      "s": {
+       "\u0000blank": "B"
+      },
+      "p": "any",
+      "o": {
+       "\u0000blank": "A"
+      },
+      "feature": "reversibility"
+     }
+    ],
+    "camo_fields": [
+     "reversibility"
+    ]
+   },
+   "recompute": [],
+   "status": "active"
+  },
+  {
+   "frame": "How does {B} influence {A}, and are effects driven by species identity, abundance, or complementarity?",
+   "template": {
+    "kind": "mechanism",
+    "triples": [
+     {
+      "s": {
+       "\u0000blank": "B"
+      },
+      "p": "any",
+      "o": {
+       "\u0000blank": "A"
+      },
+      "candidates": [
+       "species identity",
+       "abundance",
+       "complementarity"
+      ]
+     }
+    ],
+    "camo_fields": [
+     "mediation"
+    ]
+   },
+   "recompute": [],
+   "status": "active"
+  },
+  {
+   "frame": "Which interventions are most likely to sustain or restore {A}, and how can their outcomes be evaluated?",
+   "template": {
+    "kind": "intervention_outcomes",
+    "triples": [
+     {
+      "s": "?x",
+      "s_type": "management_intervention",
+      "p": "any",
+      "o": {
+       "\u0000blank": "A"
+      },
+      "o_qualifier": null
+     }
+    ],
+    "camo_fields": [
+     "comparator",
+     "evidential_basis"
+    ]
+   },
+   "recompute": [
+    "triples[0].o_qualifier"
+   ],
+   "status": "active"
+  },
+  {
+   "frame": "How do {A} shape {B}, and which interactions have the largest consequences for {C}?",
+   "template": {
+    "kind": "interactions",
+    "triples": [
+     {
+      "s": {
+       "\u0000blank": "A"
+      },
+      "p": "any",
+      "o": {
+       "\u0000blank": "B"
+      }
+     },
+     {
+      "s": "?x",
+      "s_type": "species interaction",
+      "p": "any",
+      "o": {
+       "\u0000blank": "C"
+      },
+      "rank_by": "strength"
+     }
+    ],
+    "camo_fields": [
+     "strength"
+    ]
+   },
+   "recompute": [],
+   "status": "pending"
+  },
+  {
+   "frame": "How does {A} influence {B}, and are effects driven by species identity, abundance, or complementarity?",
+   "template": {
+    "kind": "mechanism",
+    "triples": [
+     {
+      "s": {
+       "\u0000blank": "A"
+      },
+      "p": "any",
+      "o": {
+       "\u0000blank": "B"
+      },
+      "candidates": [
+       "species identity",
+       "abundance",
+       "complementarity"
+      ]
+     }
+    ],
+    "camo_fields": [
+     "mediation"
+    ]
+   },
+   "recompute": [],
+   "status": "pending"
+  }
+ ]
+}

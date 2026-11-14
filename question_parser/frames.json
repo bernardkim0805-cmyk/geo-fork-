@@ -1,0 +1,52 @@
+{
+ "version": 2,
+ "frames": [
+  {
+   "frame": "When {D} such as {E} are used against {C} in {B}, do they also reduce {A}?",
+   "template": {
+    "kind": "intervention_outcomes",
+    "topic": {
+     "\u0000blank": "A"
+    },
+    "triples": [
+     {
+      "s": {
+       "class": {
+        "\u0000blank": "D"
+       },
+       "members": [
+        {
+         "\u0000blank": "E"
+        }
+       ],
+       "relation": "exemplar"
+      },
+      "p": "any",
+      "o": {
+       "\u0000blank": "A"
+      },
+      "o_qualifier": null
+     }
+    ],
+    "context": [
+     {
+      "text": {
+       "\u0000blank": "C"
+      },
+      "role": "purpose"
+     },
+     {
+      "text": {
+       "\u0000blank": "B"
+      },
+      "role": "setting"
+     }
+    ]
+   },
+   "recompute": [
+    "triples[0].o_qualifier"
+   ],
+   "status": "pending"
+  }
+ ]
+}
