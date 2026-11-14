@@ -133,7 +133,6 @@
     "camo:edge_996897c6eca9",
     "camo:edge_5ba0f184d5e9",
     "camo:edge_056e1deffb16",
-    "camo:edge_27113204c7bc",
     "camo:edge_e5c53181b606",
     "camo:edge_0f08156c844c",
     "camo:edge_0eddb8a7e8f8",
@@ -142,7 +141,6 @@
     "camo:edge_b6e84d6ab4e8",
     "camo:edge_87cbbe1edaf0",
     "camo:edge_1a6c0a4681cf",
-    "camo:edge_75d2e0fef1cd",
     "camo:edge_09a06b168821",
     "camo:edge_5a7ab71a756a",
     "camo:edge_c28b15ab9969",
@@ -154,7 +152,6 @@
     "camo:edge_2d3d42436341",
     "camo:edge_e2fdcdac4118",
     "camo:edge_3cd124941451",
-    "camo:edge_9d981cad6d95",
     "camo:edge_ca9ffe98b848",
     "camo:edge_46cb289b6694",
     "camo:edge_78eb571dd5e0",
@@ -162,7 +159,6 @@
     "camo:edge_a407ff840faa",
     "camo:edge_d3985a137104",
     "camo:edge_1b8614704809",
-    "camo:edge_11690083251e",
     "camo:edge_aec0fc98c188",
     "camo:edge_6472e4a3fd8a",
     "camo:edge_a067c4a99838",
@@ -170,8 +166,6 @@
     "camo:edge_91a437fd98a7",
     "camo:edge_c8d6033559bf",
     "camo:edge_296f1c58ad29",
-    "camo:edge_757a4867ed5e",
-    "camo:edge_df786e67f158",
     "camo:edge_f11941a70133",
     "camo:edge_ab869e5fe3f4",
     "camo:edge_d55d3730b780",
@@ -183,7 +177,6 @@
     "camo:edge_301305563557",
     "camo:edge_a2b9a5f7e9a0",
     "camo:edge_a535cc3007c5",
-    "camo:edge_b71740d4afdf",
     "camo:edge_77e8f19b0c11",
     "camo:edge_e5cc23213dca",
     "camo:edge_bc484670f052",
@@ -202,44 +195,55 @@
     "camo:edge_fe312adb1a47",
     "camo:edge_7c23399b6d26",
     "camo:edge_fb7dd401e483",
+    "camo:edge_27113204c7bc",
+    "camo:edge_75d2e0fef1cd",
     "camo:edge_179dfda57575",
     "camo:edge_f2e46e1bb60a",
     "camo:edge_8328e65d2d95",
     "camo:edge_27324a3c69c5",
+    "camo:edge_9d981cad6d95",
+    "camo:edge_11690083251e",
     "camo:edge_d5bb6081f884",
+    "camo:edge_757a4867ed5e",
+    "camo:edge_df786e67f158",
     "camo:edge_ca84e687f0af",
-    "camo:edge_8b2d6d99b35c"
+    "camo:edge_8b2d6d99b35c",
+    "camo:edge_b71740d4afdf"
   ],
   "papers": [
     "10.1046/j.1526-100X.2003.rec0217.x",
     "10.1111/avsc.12316",
     "10.1111/j.1365-2745.2007.01333.x",
+    "10.1111/j.1526-100X.2005.00083.x",
     "10.1111/j.1526-100X.2007.00209.x",
     "10.1111/rec.12468",
     "10.3368/er.25.2.85",
-    "10.3368/er.29.1-2.35"
+    "10.3368/er.29.1-2.35",
+    "10.5558/tfc86234-2"
   ],
   "aggregate": {
     "direction": "mixed",
     "certainty": "low",
-    "confidence": 0.58,
+    "confidence": 0.59,
     "papers": {
-      "10.1111/rec.12468": "mixed",
+      "10.1111/rec.12468": "increase",
       "10.1111/j.1365-2745.2007.01333.x": "increase",
       "10.3368/er.29.1-2.35": "mixed",
       "10.1111/avsc.12316": "mixed",
       "10.3368/er.25.2.85": "decrease",
-      "10.1111/j.1526-100X.2007.00209.x": "increase",
-      "10.1046/j.1526-100X.2003.rec0217.x": "increase"
+      "10.1111/j.1526-100X.2007.00209.x": "mixed",
+      "10.5558/tfc86234-2": "decrease",
+      "10.1111/j.1526-100X.2005.00083.x": "decrease",
+      "10.1046/j.1526-100X.2003.rec0217.x": "mixed"
     },
     "paper_counts": {
-      "mixed": 3,
-      "increase": 3,
-      "decrease": 1
+      "increase": 2,
+      "mixed": 4,
+      "decrease": 3
     },
-    "agreement": 0.43,
-    "n_papers": 7,
-    "n_edges": 13
+    "agreement": 0.44,
+    "n_papers": 9,
+    "n_edges": 20
   },
   "edges": [
     {
@@ -321,6 +325,32 @@
       "sentence": "Significant increases in cover were observed for native perennial geophytes, especially Ca. quamash (F ¼ 8.44, p < 0.0001), Dodecatheon hendersonii (F ¼ 6.28, p < 0.0001), Ranunculus occidentalis (F ¼ 5.73, p < 0.0001), Lomatium utriculatum (F ¼ 4.61, p < 0.0001), and the nationally threatened Viola praemorsa (F ¼ 2.02, p ¼ 0.047)."
     },
     {
+      "id": "camo:edge_27113204c7bc",
+      "direction_raw": "decrease",
+      "direction": "decrease",
+      "inverted": false,
+      "flipped_by_llm": false,
+      "subject": "Herbicide application",
+      "predicate": "associated_with",
+      "object": "Decreased Kalmia cover",
+      "paper": "10.5558/tfc86234-2",
+      "grade": "moderate",
+      "sentence": "Orthogonal contrasts confirmed that the probability of trees in herbicided treatments (either fertilized or not) being associated with lower Kalmia cover classes was 285 times the probability of trees from unherbicided treatments being associated with lower cover classes (p < 0.001; Fig. 3)"
+    },
+    {
+      "id": "camo:edge_75d2e0fef1cd",
+      "direction_raw": "decrease",
+      "direction": "decrease",
+      "inverted": false,
+      "flipped_by_llm": false,
+      "subject": "glyphosate herbicide treatment",
+      "predicate": "causes",
+      "object": "decreased cover of Calamagrostis rubescens",
+      "paper": "10.1111/j.1526-100X.2005.00083.x",
+      "grade": "moderate",
+      "sentence": "In September 2001, plots treated with glyphosate had 47% less C. rubescens cover relative to untreated plots."
+    },
+    {
       "id": "camo:edge_179dfda57575",
       "direction_raw": "no_effect",
       "direction": "no_effect",
@@ -373,6 +403,32 @@
       "sentence": "The total cover of native species in 2000 was significantly higher in plots receiving herbicide (Fig. 5, F 11.48)"
     },
     {
+      "id": "camo:edge_9d981cad6d95",
+      "direction_raw": "decrease",
+      "direction": "decrease",
+      "inverted": false,
+      "flipped_by_llm": false,
+      "subject": "Herbicide application",
+      "predicate": "causes",
+      "object": "Kalmia cover",
+      "paper": "10.5558/tfc86234-2",
+      "grade": "low",
+      "sentence": "Herbicide applications between age 1 and 4 were effective in maintaining low *Kalmia* cover in the vicinity of planted trees for more than a decade; the vast majority (98%) of the saplings in the herbicided treatments had less than 25% *Kalmia* cover in their immediate surrounding 15 growing seasons after planting"
+    },
+    {
+      "id": "camo:edge_11690083251e",
+      "direction_raw": "increase",
+      "direction": "increase",
+      "inverted": false,
+      "flipped_by_llm": false,
+      "subject": "application of grass-specific herbicide sethoxydim",
+      "predicate": "causes",
+      "object": "increased cover of Festuca roemeri",
+      "paper": "10.1111/rec.12468",
+      "grade": "moderate",
+      "sentence": "Additionally, the native grass species, *Festuca roemeri*, had greater cover in treatments that included the grass-specific herbicide sethoxydim (Fig. 4D; *p<*0.05, post hoc Tukey tests"
+    },
+    {
       "id": "camo:edge_d5bb6081f884",
       "direction_raw": "increase",
       "direction": "increase",
@@ -384,6 +440,32 @@
       "paper": "10.1111/avsc.12316",
       "grade": "moderate",
       "sentence": "In 2013 the significantly higher native forb cover with glyphosate at Site 1 was due to increased Verbena bracteata Cav. ex Lag. & Rodr. (prostrate vervain), only found at this site."
+    },
+    {
+      "id": "camo:edge_757a4867ed5e",
+      "direction_raw": "decrease",
+      "direction": "decrease",
+      "inverted": false,
+      "flipped_by_llm": false,
+      "subject": "Herbicide application",
+      "predicate": "causes",
+      "object": "decreased cover of Agropyron cristatum",
+      "paper": "10.1046/j.1526-100X.2003.rec0217.x",
+      "grade": "moderate",
+      "sentence": "The cover of *A. cristatum* in 2000 was significantly (*p*  0.05, *df* 1, 16 for all three-factor ANOVAs) lower in plots receiving herbicide (Fig. 1, F 46.83"
+    },
+    {
+      "id": "camo:edge_df786e67f158",
+      "direction_raw": "decrease",
+      "direction": "decrease",
+      "inverted": false,
+      "flipped_by_llm": false,
+      "subject": "Disturbance treatments including grass-specific herbicide",
+      "predicate": "causes",
+      "object": "Decreased cover of Poa",
+      "paper": "10.1111/j.1526-100X.2007.00209.x",
+      "grade": "moderate",
+      "sentence": "After 4 years, the average cover of Poa and Dactylis was reduced to less than 2.5% and less than 2.4% per plot, respectively, at both sites (Tukey's HSD) (Fig. 2)."
     },
     {
       "id": "camo:edge_ca84e687f0af",
@@ -410,6 +492,19 @@
       "paper": "10.1046/j.1526-100X.2003.rec0217.x",
       "grade": "moderate",
       "sentence": "Species richness in 2000 was significantly higher in plots receiving herbicide (6.1 species per 0.5 m2) than in plots without herbicide (4.6 per 0.5 m2, F 9.41)"
+    },
+    {
+      "id": "camo:edge_b71740d4afdf",
+      "direction_raw": "decrease",
+      "direction": "decrease",
+      "inverted": false,
+      "flipped_by_llm": false,
+      "subject": "Disturbance treatments including grass-specific herbicide",
+      "predicate": "causes",
+      "object": "Decreased cover of Dactylis",
+      "paper": "10.1111/j.1526-100X.2007.00209.x",
+      "grade": "moderate",
+      "sentence": "After 4 years, the average cover of Poa and Dactylis was reduced to less than 2.5% and less than 2.4% per plot, respectively, at both sites (Tukey's HSD) (Fig. 2)."
     }
   ]
 }

@@ -66,8 +66,8 @@
         "ch4"
       ],
       "exclude": [
-        "co2",
         "carbon dioxide",
+        "co2",
         "nitrous oxide",
         "n2o"
       ],

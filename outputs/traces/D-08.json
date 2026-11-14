@@ -10,8 +10,7 @@
         "accumulation",
         "inclusion",
         "coarse woody debris",
-        "woody debris",
-        "large wood"
+        "woody debris"
       ],
       "modifier_terms": [],
       "exclude": [
@@ -53,8 +52,7 @@
         "accumulation",
         "inclusion",
         "coarse woody debris",
-        "woody debris",
-        "large wood"
+        "woody debris"
       ]
     },
     "outcome": {
@@ -66,20 +64,15 @@
         "density",
         "population",
         "richness",
-        "diversity",
-        "occurrence"
+        "diversity"
       ],
       "modifier_terms": [
         "small mammal",
-        "small mammals",
         "rodent",
-        "rodents",
+        "lagomorph",
         "shrew",
-        "shrews",
-        "vole",
-        "voles",
         "mouse",
-        "mice"
+        "vole"
       ],
       "exclude": [
         "large mammal",
@@ -97,17 +90,12 @@
         "population",
         "richness",
         "diversity",
-        "occurrence",
         "small mammal",
-        "small mammals",
         "rodent",
-        "rodents",
+        "lagomorph",
         "shrew",
-        "shrews",
-        "vole",
-        "voles",
         "mouse",
-        "mice"
+        "vole"
       ]
     }
   },

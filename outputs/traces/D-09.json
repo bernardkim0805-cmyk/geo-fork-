@@ -52,8 +52,7 @@
         "invasive",
         "non-native",
         "exotic",
-        "alien",
-        "weed"
+        "alien"
       ],
       "exclude": [
         "native"
@@ -72,20 +71,14 @@
         "invasive",
         "non-native",
         "exotic",
-        "alien",
-        "weed"
+        "alien"
       ]
     }
   },
-  "n_candidates": 22,
+  "n_candidates": 17,
   "modifier_unmatched": [],
   "reversed_rejected": 0,
-  "llm_rejected": [
-    "camo:edge_757d7f1d4ae1",
-    "camo:edge_75549c9f0ee2",
-    "camo:edge_74140098d1ba",
-    "camo:edge_5ef65c13ea41"
-  ],
+  "llm_rejected": [],
   "excluded": [],
   "asked_attribute": null,
   "duplicates_removed": [
@@ -98,7 +91,6 @@
     "camo:edge_84284086e663",
     "camo:edge_dc3a2a7ccb4b",
     "camo:edge_504e472e86d6",
-    "camo:edge_e6fc26306f73",
     "camo:edge_ef38701c9f77",
     "camo:edge_d725a79ab966",
     "camo:edge_4af8274686bd",
@@ -113,7 +105,6 @@
   "papers": [
     "10.1016/j.ecoleng.2020.106014",
     "10.1111/avsc.12316",
-    "10.1111/j.1526-100X.1995.tb00096.x",
     "10.1111/rec.12468",
     "10.3368/er.25.2.85",
     "10.3368/er.29.1-2.35",
@@ -122,24 +113,23 @@
   "aggregate": {
     "direction": "mixed",
     "certainty": "low",
-    "confidence": 0.58,
+    "confidence": 0.61,
     "papers": {
       "10.1111/rec.12468": "decrease",
       "10.3955/046.085.0212": "decrease",
       "10.3368/er.29.1-2.35": "decrease",
       "10.1111/avsc.12316": "mixed",
       "10.3368/er.25.2.85": "mixed",
-      "10.1016/j.ecoleng.2020.106014": "increase",
-      "10.1111/j.1526-100X.1995.tb00096.x": "increase"
+      "10.1016/j.ecoleng.2020.106014": "increase"
     },
     "paper_counts": {
       "decrease": 3,
       "mixed": 2,
-      "increase": 2
+      "increase": 1
     },
-    "agreement": 0.43,
-    "n_papers": 7,
-    "n_edges": 17
+    "agreement": 0.5,
+    "n_papers": 6,
+    "n_edges": 16
   },
   "edges": [
     {
@@ -219,19 +209,6 @@
       "paper": "10.1016/j.ecoleng.2020.106014",
       "grade": "moderate",
       "sentence": "Two years after reclamation cover of FMM and PMM were not significantly different, although four years after reclamation native cover was significantly greater in FMM and non-native species cover was significantly greater in PMM"
-    },
-    {
-      "id": "camo:edge_e6fc26306f73",
-      "direction_raw": "increase",
-      "direction": "increase",
-      "inverted": false,
-      "flipped_by_llm": false,
-      "subject": "Herbicide application",
-      "predicate": "causes",
-      "object": "increased cover of annual weeds",
-      "paper": "10.1111/j.1526-100X.1995.tb00096.x",
-      "grade": "moderate",
-      "sentence": "The total cover of annual weeds was significantly higher in quadrats sprayed with herbicide (19%) than in unsprayed quadrats (0.5%;  $F=265.9,\\ p<0.001"
     },
     {
       "id": "camo:edge_ef38701c9f77",

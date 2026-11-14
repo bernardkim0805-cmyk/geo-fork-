@@ -133,26 +133,32 @@
   ],
   "reversed_rejected": 2,
   "llm_rejected": [
+    "camo:edge_4ec17738dc6f",
+    "camo:edge_050c8a66dffe",
     "camo:edge_324a881d3695",
     "camo:edge_145205ddf194",
+    "camo:edge_ed5dd4b0434b",
+    "camo:edge_894318c7bd16",
     "camo:edge_ee5aa30bcc2d",
     "camo:edge_c79446230da9",
+    "camo:edge_6b9afb321f2c",
+    "camo:edge_634f67c5a5c9",
     "camo:edge_3fb326f2a6c3",
-    "camo:edge_0e818d555f79"
+    "camo:edge_624b3855328f",
+    "camo:edge_585dbd6dae83",
+    "camo:edge_ee363d4ecaf2",
+    "camo:edge_574d67f83afc"
   ],
   "excluded": [],
   "asked_attribute": null,
   "duplicates_removed": [
     "camo:edge_e482c8e5f79e",
-    "camo:edge_634f67c5a5c9",
     "camo:edge_ddfed005df71",
     "camo:edge_5ee7288c1b1f"
   ],
   "kept": [
-    "camo:edge_4ec17738dc6f",
     "camo:edge_9e35062af2b1",
     "camo:edge_fe44dfe5c234",
-    "camo:edge_050c8a66dffe",
     "camo:edge_7ab0be2fbee4",
     "camo:edge_23af0f739ba4",
     "camo:edge_086c4a29d347",
@@ -160,28 +166,21 @@
     "camo:edge_3d0573e58933",
     "camo:edge_9528c6fa579e",
     "camo:edge_b0ad08c6034c",
-    "camo:edge_ed5dd4b0434b",
     "camo:edge_1d04058f3b30",
     "camo:edge_7fd63852f9f5",
-    "camo:edge_894318c7bd16",
     "camo:edge_8eac9c464807",
     "camo:edge_7a4abb729871",
     "camo:edge_c998bcd418f7",
-    "camo:edge_6b9afb321f2c",
     "camo:edge_4de9efbfec5c",
     "camo:edge_6cc2e113d5e8",
     "camo:edge_248b654455f1",
     "camo:edge_20a8f4424d68",
     "camo:edge_408465bc9dcf",
-    "camo:edge_624b3855328f",
-    "camo:edge_585dbd6dae83",
-    "camo:edge_ee363d4ecaf2",
+    "camo:edge_0e818d555f79",
     "camo:edge_8f5f33ffe62b",
-    "camo:edge_7164fb680f66",
-    "camo:edge_574d67f83afc"
+    "camo:edge_7164fb680f66"
   ],
   "papers": [
-    "10.1007/s11056-012-9324-x",
     "10.1007/s11056-013-9378-4",
     "10.1016/j.foreco.2015.10.020",
     "10.1016/j.foreco.2015.10.024",
@@ -189,7 +188,6 @@
     "10.1046/j.1526-100x.2001.009001060.x",
     "10.1139/x06-090",
     "10.3368/er.33.1.43",
-    "10.5558/tfc86234-2",
     "H8YC97IU",
     "UYWAUMSU"
   ],
@@ -198,10 +196,8 @@
     "certainty": "low",
     "confidence": 0.65,
     "papers": {
-      "10.5558/tfc86234-2": "no_effect",
       "10.1016/j.foreco.2016.03.034": "increase",
       "10.1016/j.foreco.2015.10.024": "increase",
-      "10.1007/s11056-012-9324-x": "increase",
       "10.1139/x06-090": "increase",
       "H8YC97IU": "mixed",
       "10.3368/er.33.1.43": "no_effect",
@@ -211,28 +207,15 @@
       "10.1046/j.1526-100x.2001.009001060.x": "mixed"
     },
     "paper_counts": {
-      "no_effect": 3,
-      "increase": 6,
-      "mixed": 2
+      "increase": 5,
+      "mixed": 2,
+      "no_effect": 2
     },
-    "agreement": 0.55,
-    "n_papers": 11,
-    "n_edges": 30
+    "agreement": 0.56,
+    "n_papers": 9,
+    "n_edges": 22
   },
   "edges": [
-    {
-      "id": "camo:edge_4ec17738dc6f",
-      "direction_raw": "increase",
-      "direction": "increase",
-      "inverted": false,
-      "flipped_by_llm": false,
-      "subject": "fertilization at planting",
-      "predicate": "causes",
-      "object": "Increased growth of black spruce",
-      "paper": "10.5558/tfc86234-2",
-      "grade": "moderate",
-      "sentence": "The use of herbicide significantly increased 15-year GLD and volume index of all three conifer species, but only black spruce responded positively to fertilization at planting."
-    },
     {
       "id": "camo:edge_9e35062af2b1",
       "direction_raw": "increase",
@@ -258,19 +241,6 @@
       "paper": "10.1016/j.foreco.2015.10.024",
       "grade": "moderate",
       "sentence": "seedlings that had received CRF out-performing unfertilized seedlings"
-    },
-    {
-      "id": "camo:edge_050c8a66dffe",
-      "direction_raw": "increase",
-      "direction": "increase",
-      "inverted": false,
-      "flipped_by_llm": false,
-      "subject": "Fertilization application",
-      "predicate": "causes",
-      "object": "Increased jack pine height",
-      "paper": "10.1007/s11056-012-9324-x",
-      "grade": "moderate",
-      "sentence": "Fertilization alone at the time of planting increased the model intercept by 29, 38, 31 and 47 % for jack pine height, GLD, AGRH and AGRD, respectively, compared to the control (unscarified and unfertilized) conditions"
     },
     {
       "id": "camo:edge_7ab0be2fbee4",
@@ -364,19 +334,6 @@
       "sentence": "When the plants were harvested, a significantly lower total dry root biomass per plant was recorded for plants receiving 1.6 g of fertilizer pellets, compared to the other treatments which did not differ significantly from one another (Fig. 5)."
     },
     {
-      "id": "camo:edge_ed5dd4b0434b",
-      "direction_raw": "no_effect",
-      "direction": "no_effect",
-      "inverted": false,
-      "flipped_by_llm": false,
-      "subject": "fertilization at planting",
-      "predicate": "causes",
-      "object": "Growth of jack pine",
-      "paper": "10.5558/tfc86234-2",
-      "grade": "moderate",
-      "sentence": "The use of herbicide significantly increased 15-year GLD and volume index of all three conifer species, but only black spruce responded positively to fertilization at planting."
-    },
-    {
       "id": "camo:edge_1d04058f3b30",
       "direction_raw": "increase",
       "direction": "increase",
@@ -401,19 +358,6 @@
       "paper": "10.1016/j.foreco.2015.10.024",
       "grade": "moderate",
       "sentence": "seedlings that had received CRF out-performing unfertilized seedlings"
-    },
-    {
-      "id": "camo:edge_894318c7bd16",
-      "direction_raw": "increase",
-      "direction": "increase",
-      "inverted": false,
-      "flipped_by_llm": false,
-      "subject": "Combined fertilization and scarification",
-      "predicate": "causes",
-      "object": "Increased jack pine height",
-      "paper": "10.1007/s11056-012-9324-x",
-      "grade": "moderate",
-      "sentence": "The combine effect of fertilization and scarification led to a 55 % increase in minimal (intercept value) 90th percentile jack pine height, and increased the expected minimal (intercept value) 90th percentile GLD by 71 %, compared to control conditions"
     },
     {
       "id": "camo:edge_8eac9c464807",
@@ -453,19 +397,6 @@
       "paper": "10.1046/j.1526-100x.2001.009001060.x",
       "grade": "moderate",
       "sentence": "Plants receiving 1.0 g/L of water-soluble fertilizer had longer roots than those in the control and 1.6 g fertilizer pellet treatments."
-    },
-    {
-      "id": "camo:edge_6b9afb321f2c",
-      "direction_raw": "no_effect",
-      "direction": "no_effect",
-      "inverted": false,
-      "flipped_by_llm": false,
-      "subject": "fertilization at planting",
-      "predicate": "causes",
-      "object": "Growth of tamarack",
-      "paper": "10.5558/tfc86234-2",
-      "grade": "moderate",
-      "sentence": "The use of herbicide significantly increased 15-year GLD and volume index of all three conifer species, but only black spruce responded positively to fertilization at planting."
     },
     {
       "id": "camo:edge_4de9efbfec5c",
@@ -533,43 +464,17 @@
       "sentence": "The mean total dry leaf biomass per plant in the 2.8 g/L of water-soluble fertilizer treatment was greater than in the control and 1.6 g fertilizer pellet treatments (Fig. 5)."
     },
     {
-      "id": "camo:edge_624b3855328f",
+      "id": "camo:edge_0e818d555f79",
       "direction_raw": "increase",
       "direction": "increase",
       "inverted": false,
       "flipped_by_llm": false,
-      "subject": "Fertilization",
+      "subject": "controlled-release fertilizer application",
       "predicate": "causes",
-      "object": "Increased 15-year total height of black spruce",
-      "paper": "10.5558/tfc86234-2",
+      "object": "increased root nitrogen concentration",
+      "paper": "10.1016/j.foreco.2015.10.024",
       "grade": "moderate",
-      "sentence": "Fertilization increased black spruce 15-year height by 30% but had no effect on the other two species (Table 2)."
-    },
-    {
-      "id": "camo:edge_585dbd6dae83",
-      "direction_raw": "increase",
-      "direction": "increase",
-      "inverted": false,
-      "flipped_by_llm": false,
-      "subject": "Fertilization",
-      "predicate": "causes",
-      "object": "Increased black spruce height",
-      "paper": "10.1007/s11056-012-9324-x",
-      "grade": "moderate",
-      "sentence": "Fertilization alone increased these values by 13, 41, 32 and 45 % for height, GLD, AGRH and AGRD, respectively."
-    },
-    {
-      "id": "camo:edge_ee363d4ecaf2",
-      "direction_raw": "increase",
-      "direction": "increase",
-      "inverted": false,
-      "flipped_by_llm": false,
-      "subject": "fertilization with Forest Paks",
-      "predicate": "causes",
-      "object": "Increased black spruce height",
-      "paper": "10.1139/x06-090",
-      "grade": "moderate",
-      "sentence": "Scarification and fertilization significantly interacted to influence seedling height and diameter at age 5 and aboveground biomass after three growing seasons (Table 2, Figs. 2 and 3)."
+      "sentence": "Both CRF and IAF treatments resulted in similar increases in foliar and root N concentrations in foliage and roots of fertilized seedlings relative to those of unfertilized seedlings"
     },
     {
       "id": "camo:edge_8f5f33ffe62b",
@@ -596,19 +501,6 @@
       "paper": "10.1046/j.1526-100x.2001.009001060.x",
       "grade": "moderate",
       "sentence": "There was a significantly higher total dry biomass in the 2.8 g/L of water-soluble fertilizer treatments compared to the control."
-    },
-    {
-      "id": "camo:edge_574d67f83afc",
-      "direction_raw": "no_effect",
-      "direction": "no_effect",
-      "inverted": false,
-      "flipped_by_llm": false,
-      "subject": "Fertilization",
-      "predicate": "causes",
-      "object": "15-year total height of jack pine and tamarack",
-      "paper": "10.5558/tfc86234-2",
-      "grade": "moderate",
-      "sentence": "Fertilization increased black spruce 15-year height by 30% but had no effect on the other two species (Table 2)."
     }
   ]
 }

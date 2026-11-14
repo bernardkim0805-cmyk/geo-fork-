@@ -134,7 +134,7 @@
       "confidence": 0.4,
       "certainty": null,
       "edge_ids": [],
-      "searched_for": "edges whose subject node is 'beaver reintroduction' (head terms: beaver reintroduction, reintroduction, reintroduc, restor; context: beaver, castor) and whose object node measures 'songbird abundance' (head terms: songbird abundance, abundance, abundanc, richness, density, occurrence; context: songbird, passerine, passerines). Candidate edges matched these terms but none survived the relevance, attribute and orientation checks.",
+      "searched_for": "edges whose subject node is 'beaver reintroduction' (head terms: beaver reintroduction, reintroduction, reintroduc, restor; context: beaver, castor) and whose object node measures 'songbird abundance' (head terms: songbird abundance, abundance, abundanc, richness, density, population, diversity; context: songbird, passerine, bird). Candidate edges matched these terms but none survived the relevance, attribute and orientation checks.",
       "extras": [
         "outputs/traces/D-008.json"
       ]
@@ -147,7 +147,7 @@
       "confidence": 0.5,
       "certainty": null,
       "edge_ids": [],
-      "searched_for": "edges whose subject node is 'grazing exclusion' (head terms: grazing exclusion, exclusion, no grazing, grazing free; context: grazing, graze, livestock, herbivory) and whose object node measures 'pollinator diversity' (head terms: pollinator diversity, diversity, richness, abundance, species richness, community composition; context: pollinator, pollinators, bees, butterflies, insects, wild bees). No edge matched both sides.",
+      "searched_for": "edges whose subject node is 'grazing exclusion' (head terms: grazing exclusion, exclusion, fencing, grazing free; context: grazing, graze, livestock, herbivory) and whose object node measures 'pollinator diversity' (head terms: pollinator diversity, diversity, richness, abundance, species richness, community composition; context: pollinator, pollinators, bees, butterflies, insects, wild bees). No edge matched both sides.",
       "extras": [
         "outputs/traces/D-009.json"
       ]
@@ -157,10 +157,10 @@
       "status": "no_evidence",
       "answer": "The graph has no claim in which water table position is the cause and peatland restoration is the measured outcome. 28 edge(s) link the two the other way round and were not used.",
       "direction": null,
-      "confidence": 0.5,
+      "confidence": 0.4,
       "certainty": null,
       "edge_ids": [],
-      "searched_for": "edges whose subject node is 'water table position' (head terms: water table position, position, level, height, depth, elevation; context: water table, groundwater, water level) and whose object node measures 'peatland restoration' (head terms: peatland restoration, restoration, rewetting, reclamation; context: peatland, peat, bog, fen). No edge matched both sides.",
+      "searched_for": "edges whose subject node is 'water table position' (head terms: water table position, position, level, height, depth, elevation; context: water table, groundwater, water level) and whose object node measures 'peatland restoration' (head terms: peatland restoration, restoration, rewetting, reclamation; context: peatland, peat, bog, fen). Candidate edges matched these terms but none survived the relevance, attribute and orientation checks.",
       "extras": [
         "outputs/traces/D-010.json"
       ]
@@ -168,9 +168,9 @@
     {
       "id": "D-01",
       "status": "answered",
-      "answer": "herbicide application has mixed effects on native plant cover and richness, based on 13 distinct claims from 7 papers (one vote per paper: 1 decrease, 3 increase, 3 mixed). Example (Trowbridge 2017): \"Specifically, when plots were not seeded, the abundance of native species was higher in the two disturbance treatments that included grass-specific herbicide compared with those that did not (Fig. 2B, *t*93.8 = −3.05,...\"",
+      "answer": "herbicide application has mixed effects on native plant cover and richness, based on 20 distinct claims from 9 papers (one vote per paper: 3 decrease, 2 increase, 4 mixed). Example (Trowbridge 2017): \"Specifically, when plots were not seeded, the abundance of native species was higher in the two disturbance treatments that included grass-specific herbicide compared with those that did not (Fig. 2B, *t*93.8 = −3.05,...\"",
       "direction": "mixed",
-      "confidence": 0.58,
+      "confidence": 0.59,
       "certainty": "low",
       "edge_ids": [
         "camo:edge_880bf356af12",
@@ -179,13 +179,20 @@
         "camo:edge_fe312adb1a47",
         "camo:edge_7c23399b6d26",
         "camo:edge_fb7dd401e483",
+        "camo:edge_27113204c7bc",
+        "camo:edge_75d2e0fef1cd",
         "camo:edge_179dfda57575",
         "camo:edge_f2e46e1bb60a",
         "camo:edge_8328e65d2d95",
         "camo:edge_27324a3c69c5",
+        "camo:edge_9d981cad6d95",
+        "camo:edge_11690083251e",
         "camo:edge_d5bb6081f884",
+        "camo:edge_757a4867ed5e",
+        "camo:edge_df786e67f158",
         "camo:edge_ca84e687f0af",
-        "camo:edge_8b2d6d99b35c"
+        "camo:edge_8b2d6d99b35c",
+        "camo:edge_b71740d4afdf"
       ],
       "searched_for": null,
       "extras": [
@@ -230,15 +237,13 @@
     {
       "id": "D-04",
       "status": "answered",
-      "answer": "nursery fertilization has mixed effects on seedling growth, based on 30 distinct claims from 11 papers (one vote per paper: 6 increase, 2 mixed, 3 no effect). Example (Thiffaul 2010): \"The use of herbicide significantly increased 15-year GLD and volume index of all three conifer species, but only black spruce responded positively to fertilization at planting.\"",
+      "answer": "nursery fertilization has mixed effects on seedling growth, based on 22 distinct claims from 9 papers (one vote per paper: 5 increase, 2 mixed, 2 no effect). Example (Pokharel 2016): \"Exponential fertilization increased shoot height on the PMM site in 2014 and 2015 (P = 0.016 and 0.028, respectively) and on the LFH site in 2014 (P = 0.022).\"",
       "direction": "mixed",
       "confidence": 0.65,
       "certainty": "low",
       "edge_ids": [
-        "camo:edge_4ec17738dc6f",
         "camo:edge_9e35062af2b1",
         "camo:edge_fe44dfe5c234",
-        "camo:edge_050c8a66dffe",
         "camo:edge_7ab0be2fbee4",
         "camo:edge_23af0f739ba4",
         "camo:edge_086c4a29d347",
@@ -246,25 +251,19 @@
         "camo:edge_3d0573e58933",
         "camo:edge_9528c6fa579e",
         "camo:edge_b0ad08c6034c",
-        "camo:edge_ed5dd4b0434b",
         "camo:edge_1d04058f3b30",
         "camo:edge_7fd63852f9f5",
-        "camo:edge_894318c7bd16",
         "camo:edge_8eac9c464807",
         "camo:edge_7a4abb729871",
         "camo:edge_c998bcd418f7",
-        "camo:edge_6b9afb321f2c",
         "camo:edge_4de9efbfec5c",
         "camo:edge_6cc2e113d5e8",
         "camo:edge_248b654455f1",
         "camo:edge_20a8f4424d68",
         "camo:edge_408465bc9dcf",
-        "camo:edge_624b3855328f",
-        "camo:edge_585dbd6dae83",
-        "camo:edge_ee363d4ecaf2",
+        "camo:edge_0e818d555f79",
         "camo:edge_8f5f33ffe62b",
-        "camo:edge_7164fb680f66",
-        "camo:edge_574d67f83afc"
+        "camo:edge_7164fb680f66"
       ],
       "searched_for": null,
       "extras": [
@@ -348,9 +347,9 @@
     {
       "id": "D-09",
       "status": "answered",
-      "answer": "herbicide application has mixed effects on invasive / non-native species abundance, based on 17 distinct claims from 7 papers (one vote per paper: 3 decrease, 2 increase, 2 mixed). Example (Trowbridge 2017): \"Treatment was a significant predictor of non-native grass cover at only one site (Triangle Prairie; *F*4,14 =9.22, *p<*0.001), where plots that received applications of grass-specific herbicide had lower abundances of...\"",
+      "answer": "herbicide application has mixed effects on invasive / non-native species abundance, based on 16 distinct claims from 6 papers (one vote per paper: 3 decrease, 1 increase, 2 mixed). Example (Trowbridge 2017): \"Treatment was a significant predictor of non-native grass cover at only one site (Triangle Prairie; *F*4,14 =9.22, *p<*0.001), where plots that received applications of grass-specific herbicide had lower abundances of...\"",
       "direction": "mixed",
-      "confidence": 0.58,
+      "confidence": 0.61,
       "certainty": "low",
       "edge_ids": [
         "camo:edge_e0b14f29cd85",
@@ -359,7 +358,6 @@
         "camo:edge_84284086e663",
         "camo:edge_dc3a2a7ccb4b",
         "camo:edge_504e472e86d6",
-        "camo:edge_e6fc26306f73",
         "camo:edge_ef38701c9f77",
         "camo:edge_d725a79ab966",
         "camo:edge_4af8274686bd",

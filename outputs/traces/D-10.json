@@ -9,7 +9,8 @@
         "livestock grazing",
         "grazing",
         "herbivory",
-        "defoliation"
+        "defoliation",
+        "livestock"
       ],
       "modifier_terms": [
         "livestock",
@@ -17,22 +18,18 @@
         "sheep",
         "goat",
         "horse",
-        "ungulate"
+        "ruminant"
       ],
       "exclude": [
-        "no grazing",
-        "ungrazed",
-        "exclusion"
+        "invasive",
+        "exotic",
+        "non-native"
       ],
       "low_grounding": true,
       "phrase": "livestock grazing",
       "dropped": [
         {
           "term": "graze",
-          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
-        },
-        {
-          "term": "grazed",
           "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
         },
         {
@@ -51,7 +48,7 @@
         "sheep",
         "goat",
         "horse",
-        "ungulate"
+        "ruminant"
       ]
     },
     "outcome": {
@@ -62,52 +59,56 @@
         "carbon",
         "soc",
         "organic carbon",
-        "carbon stock",
-        "carbon content",
-        "carbon pool"
+        "soil carbon",
+        "co2"
       ],
       "modifier_terms": [
         "soil",
         "pedon",
-        "topsoil",
-        "mineral soil"
+        "substrate",
+        "ground"
       ],
       "exclude": [
-        "atmospheric",
-        "plant",
-        "biomass",
-        "litter"
+        "invasive",
+        "exotic",
+        "non-native"
       ],
       "low_grounding": false,
       "phrase": "soil organic carbon",
-      "dropped": [],
+      "dropped": [
+        {
+          "term": "c stock",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        }
+      ],
       "head_promoted_from_modifiers": false,
       "terms": [
         "soil organic carbon",
         "carbon",
         "soc",
         "organic carbon",
-        "carbon stock",
-        "carbon content",
-        "carbon pool",
+        "soil carbon",
+        "co2",
         "soil",
         "pedon",
-        "topsoil",
-        "mineral soil"
+        "substrate",
+        "ground"
       ]
     }
   },
-  "n_candidates": 4,
+  "n_candidates": 5,
   "modifier_unmatched": [
     "camo:edge_41d8fc19f522",
     "camo:edge_9d016c882621",
     "camo:edge_3811dfc7069f",
-    "camo:edge_743ede6b951e"
+    "camo:edge_743ede6b951e",
+    "camo:edge_96d974a9352f"
   ],
   "reversed_rejected": 0,
   "llm_rejected": [
     "camo:edge_9d016c882621",
-    "camo:edge_743ede6b951e"
+    "camo:edge_743ede6b951e",
+    "camo:edge_96d974a9352f"
   ],
   "excluded": [],
   "asked_attribute": null,
