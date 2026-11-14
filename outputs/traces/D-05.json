@@ -3,55 +3,125 @@
   "question": "What effect does prescribed burning have on invasive / non-native species abundance?",
   "plan": {
     "cause": {
-      "label": "Prescribed burning",
-      "terms": [
-        "prescribed",
-        "burn",
-        "fire",
+      "label": "prescribed burning",
+      "head": "burning",
+      "head_terms": [
+        "prescribed burning",
         "burning",
+        "fire",
+        "burn",
         "prescribed fire"
       ],
+      "modifier_terms": [
+        "prescribed",
+        "controlled",
+        "managed"
+      ],
       "exclude": [
-        "uncontrolled",
         "wildfire",
+        "unplanned",
         "accidental"
+      ],
+      "low_grounding": true,
+      "phrase": "prescribed burning",
+      "dropped": [
+        {
+          "term": "controlled burn",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        },
+        {
+          "term": "fire management",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        }
+      ],
+      "head_promoted_from_modifiers": false,
+      "terms": [
+        "prescribed burning",
+        "burning",
+        "fire",
+        "burn",
+        "prescribed fire",
+        "prescribed",
+        "controlled",
+        "managed"
       ]
     },
     "outcome": {
-      "label": "Invasive / non-native species abundance",
-      "terms": [
-        "invasive",
-        "non-native",
-        "exotic",
-        "alien",
-        "weedy"
-      ],
-      "attributes": [
+      "label": "invasive / non-native species abundance",
+      "head": "abundance",
+      "head_terms": [
+        "invasive / non-native species abundance",
         "abundance",
         "density",
         "cover",
         "frequency",
-        "richness"
+        "richness",
+        "biomass"
+      ],
+      "modifier_terms": [
+        "invasive",
+        "non-native",
+        "alien",
+        "exotic",
+        "introduced",
+        "invasiv",
+        "nonnative"
       ],
       "exclude": [
         "native",
-        "indigenous",
-        "local"
+        "indigenous"
+      ],
+      "low_grounding": true,
+      "phrase": "invasive / non-native species abundance",
+      "dropped": [],
+      "head_promoted_from_modifiers": false,
+      "terms": [
+        "invasive / non-native species abundance",
+        "abundance",
+        "density",
+        "cover",
+        "frequency",
+        "richness",
+        "biomass",
+        "invasive",
+        "non-native",
+        "alien",
+        "exotic",
+        "introduced",
+        "invasiv",
+        "nonnative"
       ]
     }
   },
-  "n_candidates": 3,
+  "n_candidates": 5,
+  "modifier_unmatched": [
+    "camo:edge_7508d85e106f",
+    "camo:edge_ef38701c9f77",
+    "camo:edge_932eb9343bea",
+    "camo:edge_da0063deef0c",
+    "camo:edge_00e6c28641e7"
+  ],
+  "reversed_rejected": 1,
+  "llm_rejected": [
+    "camo:edge_932eb9343bea"
+  ],
+  "excluded": [],
+  "asked_attribute": null,
+  "duplicates_removed": [],
   "kept": [
     "camo:edge_7508d85e106f",
     "camo:edge_ef38701c9f77",
-    "camo:edge_da0063deef0c"
+    "camo:edge_da0063deef0c",
+    "camo:edge_00e6c28641e7"
   ],
-  "flipped": [],
-  "rejected": [],
+  "papers": [
+    "10.3368/er.29.1-2.35",
+    "10.3955/046.085.0212"
+  ],
   "aggregate": {
     "direction": "decrease",
     "certainty": "moderate",
-    "confidence": 0.71,
+    "confidence": 0.7,
     "papers": {
       "10.3955/046.085.0212": "decrease",
       "10.3368/er.29.1-2.35": "decrease"
@@ -60,13 +130,16 @@
       "decrease": 2
     },
     "agreement": 1.0,
-    "n_papers": 2
+    "n_papers": 2,
+    "n_edges": 4
   },
   "edges": [
     {
       "id": "camo:edge_7508d85e106f",
+      "direction_raw": "decrease",
       "direction": "decrease",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "SBG treatment (burning + glyphosate)",
       "predicate": "causes",
       "object": "decreased cover of non-native grasses (Agrostis spp.)",
@@ -76,8 +149,10 @@
     },
     {
       "id": "camo:edge_ef38701c9f77",
+      "direction_raw": "decrease",
       "direction": "decrease",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "combination of mowing, burning, and glyphosate application",
       "predicate": "causes",
       "object": "decreased cover of non-native grasses",
@@ -87,14 +162,29 @@
     },
     {
       "id": "camo:edge_da0063deef0c",
+      "direction_raw": "decrease",
       "direction": "decrease",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "combination of burning and glyphosate application",
       "predicate": "causes",
       "object": "decreased cover of perennial non-native forbs",
       "paper": "10.3368/er.29.1-2.35",
       "grade": "moderate",
       "sentence": "Cover of perennial non-native forbs was significantly reduced with treatments that combined burning with glyphosate application (SBG, MBG; Figure 2c)."
+    },
+    {
+      "id": "camo:edge_00e6c28641e7",
+      "direction_raw": "decrease",
+      "direction": "decrease",
+      "inverted": false,
+      "flipped_by_llm": false,
+      "subject": "treatments including burning and glyphosate",
+      "predicate": "causes",
+      "object": "decreased total nonnative species cover",
+      "paper": "10.3368/er.29.1-2.35",
+      "grade": "moderate",
+      "sentence": "Collectively, these responses resulted in the greatest overall reductions in total nonnative species cover in treatments that included burning and glyphosate, with or without sethoxydim (SBG, MBG)."
     }
   ]
 }

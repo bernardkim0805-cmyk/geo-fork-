@@ -3,92 +3,142 @@
   "question": "What effect does peatland rewetting have on methane emissions?",
   "plan": {
     "cause": {
-      "label": "Peatland rewetting",
-      "terms": [
-        "peatland",
+      "label": "peatland rewetting",
+      "head": "rewetting",
+      "head_terms": [
+        "peatland rewetting",
         "rewetting",
-        "rewet",
+        "restoration",
+        "reclamation"
+      ],
+      "modifier_terms": [
+        "peatland",
         "peat",
         "bog",
-        "wetland",
-        "drainage",
-        "water table"
+        "fen",
+        "wetland"
       ],
       "exclude": [
-        "drain",
-        "drying",
-        "drought"
+        "drainage",
+        "drying"
+      ],
+      "low_grounding": true,
+      "phrase": "peatland rewetting",
+      "dropped": [
+        {
+          "term": "rehabilitation",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        },
+        {
+          "term": "ditch blocking",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        },
+        {
+          "term": "drainage reversal",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        }
+      ],
+      "head_promoted_from_modifiers": false,
+      "terms": [
+        "peatland rewetting",
+        "rewetting",
+        "restoration",
+        "reclamation",
+        "peatland",
+        "peat",
+        "bog",
+        "fen",
+        "wetland"
       ]
     },
     "outcome": {
-      "label": "Methane emissions",
-      "terms": [
-        "methane",
-        "ch4",
-        "emission",
+      "label": "methane emissions",
+      "head": "emissions",
+      "head_terms": [
+        "methane emissions",
+        "emissions",
         "flux",
-        "gas"
+        "release",
+        "production"
       ],
-      "attributes": [
-        "emission",
-        "flux",
-        "concentration",
-        "rate"
+      "modifier_terms": [
+        "methane",
+        "ch4"
       ],
       "exclude": [
-        "carbon",
         "co2",
-        "nitrous",
-        "nitrogen",
-        "co2"
+        "carbon dioxide",
+        "nitrous oxide",
+        "n2o"
+      ],
+      "low_grounding": false,
+      "phrase": "methane emissions",
+      "dropped": [
+        {
+          "term": "efflux",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        }
+      ],
+      "head_promoted_from_modifiers": false,
+      "terms": [
+        "methane emissions",
+        "emissions",
+        "flux",
+        "release",
+        "production",
+        "methane",
+        "ch4"
       ]
     }
   },
-  "n_candidates": 9,
+  "n_candidates": 8,
+  "modifier_unmatched": [
+    "camo:edge_af42fcfd0bb5",
+    "camo:edge_65e3f89c3df2",
+    "camo:edge_cc17ca1e8e04",
+    "camo:edge_2ae8f63bd168",
+    "camo:edge_9412e0d4a3ff"
+  ],
+  "reversed_rejected": 0,
+  "llm_rejected": [
+    "camo:edge_65e3f89c3df2",
+    "camo:edge_cc17ca1e8e04",
+    "camo:edge_9412e0d4a3ff",
+    "camo:edge_af42fcfd0bb5",
+    "camo:edge_2ae8f63bd168"
+  ],
+  "excluded": [],
+  "asked_attribute": null,
+  "duplicates_removed": [],
   "kept": [
-    "camo:edge_d4349eba0a25",
     "camo:edge_c7081c2dd012",
-    "camo:edge_df47d1576b5f",
     "camo:edge_911a1a3de5b4",
     "camo:edge_94523e08e3c5"
   ],
-  "flipped": [],
-  "rejected": [
-    "camo:edge_fd86025bf68f",
-    "camo:edge_1e4736203aca",
-    "camo:edge_455ca747efb6",
-    "camo:edge_153038192005"
+  "papers": [
+    "10.1007/s11273-014-9399-6"
   ],
   "aggregate": {
     "direction": "increase",
-    "certainty": "moderate",
-    "confidence": 0.71,
+    "certainty": "low",
+    "confidence": 0.57,
     "papers": {
-      "10.1016/j.ecoleng.2013.12.013": "increase",
       "10.1007/s11273-014-9399-6": "increase"
     },
     "paper_counts": {
-      "increase": 2
+      "increase": 1
     },
     "agreement": 1.0,
-    "n_papers": 2
+    "n_papers": 1,
+    "n_edges": 3
   },
   "edges": [
     {
-      "id": "camo:edge_d4349eba0a25",
-      "direction": "increase",
-      "flipped": false,
-      "subject": "Increased water table position",
-      "predicate": "correlated_with",
-      "object": "Increased mean seasonal methane flux",
-      "paper": "10.1016/j.ecoleng.2013.12.013",
-      "grade": "low",
-      "sentence": "Mean seasonal CH<sub>4</sub> flux varied with water table with log (total season CH<sub>4</sub> flux + 1) increasing as mean season water table position became shallower (Fig. 5;  $R^2$ (adj)=0.25, p=0.057"
-    },
-    {
       "id": "camo:edge_c7081c2dd012",
+      "direction_raw": "increase",
       "direction": "increase",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "experimental peat-harvesting and reclamation treatment",
       "predicate": "associated_with",
       "object": "increased methane emissions",
@@ -97,20 +147,11 @@
       "sentence": "Methane emissions from the experimental site were much greater (habitat: F(2, 18) = 18.8, p\\0.0001), and unlike the reference plot increased substantially from 2008 to 2009 (year 9 habitat: F(2, 18) = 23.3, p\\0.001) so that in 2009 the measured fluxes were more than 10 times greater than at the reference plot (Fig. 3"
     },
     {
-      "id": "camo:edge_df47d1576b5f",
-      "direction": "increase",
-      "flipped": false,
-      "subject": "Increased water table position",
-      "predicate": "associated_with",
-      "object": "Increased methane flux",
-      "paper": "10.1016/j.ecoleng.2013.12.013",
-      "grade": "low",
-      "sentence": "Wet restored plots had significantly higher CH<sub>4</sub> flux than dry restored plots (Mann–Whitney, p = 0.006"
-    },
-    {
       "id": "camo:edge_911a1a3de5b4",
+      "direction_raw": "increase",
       "direction": "increase",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "experimental peatland restoration treatment",
       "predicate": "associated_with",
       "object": "midday methane flux",
@@ -120,8 +161,10 @@
     },
     {
       "id": "camo:edge_94523e08e3c5",
+      "direction_raw": "increase",
       "direction": "increase",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "implementation of peat-block reclamation method",
       "predicate": "causes",
       "object": "elevated methane fluxes",

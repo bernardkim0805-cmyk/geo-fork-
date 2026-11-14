@@ -3,53 +3,118 @@
   "question": "What effect does coarse woody debris retention have on small mammal abundance?",
   "plan": {
     "cause": {
-      "label": "Coarse woody debris retention",
-      "terms": [
-        "coarse",
-        "woody",
-        "debris",
-        "retention",
-        "log",
-        "snag",
-        "deadwood"
+      "label": "coarse woody debris retention",
+      "head": "retention",
+      "head_terms": [
+        "coarse woody debris retention",
+        "accumulation",
+        "inclusion",
+        "coarse woody debris",
+        "woody debris",
+        "large wood"
       ],
+      "modifier_terms": [],
       "exclude": [
         "removal",
         "clearing",
         "harvesting"
+      ],
+      "low_grounding": true,
+      "phrase": "coarse woody debris retention",
+      "dropped": [
+        {
+          "term": "preservation",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        },
+        {
+          "term": "maintenance",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        },
+        {
+          "term": "cud",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        },
+        {
+          "term": "snags",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        },
+        {
+          "term": "logs",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        },
+        {
+          "term": "deadwood",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        }
+      ],
+      "head_promoted_from_modifiers": true,
+      "terms": [
+        "coarse woody debris retention",
+        "accumulation",
+        "inclusion",
+        "coarse woody debris",
+        "woody debris",
+        "large wood"
       ]
     },
     "outcome": {
-      "label": "Small mammal abundance",
-      "terms": [
-        "small",
-        "mammal",
-        "rodent",
-        "shrew",
-        "mouse",
-        "vole",
-        "squirrel"
-      ],
-      "attributes": [
+      "label": "small mammal abundance",
+      "head": "abundance",
+      "head_terms": [
+        "small mammal abundance",
         "abundance",
         "density",
         "population",
-        "richness"
+        "richness",
+        "diversity",
+        "occurrence"
+      ],
+      "modifier_terms": [
+        "small mammal",
+        "small mammals",
+        "rodent",
+        "rodents",
+        "shrew",
+        "shrews",
+        "vole",
+        "voles",
+        "mouse",
+        "mice"
       ],
       "exclude": [
-        "large",
-        "predator",
+        "large mammal",
         "insect",
         "bird"
+      ],
+      "low_grounding": true,
+      "phrase": "small mammal abundance",
+      "dropped": [],
+      "head_promoted_from_modifiers": false,
+      "terms": [
+        "small mammal abundance",
+        "abundance",
+        "density",
+        "population",
+        "richness",
+        "diversity",
+        "occurrence",
+        "small mammal",
+        "small mammals",
+        "rodent",
+        "rodents",
+        "shrew",
+        "shrews",
+        "vole",
+        "voles",
+        "mouse",
+        "mice"
       ]
     }
   },
-  "n_candidates": 7,
-  "kept": [
-    "camo:edge_9f68a35a2af5"
-  ],
-  "flipped": [],
-  "rejected": [
+  "n_candidates": 10,
+  "modifier_unmatched": [],
+  "reversed_rejected": 1,
+  "llm_rejected": [
     "camo:edge_261dd8ad2d1e",
     "camo:edge_8d79ee00a64d",
     "camo:edge_9bf2ef47df73",
@@ -57,10 +122,22 @@
     "camo:edge_6d717fa3b5bc",
     "camo:edge_1f860e21bb1f"
   ],
+  "excluded": [],
+  "asked_attribute": null,
+  "duplicates_removed": [],
+  "kept": [
+    "camo:edge_8b976a5bcb2d",
+    "camo:edge_f9ac4c2cc54c",
+    "camo:edge_301c9871a90c",
+    "camo:edge_9f68a35a2af5"
+  ],
+  "papers": [
+    "10.1016/j.foreco.2019.117535"
+  ],
   "aggregate": {
     "direction": "increase",
     "certainty": "very_low",
-    "confidence": 0.63,
+    "confidence": 0.57,
     "papers": {
       "10.1016/j.foreco.2019.117535": "increase"
     },
@@ -68,13 +145,55 @@
       "increase": 1
     },
     "agreement": 1.0,
-    "n_papers": 1
+    "n_papers": 1,
+    "n_edges": 4
   },
   "edges": [
     {
-      "id": "camo:edge_9f68a35a2af5",
+      "id": "camo:edge_8b976a5bcb2d",
+      "direction_raw": "increase",
       "direction": "increase",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
+      "subject": "Woody debris presence",
+      "predicate": "associated_with",
+      "object": "Increased mean abundance of Myodes gapperi",
+      "paper": "10.1016/j.foreco.2019.117535",
+      "grade": "low",
+      "sentence": "Mean abundance of M. gapperi was significantly (F3,6 = 8.45; P = 0.01) different among treatment sites with the piles, windrow, and forest sites at consistently higher (DMRT; P = 0.05) numbers (5.0 to 7.6 times on average) than the dispersed sites in 2007–2011"
+    },
+    {
+      "id": "camo:edge_f9ac4c2cc54c",
+      "direction_raw": "increase",
+      "direction": "increase",
+      "inverted": false,
+      "flipped_by_llm": false,
+      "subject": "Woody debris presence",
+      "predicate": "associated_with",
+      "object": "Increased mean abundance of Microtus longicaudus",
+      "paper": "10.1016/j.foreco.2019.117535",
+      "grade": "low",
+      "sentence": "Mean abundance of M. longicaudus was significantly (F3,6 = 10.90; P < 0.01) different among treatment sites with the piles and windrow at consistently higher (DMRT; P = 0.05) numbers (2.8 to 3.5 times on average) than the dispersed sites in 2007–2011"
+    },
+    {
+      "id": "camo:edge_301c9871a90c",
+      "direction_raw": "increase",
+      "direction": "increase",
+      "inverted": false,
+      "flipped_by_llm": false,
+      "subject": "Woody debris presence",
+      "predicate": "associated_with",
+      "object": "Increased mean abundance of Neotoma amoenus",
+      "paper": "10.1016/j.foreco.2019.117535",
+      "grade": "low",
+      "sentence": "Mean abundance of N. amoenus was significantly (F3,6 = 22.57; P < 0.01) different among treatment sites with the piles and windrows at consistently higher (DMRT; P = 0.05) numbers (2.5 to 5.7 times on average) than the dispersed and forest sites in 2007–2011"
+    },
+    {
+      "id": "camo:edge_9f68a35a2af5",
+      "direction_raw": "increase",
+      "direction": "increase",
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "Woody debris presence",
       "predicate": "associated_with",
       "object": "Increased mean abundance of total small mammals",

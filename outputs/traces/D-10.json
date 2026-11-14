@@ -3,76 +3,143 @@
   "question": "What effect does livestock grazing have on soil organic carbon?",
   "plan": {
     "cause": {
-      "label": "Livestock grazing",
-      "terms": [
-        "livestock",
+      "label": "livestock grazing",
+      "head": "grazing",
+      "head_terms": [
+        "livestock grazing",
         "grazing",
+        "herbivory",
+        "defoliation"
+      ],
+      "modifier_terms": [
+        "livestock",
         "cattle",
         "sheep",
         "goat",
         "horse",
-        "trampling",
-        "herbivory"
+        "ungulate"
       ],
       "exclude": [
-        "grazing exclusion",
         "no grazing",
-        "ungrazed"
+        "ungrazed",
+        "exclusion"
+      ],
+      "low_grounding": true,
+      "phrase": "livestock grazing",
+      "dropped": [
+        {
+          "term": "graze",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        },
+        {
+          "term": "grazed",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        },
+        {
+          "term": "trampling",
+          "reason": "ungrounded: no node is named by it and none combines it with the phrase's modifiers"
+        }
+      ],
+      "head_promoted_from_modifiers": false,
+      "terms": [
+        "livestock grazing",
+        "grazing",
+        "herbivory",
+        "defoliation",
+        "livestock",
+        "cattle",
+        "sheep",
+        "goat",
+        "horse",
+        "ungulate"
       ]
     },
     "outcome": {
-      "label": "Soil organic carbon",
-      "terms": [
-        "soil",
+      "label": "soil organic carbon",
+      "head": "carbon",
+      "head_terms": [
+        "soil organic carbon",
         "carbon",
         "soc",
-        "co2",
-        "sequestration"
+        "organic carbon",
+        "carbon stock",
+        "carbon content",
+        "carbon pool"
       ],
-      "attributes": [
-        "level",
-        "concentration",
-        "stock",
-        "content",
-        "change"
+      "modifier_terms": [
+        "soil",
+        "pedon",
+        "topsoil",
+        "mineral soil"
       ],
       "exclude": [
         "atmospheric",
         "plant",
-        "root",
+        "biomass",
         "litter"
+      ],
+      "low_grounding": false,
+      "phrase": "soil organic carbon",
+      "dropped": [],
+      "head_promoted_from_modifiers": false,
+      "terms": [
+        "soil organic carbon",
+        "carbon",
+        "soc",
+        "organic carbon",
+        "carbon stock",
+        "carbon content",
+        "carbon pool",
+        "soil",
+        "pedon",
+        "topsoil",
+        "mineral soil"
       ]
     }
   },
-  "n_candidates": 5,
+  "n_candidates": 4,
+  "modifier_unmatched": [
+    "camo:edge_41d8fc19f522",
+    "camo:edge_9d016c882621",
+    "camo:edge_3811dfc7069f",
+    "camo:edge_743ede6b951e"
+  ],
+  "reversed_rejected": 0,
+  "llm_rejected": [
+    "camo:edge_9d016c882621",
+    "camo:edge_743ede6b951e"
+  ],
+  "excluded": [],
+  "asked_attribute": null,
+  "duplicates_removed": [],
   "kept": [
     "camo:edge_41d8fc19f522",
     "camo:edge_3811dfc7069f"
   ],
-  "flipped": [],
-  "rejected": [
-    "camo:edge_025288605f5e",
-    "camo:edge_743ede6b951e",
-    "camo:edge_96d974a9352f"
+  "papers": [
+    "10.1017/S0376892910000184"
   ],
   "aggregate": {
     "direction": "mixed",
     "certainty": "very_low",
-    "confidence": 0.53,
+    "confidence": 0.57,
     "papers": {
       "10.1017/S0376892910000184": "mixed"
     },
     "paper_counts": {
       "mixed": 1
     },
-    "agreement": 0.0,
-    "n_papers": 1
+    "agreement": 1.0,
+    "n_papers": 1,
+    "n_edges": 2
   },
   "edges": [
     {
       "id": "camo:edge_41d8fc19f522",
+      "direction_raw": "no_effect",
       "direction": "no_effect",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "Grazing",
       "predicate": "causes",
       "object": "Per cent organic carbon in soils",
@@ -82,8 +149,10 @@
     },
     {
       "id": "camo:edge_3811dfc7069f",
+      "direction_raw": "increase",
       "direction": "increase",
-      "flipped": false,
+      "inverted": false,
+      "flipped_by_llm": false,
       "subject": "Grazing",
       "predicate": "associated_with",
       "object": "Increased soil carbon density",
