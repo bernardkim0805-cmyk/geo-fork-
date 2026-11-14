@@ -1,0 +1,225 @@
+{
+  "_about": "Hand-written CORRECT outputs of the parse stage for every question in dev_questions.yaml and questions.yaml. Use them to test parse.py, and as ready-made inputs for ground.py / retrieve.py while parse is still a stub. Each query is one triple: subject = the intervention/condition (Query.intervention), object = the outcome (Query.outcome), predicate = the relation the question asks about. Multi-part practice questions are split into one triple per sub-question.",
+  "_fields": {
+    "mode": "effect = what does X do to Y (the hidden-set shape); interaction = do several stressors combine; gap_map = where is evidence dense or missing (no single triple answers it)",
+    "subject": "cause side, in the question's own words -> Query.intervention",
+    "predicate": "affects = direction not presumed (most questions); increases / decreases = the question presumes a direction, which the decide stage must CHECK, not assume; interacts_with = combined stressors",
+    "object": "outcome side, in the question's own words -> Query.outcome",
+    "context": "setting the evidence must match (region, ecosystem, site type), or null. Edges from another setting do not answer the question",
+    "notes": "traps and what a correct downstream answer has to watch for"
+  },
+  "parses": [
+    {
+      "id": "D-001",
+      "question": "What effect does mulch & surface cover have on invasive / non-native species abundance?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "mulch & surface cover", "predicate": "affects", "object": "invasive / non-native species abundance", "context": null}
+      ],
+      "notes": "The README's own example. Object is NON-native: native-species edges are a different outcome."
+    },
+    {
+      "id": "D-002",
+      "question": "What effect does prescribed burning have on non-native grass cover?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "prescribed burning", "predicate": "affects", "object": "non-native grass cover", "context": null}
+      ],
+      "notes": "Many burning edges are combined treatments (burning + glyphosate, mowing + burning); decide whether they count."
+    },
+    {
+      "id": "D-003",
+      "question": "What effect does tree shelters have on seedling survival?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "tree shelters", "predicate": "affects", "object": "seedling survival", "context": null}
+      ],
+      "notes": "Polarity trap: an edge reporting increased MORTALITY means survival went down."
+    },
+    {
+      "id": "D-004",
+      "question": "What effect does peatland restoration have on water table position?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "peatland restoration", "predicate": "affects", "object": "water table position", "context": null}
+      ],
+      "notes": "Compare with D-010, the same pair reversed."
+    },
+    {
+      "id": "D-005",
+      "question": "What effect does scarification have on seedling density?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "scarification", "predicate": "affects", "object": "seedling density", "context": null}
+      ],
+      "notes": null
+    },
+    {
+      "id": "D-006",
+      "question": "What effect does fertilization have on plant biomass?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "fertilization", "predicate": "affects", "object": "plant biomass", "context": null}
+      ],
+      "notes": "Broad object: tree seedling growth, height and diameter edges count as plant biomass/growth."
+    },
+    {
+      "id": "D-007",
+      "question": "What effect does mowing have on soil organic carbon?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "mowing", "predicate": "affects", "object": "soil organic carbon", "context": null}
+      ],
+      "notes": "Same wording as the README's no_evidence example (mowing -> soil organic carbon)."
+    },
+    {
+      "id": "D-008",
+      "question": "What effect does beaver reintroduction have on songbird abundance?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "beaver reintroduction", "predicate": "affects", "object": "songbird abundance", "context": null}
+      ],
+      "notes": "Likely no_evidence; searched_for should name both sides."
+    },
+    {
+      "id": "D-009",
+      "question": "What effect does grazing exclusion have on pollinator diversity?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "grazing exclusion", "predicate": "affects", "object": "pollinator diversity", "context": null}
+      ],
+      "notes": "Negated-subject trap: the subject is the ABSENCE of grazing. Edges about grazing itself answer the opposite question (flip them or leave them out)."
+    },
+    {
+      "id": "D-010",
+      "question": "What effect does water table position have on peatland restoration?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "water table position", "predicate": "affects", "object": "peatland restoration", "context": null}
+      ],
+      "notes": "Reversed-direction trap: parse literally. Edges restoration -> water table (D-004) do NOT answer this; retrieve must only follow subject -> object."
+    },
+    {
+      "id": "c3",
+      "question": "Which seed-mix species establish, persist and self-seed in each Ontario ELC ecosite type (e.g. dry/wet deciduous forest, meadow, riparian)?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "seed-mix species", "predicate": "affects", "object": "establishment", "context": "Ontario ELC ecosite types (dry/wet deciduous forest, meadow, riparian)"},
+        {"subject": "seed-mix species", "predicate": "affects", "object": "persistence", "context": "Ontario ELC ecosite types (dry/wet deciduous forest, meadow, riparian)"},
+        {"subject": "seed-mix species", "predicate": "affects", "object": "self-seeding", "context": "Ontario ELC ecosite types (dry/wet deciduous forest, meadow, riparian)"}
+      ],
+      "notes": "Context trap. Expected no_evidence (tests/cases.yaml): the only 'ecosite' edges are Alberta seismic-line regeneration, which do not match the context."
+    },
+    {
+      "id": "c4-modified",
+      "question": "For tree planting in Canadian forest restoration, how do planting-stock traits (seedling size, nursery fertilization, mycorrhizal inoculation) affect survival and growth, and how do competing vegetation and site preparation change that?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "seedling size", "predicate": "affects", "object": "seedling survival", "context": "tree planting, Canadian forest restoration"},
+        {"subject": "seedling size", "predicate": "affects", "object": "seedling growth", "context": "tree planting, Canadian forest restoration"},
+        {"subject": "nursery fertilization", "predicate": "affects", "object": "seedling survival", "context": "tree planting, Canadian forest restoration"},
+        {"subject": "nursery fertilization", "predicate": "affects", "object": "seedling growth", "context": "tree planting, Canadian forest restoration"},
+        {"subject": "mycorrhizal inoculation", "predicate": "affects", "object": "seedling survival", "context": "tree planting, Canadian forest restoration"},
+        {"subject": "mycorrhizal inoculation", "predicate": "affects", "object": "seedling growth", "context": "tree planting, Canadian forest restoration"},
+        {"subject": "competing vegetation", "predicate": "affects", "object": "seedling survival", "context": "tree planting, Canadian forest restoration"},
+        {"subject": "competing vegetation", "predicate": "affects", "object": "seedling growth", "context": "tree planting, Canadian forest restoration"},
+        {"subject": "site preparation", "predicate": "affects", "object": "seedling survival", "context": "tree planting, Canadian forest restoration"},
+        {"subject": "site preparation", "predicate": "affects", "object": "seedling growth", "context": "tree planting, Canadian forest restoration"}
+      ],
+      "notes": "False friend: Frankia inoculation (nitrogen-fixing bacteria) is not mycorrhizal inoculation. Survival triples: mortality edges flip polarity."
+    },
+    {
+      "id": "c7",
+      "question": "How long do created marshes take to reach biodiversity and function comparable to natural reference wetlands, and which attributes lag?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "created marshes", "predicate": "affects", "object": "biodiversity", "context": "compared with natural reference wetlands, over time since creation"},
+        {"subject": "created marshes", "predicate": "affects", "object": "ecosystem function", "context": "compared with natural reference wetlands, over time since creation"}
+      ],
+      "notes": "The comparison is created/restored vs reference, so reference-site nodes are the comparator, not a negated subject. The graph has no created marshes; restored prairie wetlands are the nearest evidence, and the answer must say so."
+    },
+    {
+      "id": "c13-modified",
+      "question": "After wildfire in boreal forests, what controls natural conifer regeneration (fire interval, fire severity, seed supply, seedbed type), and which conditions signal that regeneration will fail without active restoration?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "fire interval", "predicate": "affects", "object": "natural conifer regeneration", "context": "boreal forest after wildfire"},
+        {"subject": "fire severity", "predicate": "affects", "object": "natural conifer regeneration", "context": "boreal forest after wildfire"},
+        {"subject": "seed supply", "predicate": "affects", "object": "natural conifer regeneration", "context": "boreal forest after wildfire"},
+        {"subject": "seedbed type", "predicate": "affects", "object": "natural conifer regeneration", "context": "boreal forest after wildfire"}
+      ],
+      "notes": "Seed supply often appears as distance to seed trees: greater distance means LESS seed, so its sign is reversed. The 'signals of failure' part has no triple; the graph has no failure-threshold edge."
+    },
+    {
+      "id": "c16-modified",
+      "question": "For grassland restoration in Canada, which intervention-outcome combinations have little or no evidence, and where is the graph densest?",
+      "mode": "gap_map",
+      "queries": [
+        {"subject": "any grassland restoration intervention", "predicate": "affects", "object": "any outcome", "context": "grassland restoration in Canada"}
+      ],
+      "notes": "Not a single-effect question: count edges per (intervention category x outcome category) within the grassland context and report dense and empty cells."
+    },
+    {
+      "id": "b1",
+      "question": "Which forestry practices (partial harvesting versus clearcutting, retained woody debris, riparian retention) maintain biodiversity or speed its recovery in Canadian forests?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "partial harvesting", "predicate": "affects", "object": "biodiversity", "context": "Canadian forests"},
+        {"subject": "clearcutting", "predicate": "affects", "object": "biodiversity", "context": "Canadian forests"},
+        {"subject": "retained woody debris", "predicate": "affects", "object": "biodiversity", "context": "Canadian forests"},
+        {"subject": "riparian retention", "predicate": "affects", "object": "biodiversity", "context": "Canadian forests"}
+      ],
+      "notes": "Richness can rise through exotic and ruderal species while old-growth species decline; total richness alone is misleading."
+    },
+    {
+      "id": "b2",
+      "question": "Which restoration actions, such as peatland rewetting, moss layer transfer or salt marsh realignment, turn degraded sites back into carbon sinks, and what happens to methane emissions?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "peatland rewetting", "predicate": "increases", "object": "carbon sink", "context": "degraded sites"},
+        {"subject": "moss layer transfer", "predicate": "increases", "object": "carbon sink", "context": "degraded sites"},
+        {"subject": "salt marsh realignment", "predicate": "increases", "object": "carbon sink", "context": "degraded sites"},
+        {"subject": "peatland rewetting", "predicate": "affects", "object": "methane emissions", "context": "degraded sites"},
+        {"subject": "moss layer transfer", "predicate": "affects", "object": "methane emissions", "context": "degraded sites"},
+        {"subject": "salt marsh realignment", "predicate": "affects", "object": "methane emissions", "context": "degraded sites"}
+      ],
+      "notes": "'Turn back into carbon sinks' presumes an increase, so check it. 'carbon sink' means net carbon uptake. Carbon polarity: lower CO2 emissions or flux = more sink. Salt marsh realignment is expected to have no evidence."
+    },
+    {
+      "id": "b3",
+      "question": "When herbicides such as glyphosate are used against invasive plants in grassland restoration, do they also reduce native plant cover and richness?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "herbicides", "predicate": "decreases", "object": "native plant cover", "context": "grassland restoration, herbicide used against invasive plants"},
+        {"subject": "herbicides", "predicate": "decreases", "object": "native plant richness", "context": "grassland restoration, herbicide used against invasive plants"}
+      ],
+      "notes": "Leading question: it presumes a decrease, but the hand answer is mixed (natives went up in 5 of 8 studies). 'such as glyphosate' is an example; the subject is ALL herbicides (glyphosate, picloram, sethoxydim, ...). Native vs non-native trap on the object."
+    },
+    {
+      "id": "b4",
+      "question": "What lethal and sub-lethal effects do contaminants such as oil sands tailings, PCBs and acid deposition have on wildlife and aquatic communities, and do remediation actions allow them to recover?",
+      "mode": "effect",
+      "queries": [
+        {"subject": "oil sands tailings", "predicate": "affects", "object": "wildlife", "context": null},
+        {"subject": "oil sands tailings", "predicate": "affects", "object": "aquatic communities", "context": null},
+        {"subject": "PCBs", "predicate": "affects", "object": "wildlife", "context": null},
+        {"subject": "PCBs", "predicate": "affects", "object": "aquatic communities", "context": null},
+        {"subject": "acid deposition", "predicate": "affects", "object": "wildlife", "context": null},
+        {"subject": "acid deposition", "predicate": "affects", "object": "aquatic communities", "context": null},
+        {"subject": "remediation actions", "predicate": "affects", "object": "wildlife & aquatic community recovery", "context": "contaminated sites"}
+      ],
+      "notes": "Covers lethal and sub-lethal effects (mortality, growth, reproduction, biomarkers). PCB edges are tissue concentrations, not effects on the animals; do not count them as harm. Mortality-type objects flip polarity."
+    },
+    {
+      "id": "b5",
+      "question": "Where restoration sites face several stressors at once (for example deer browsing plus competing vegetation, harvesting plus drought, or repeated fires), do the stressors interact, and which one most limits recovery?",
+      "mode": "interaction",
+      "queries": [
+        {"subject": "deer browsing & competing vegetation", "predicate": "interacts_with", "object": "restoration recovery", "context": null},
+        {"subject": "harvesting & drought", "predicate": "interacts_with", "object": "restoration recovery", "context": null},
+        {"subject": "repeated fires", "predicate": "interacts_with", "object": "restoration recovery", "context": null}
+      ],
+      "notes": "The '&' joins stressors that act together, not alternatives. Look for 'moderates' / 'mediates' predicates and combined-treatment subjects. Stressors are mostly studied one at a time; 'which limits most' has no direct edge."
+    }
+  ]
+}
