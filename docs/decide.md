@@ -92,6 +92,12 @@ double-counts. Turning it on changed no eval_decide result.
 - answered: `base + per_paper × agreeing papers` (capped), scaled by the top share; `mixed` and `unclear` get flat low values; × `head_to_head_penalty` when every paper is head-to-head.
 - no_evidence: higher when both sides grounded to nodes but no edge joins them (a real gap), lower when one side grounded to nothing (could be a grounding miss).
 
+## 5b. One study that disagrees with itself (D1)
+
+If only one paper votes and the result is `mixed`, confidence × `single_study_mixed_penalty`
+(0.85) and a note gives the split ("One study, and its results disagree (2 no_effect,
+2 increase edges) …"). Certainty is not dropped again: the `mixed` rule already did.
+
 ## 6. Notes for render
 
 `Decision.notes` carries plain-English caveats (head-to-head comparisons, excluded edges, flipped subjects) so render can be honest without re-deriving anything.

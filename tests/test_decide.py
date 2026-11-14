@@ -189,6 +189,15 @@ class Aggregate(unittest.TestCase):
         d = run(self.g, eids)
         self.assertEqual((d.direction, d.tally), ("mixed", {"mixed": 1}))
 
+    def test_D1_single_split_paper_gets_penalty_and_note(self):
+        one = run(self.g, [self.g.edge(self.x, "causes", self.up, doc="a"),
+                           self.g.edge(self.x, "causes", self.down, doc="a")])
+        two = run(self.g, [self.g.edge(self.x, "causes", self.up, doc="b"),
+                           self.g.edge(self.x, "causes", self.down, doc="c")])
+        self.assertLess(one.confidence, two.confidence)
+        self.assertEqual(one.certainty, "low")  # moderate - 1 for mixed, not dropped twice
+        self.assertTrue(any(n.startswith("One study") for n in one.notes))
+
     def test_excluded_edges_are_not_cited(self):
         keep = self.g.edge(self.x, "causes", self.up, doc="a")
         drop = self.g.edge(self.x, "moderates", self.up, doc="a")

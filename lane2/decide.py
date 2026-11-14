@@ -42,6 +42,7 @@ CONFIG = {
     # confidence placeholders (calibrate against tests/cases.yaml)
     "conf_base": 0.45, "conf_per_paper": 0.08, "conf_cap": 0.9,
     "conf_mixed": 0.45, "conf_unclear": 0.3, "head_to_head_penalty": 0.85,
+    "single_study_mixed_penalty": 0.85,  # D1: one paper that disagrees with itself
     "conf_no_evidence_gap": 0.75,    # both sides grounded, nothing joins them
     "conf_no_evidence_miss": 0.55,   # a side grounded to nothing (maybe our miss)
     "conf_parse_failed": 0.3,
@@ -311,6 +312,16 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
         conf *= top_share
     if all_h2h:
         conf *= CONFIG["head_to_head_penalty"]
+    if direction == "mixed" and len(papers) == 1:
+        # D1: certainty already dropped a level for "mixed"; don't drop it twice
+        conf *= CONFIG["single_study_mixed_penalty"]
+        split = defaultdict(int)
+        for v in voting:
+            if v.direction in DIRS:
+                split[v.direction] += 1
+        parts = ", ".join(f"{n} {k}" for k, n in sorted(split.items(), key=lambda kv: -kv[1]))
+        notes.append(f"One study, and its results disagree ({parts} edges): "
+                     "the effect likely depends on species, site or time.")
     if bad:
         conf *= CONFIG["bad_input_penalty"]
         notes.append(f"{len(bad)} edge id(s) skipped: not in the graph or missing a node.")
