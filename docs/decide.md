@@ -1,7 +1,7 @@
 # Decide stage: spec
 
 `lane2/decide.py` turns the retrieved edges into `direction`, `certainty`,
-`confidence` and `status`. It is deterministic: the graph decides, not the LLM.
+`confidence` and `status`. It is deterministic except for one cached LLM yes/no (D2, below): the graph decides the answer, not the LLM.
 Every rule below has a test in `tests/test_decide.py`. Every number lives in
 the `CONFIG` block at the top of `decide.py`.
 
@@ -25,7 +25,9 @@ Signs:
 
 - **Predicate:** `causes` / `contributes_to` / `enables` = +1. `prevents` / `disrupts` = −1. `associated_with` / `correlated_with` = +1, but they get a lower weight (unsigned association).
 - **Object:** `increased` / `introduced` / `initiated` = +1. `decreased` / `removed` / `absent` / `terminated` / `interrupted` / `aborted` = −1. `present` / `occurred` / `ongoing` / none = no sign → **B1:** take the sign from words in the object's name (higher/greater/more/… = +1, lower/reduced/fewer/loss/… = −1). If the name has none, or both kinds, the edge **abstains**: it is cited as context but doesn't vote.
-- **Subject:** −1 if the qualifier is `removed` / `absent` / `decreased` / `terminated` / `interrupted` / `aborted`, **unless the question itself asks about a removal** (its intervention phrase contains a word like removal, exclusion, reduction, thinning, control, suppression, absence). Otherwise +1.
+- **Subject:** −1 if the qualifier is `removed` / `absent` / `decreased` / `terminated` / `interrupted` / `aborted` **and the subject is the opposite of the question's intervention**. Otherwise +1.
+  - **D2:** "opposite?" is one small LLM call (Qwen via `lane2/llm.py`): *does subject S describe intervention X happening (SAME) or not happening (OPPOSITE)?* It runs only for edges with a removal/absence subject and is cached per (intervention, subject) pair, so most questions make zero calls. `eval_decide` prints the call count.
+  - Fallback when `BRINE_URL` is unset or the call fails/garbles: a tightened word list (removal, exclusion, exclosure, absence, suppression, eradication, culling, elimination, release from, without, withdrawal, cessation). If the question's intervention contains one, there's no flip. `control`, `cut`, `thin`, `clear`, `harvest` and `no ` were dropped: "erosion control" is not a removal.
   - "What effect does **fertilization** have on survival?" + `absence of fertilization` [absent] causes `increased survival` → **decrease**
   - "What effect does **browsing exclusion** have on height?" + `release from moose browsing` [removed] → `increased height` → **increase** (no flip: the removal is the question's own subject)
 

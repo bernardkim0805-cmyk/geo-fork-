@@ -1,10 +1,15 @@
-"""Stage 3: edges -> direction, certainty, confidence, status. Deterministic.
+"""Stage 3: edges -> direction, certainty, confidence, status.
+
+Deterministic except D2: when an edge's subject is a removal/absence, one small
+cached LLM call decides whether that subject IS the question's intervention or
+its opposite (falls back to a word list when the LLM is unavailable).
 
 Spec: docs/decide.md (rule numbers R1-R4 below refer to it).
 Tests: tests/test_decide.py.  Tune numbers in CONFIG only.
 """
 from __future__ import annotations
 
+import os
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -26,9 +31,12 @@ CONFIG = {
                     "terminated": -1, "interrupted": -1, "aborted": -1},
     "negative_subject_qualifiers": {"removed", "absent", "decreased",
                                     "terminated", "interrupted", "aborted"},
-    # question phrases that are themselves about a removal -> don't flip subject
-    "removal_words": r"\b(remov|exclu|exclos|reduc|absen|thin|clear|control|suppress|"
-                     r"eradicat|cull|kill|cut|harvest|release from|elimin|without|no )",
+    # D2 fallback (no LLM): question phrases that are themselves about a removal -> no flip.
+    # Tightened: control/cut/thin/clear/harvest/'no ' removed (e.g. 'erosion control').
+    "removal_words": r"\b(remov|exclu|exclos|absen|suppress|eradicat|cull|elimin|"
+                     r"release from|without|withdraw|cessation)",
+    "removal_llm": True,             # D2: ask the LLM when BRINE_URL is set
+    "removal_llm_max_tokens": 400,
     "comparator_weight": {"untreated_control": 1.0, "pre_treatment_baseline": 1.0,
                           "spatial_or_temporal_control": 1.0, "passive_management_arm": 1.0,
                           "alternative_treatment": 0.5, "reference_undisturbed": 0.5},
@@ -164,13 +172,67 @@ def read_edge(edge: dict, graph, query: Query) -> EdgeVote:
         return v
     s = 1
     if subj_q in CONFIG["negative_subject_qualifiers"]:
-        asks_about_removal = re.search(CONFIG["removal_words"], (query.intervention or "") + " ", re.I)
-        if not asks_about_removal:
+        subj_name = graph.nodes[edge["subject"]].get("name") or ""
+        if subject_is_opposite(query.intervention or "", subj_name):
             s, v.flipped_subject = -1, True
     v.direction = "increase" if s * p * o > 0 else "decrease"
     v.reason = (f"sign {s}*{p}*{o}" + (" (object sign from name)" if from_name else "")
                 + (" (subject flipped)" if v.flipped_subject else ""))
     return v
+
+
+# --------------------------------------------------------------------------
+# D2: is a removal/absence subject the question's intervention, or its opposite?
+# --------------------------------------------------------------------------
+LLM_STATS = {"calls": 0, "cache_hits": 0, "fallbacks": 0}
+_OPPOSITE_CACHE: dict[tuple[str, str], bool] = {}
+
+_PROMPT = (
+    "A question asks about the effect of an intervention: \"{x}\".\n"
+    "A study's claim has this subject, which describes something being removed, absent "
+    "or reduced: \"{s}\".\n"
+    "Does the subject describe the intervention itself happening (SAME), e.g. "
+    "'weed removal' for 'weed control', 'release from browsing' for 'browsing exclusion'; "
+    "or the intervention NOT happening / its opposite (OPPOSITE), e.g. 'absence of "
+    "fertilization' for 'fertilization', 'weed removal' for 'competing vegetation'?\n"
+    "Answer with one word: SAME or OPPOSITE. /no_think"
+)
+
+
+def _regex_opposite(intervention: str) -> bool:
+    return not re.search(CONFIG["removal_words"], intervention + " ", re.I)
+
+
+def _llm_opposite(intervention: str, subject: str) -> Optional[bool]:
+    from .llm import chat  # local import: decide must work without network config
+    out = chat([{"role": "user", "content": _PROMPT.format(x=intervention, s=subject)}],
+               temperature=0, max_tokens=CONFIG["removal_llm_max_tokens"])
+    out = re.sub(r"<think>.*?</think>", "", out or "", flags=re.S).strip().upper()
+    if "OPPOSITE" in out:
+        return True
+    if "SAME" in out:
+        return False
+    return None
+
+
+def subject_is_opposite(intervention: str, subject: str) -> bool:
+    """True -> flip the subject's sign. One LLM call per (intervention, subject), cached."""
+    key = (intervention.strip().lower(), subject.strip().lower())
+    if key in _OPPOSITE_CACHE:
+        LLM_STATS["cache_hits"] += 1
+        return _OPPOSITE_CACHE[key]
+    ans = None
+    if CONFIG["removal_llm"] and os.environ.get("BRINE_URL"):
+        try:
+            LLM_STATS["calls"] += 1
+            ans = _llm_opposite(intervention, subject)
+        except Exception:
+            ans = None
+    if ans is None:
+        LLM_STATS["fallbacks"] += 1
+        ans = _regex_opposite(intervention)
+    _OPPOSITE_CACHE[key] = ans
+    return ans
 
 
 def _name_sign(name: str) -> Optional[int]:

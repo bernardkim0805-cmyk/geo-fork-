@@ -256,6 +256,79 @@ class Aggregate(unittest.TestCase):
         self.assertLessEqual(run(self.g, eids).confidence, 0.95)
 
 
+class RemovalCheck(unittest.TestCase):
+    """D2: LLM decides whether a removal subject is the intervention or its opposite."""
+
+    def setUp(self):
+        import os
+        import lane2.decide as dec
+        import lane2.llm as llm
+        self.dec, self.llm, self.os = dec, llm, os
+        dec._OPPOSITE_CACHE.clear()
+        for k in dec.LLM_STATS:
+            dec.LLM_STATS[k] = 0
+        self._chat, self._env = llm.chat, os.environ.get("BRINE_URL")
+        self.g = FakeGraph()
+        self.removal = self.g.node("Weed removal", "removed", "management_intervention")
+        self.e = self.g.edge(self.removal, "causes", self.g.node("seedling growth", "increased"))
+
+    def tearDown(self):
+        self.llm.chat = self._chat
+        if self._env is None:
+            self.os.environ.pop("BRINE_URL", None)
+        else:
+            self.os.environ["BRINE_URL"] = self._env
+        self.dec._OPPOSITE_CACHE.clear()
+
+    def _with_llm(self, reply):
+        self.os.environ["BRINE_URL"] = "http://stub"
+        self.calls = []
+
+        def fake_chat(messages, **kw):
+            self.calls.append(messages)
+            if isinstance(reply, Exception):
+                raise reply
+            return reply
+        self.llm.chat = fake_chat
+
+    def test_llm_same_means_no_flip(self):
+        self._with_llm("<think>weed control removes weeds</think>SAME")
+        v = read_edge(self.g.edges[self.e], self.g, q("weed control", "seedling growth"))
+        self.assertEqual(v.direction, "increase")
+
+    def test_llm_opposite_means_flip(self):
+        self._with_llm("OPPOSITE")
+        v = read_edge(self.g.edges[self.e], self.g, q("competing vegetation", "seedling growth"))
+        self.assertEqual(v.direction, "decrease")
+
+    def test_llm_answer_is_cached(self):
+        self._with_llm("OPPOSITE")
+        for _ in range(3):
+            read_edge(self.g.edges[self.e], self.g, q("competing vegetation", "seedling growth"))
+        self.assertEqual(len(self.calls), 1)
+        self.assertEqual(self.dec.LLM_STATS["cache_hits"], 2)
+
+    def test_llm_error_falls_back_to_word_list(self):
+        self._with_llm(RuntimeError("endpoint down"))
+        v = read_edge(self.g.edges[self.e], self.g, q("weed removal", "seedling growth"))
+        self.assertEqual(v.direction, "increase")  # 'remov' in the question -> no flip
+        self.assertEqual(self.dec.LLM_STATS["fallbacks"], 1)
+
+    def test_no_llm_call_without_a_removal_subject(self):
+        self._with_llm("OPPOSITE")
+        plain = self.g.node("fertilization", "introduced", "management_intervention")
+        e = self.g.edge(plain, "causes", self.g.node("growth", "increased"))
+        read_edge(self.g.edges[e], self.g, q())
+        self.assertEqual(self.calls, [])
+
+    def test_tightened_fallback_flips_erosion_control(self):
+        self.os.environ.pop("BRINE_URL", None)
+        subj = self.g.node("absence of erosion control", "absent", "management_intervention")
+        e = self.g.edge(subj, "causes", self.g.node("sediment loss", "increased"))
+        v = read_edge(self.g.edges[e], self.g, q("erosion control", "sediment loss"))
+        self.assertEqual(v.direction, "decrease")
+
+
 class BadInput(unittest.TestCase):
     """F1-F3: decide never throws on bad edge input."""
 

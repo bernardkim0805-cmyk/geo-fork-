@@ -134,6 +134,9 @@ def main(argv=None) -> int:
               f"excluding them: {totals['pass'] - totals['known_pass']}/{len(cases) - totals['known']} pass)")
     if calib:
         calibration(calib)
+    from lane2.decide import LLM_STATS
+    print(f"  D2 removal check: {LLM_STATS['calls']} LLM call(s), {LLM_STATS['cache_hits']} cache hit(s), "
+          f"{LLM_STATS['fallbacks']} word-list fallback(s) over {len(cases)} cases")
     return 0
 
 
