@@ -4,7 +4,7 @@ The API key is read from the environment variable API_KEY. `call_model` is the O
 provider-specific function: implement it with your provider's SDK (temperature 0, JSON output).
 Everything else (prompt, reply checking) is provider-independent.
 
-llm_parse(question) -> dict          a parse in the format below
+llm_parse(question) -> (dict, int)   a parse in the format below, and the total tokens the call used
                     raises           on API errors or unusable replies; the pipeline catches
                                      any exception and returns route "llm_failed"
 """
@@ -64,8 +64,8 @@ def build_prompt(question):
     return SYSTEM_PROMPT + shots, f"Q: {question}\nA:"
 
 
-def call_model(system, user):
-    """Send one request with the API key and return the reply TEXT.
+def call_model(system, user, max_tokens=800):
+    """Send one request with the API key and return (reply TEXT, total tokens used).
     Implement with your provider's SDK: temperature=0, max output ~800 tokens, JSON mode if offered.
 
     Team implementation: the BRINE LiteLLM endpoint (OpenAI-compatible, Qwen3.8-27B), stdlib only.
@@ -76,7 +76,7 @@ def call_model(system, user):
     url, model = os.environ.get("BRINE_URL"), os.environ.get("BRINE_MODEL")
     if not (key and url and model):
         raise RuntimeError("need API_KEY (or BRINE_API_KEY), BRINE_URL and BRINE_MODEL in the environment")
-    body = {"model": model, "temperature": 0, "max_tokens": 800,
+    body = {"model": model, "temperature": 0, "max_tokens": max_tokens,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
             "response_format": {"type": "json_object"},
             "chat_template_kwargs": {"enable_thinking": False}}      # Qwen3: no hidden reasoning tokens
@@ -88,7 +88,8 @@ def call_model(system, user):
         ctx.load_verify_locations("/etc/ssl/cert.pem")
     with urllib.request.urlopen(req, timeout=120, context=ctx) as resp:
         data = json.loads(resp.read())
-    return data["choices"][0]["message"]["content"] or ""
+    tokens = (data.get("usage") or {}).get("total_tokens") or 0
+    return data["choices"][0]["message"]["content"] or "", tokens
 
 
 def extract_json(text):
@@ -125,4 +126,46 @@ def validate(parse, question):
 
 def llm_parse(question):
     system, user = build_prompt(question)
-    return validate(extract_json(call_model(system, user)), question)
+    text, tokens = call_model(system, user)
+    try:
+        return validate(extract_json(text), question), tokens
+    except Exception as e:
+        e.tokens = tokens        # the call was paid for even though the reply is unusable
+        raise
+
+
+# ---------------------------------------------------------------------------
+# DEV ONLY (delete later): ask Qwen how unsure it is that a parse is right.
+# ---------------------------------------------------------------------------
+UNCERTAINTY_PROMPT = """You check whether a structured parse correctly captures an ecology question.
+You get the question and the parse (JSON). Judge ONLY whether the parse captures what the question
+asks: the right cause(s) as "s", the right effect(s) as "o", nothing missing, nothing invented,
+nothing reversed. Do not judge whether the science is true.
+
+Reply with ONE JSON object and nothing else:
+  {"uncertainty": <integer 0-100>, "reason": "<one short sentence>"}
+
+0 = certain the parse is right. 100 = certain it is wrong or useless. Use the full range."""
+
+
+def _public(parse):
+    """Drop internal bookkeeping keys (e.g. "_recompute") so the checker judges only the parse."""
+    return {k: v for k, v in parse.items() if not str(k).startswith("_")} if isinstance(parse, dict) else parse
+
+
+def score_uncertainty(question, parse):
+    """Returns (score 0-100 or None, reason, tokens). Never raises."""
+    if parse is None:
+        return 100, "no parse was produced", 0
+    try:
+        text, tokens = call_model(UNCERTAINTY_PROMPT,
+                                  f"Question: {question}\nParse: {json.dumps(_public(parse), ensure_ascii=False)}",
+                                  max_tokens=150)
+    except Exception as e:
+        return None, f"uncertainty check failed: {type(e).__name__}: {str(e)[:80]}", 0
+    try:
+        obj = extract_json(text)
+        score = max(0, min(100, int(round(float(obj["uncertainty"])))))
+        return score, str(obj.get("reason", ""))[:300], tokens
+    except Exception as e:
+        return None, f"unusable reply: {text[:80]!r}", tokens

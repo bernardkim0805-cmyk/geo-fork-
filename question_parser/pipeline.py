@@ -398,9 +398,11 @@ def _walk_values(obj, keys):
 # The pipeline
 # ---------------------------------------------------------------------------
 class Pipeline:
-    def __init__(self, graph_path, llm, confirm=True):
-        """llm: function(question) -> parse dict, or None if it can't answer.
-        confirm: put each new template on probation until a second LLM answer agrees with it."""
+    def __init__(self, graph_path, llm, confirm=True, checker=None):
+        """llm: function(question) -> parse dict, (parse dict, tokens_used), or None if it can't answer.
+        confirm: put each new template on probation until a second LLM answer agrees with it.
+        checker: DEV ONLY. function(question, parse) -> (uncertainty 0-100 or None, reason, tokens).
+                 When set, it runs on EVERY result, whichever layer produced the parse."""
         terms, contexts = vocab_from_graph(graph_path)
         g = json.load(open(graph_path))
         for n in g["nodes"]:
@@ -410,12 +412,46 @@ class Pipeline:
         self.frames = FrameCache(self.rules.nlp, confirm=confirm)
         self.exact = {}
         self.llm = llm
+        self.checker = checker
+        self.scores = {}             # (question, parse json) -> (score, reason): never pay twice
         self.counts = {"exact_cache": 0, "frame_cache": 0, "strict_rules": 0, "llm": 0, "llm_failed": 0,
-                       "confirmed": 0, "dropped": 0}
+                       "confirmed": 0, "dropped": 0, "tokens": 0,
+                       "uncertainty_tokens": 0}
         self.vocab_size = (len(terms), len(contexts))
 
     def parse(self, question):
         """Never raises for bad input or a failing API: returns a route saying what happened."""
+        r = self._parse_input(question)
+        r["parse"] = copy.deepcopy(r["parse"])       # callers can't edit what is stored
+        parse_tokens = r.pop("tokens", 0)            # tokens spent on THIS call; 0 unless the LLM ran
+        check_tokens = 0
+        if not self.checker:
+            # always present, so code reading the output never has to check for the key
+            r["uncertainty"] = {"score": None, "reason": "uncertainty check disabled", "cached": False}
+        else:
+            if isinstance(question, bytes):
+                question = question.decode("utf-8", errors="replace")
+            q = " ".join(question.split()) if isinstance(question, str) else repr(question)[:200]
+            ck = (q.lower(), json.dumps(r["parse"], sort_keys=True, default=str))
+            if ck in self.scores:
+                score, reason = self.scores[ck]
+                r["uncertainty"] = {"score": score, "reason": reason, "cached": True}
+            else:
+                try:
+                    score, reason, check_tokens = self.checker(q, r["parse"])
+                    check_tokens = check_tokens or 0
+                except Exception as e:           # a dev-only check must never break parsing
+                    score, reason = None, f"checker crashed: {type(e).__name__}: {str(e)[:80]}"
+                if score is not None:            # don't cache failures; retry them next time
+                    self.scores[ck] = (score, reason)
+                self.counts["uncertainty_tokens"] += check_tokens
+                r["uncertainty"] = {"score": score, "reason": reason, "cached": False}
+        r["tokens"] = {"parse": parse_tokens, "uncertainty": check_tokens,
+                       "total": parse_tokens + check_tokens}
+        r["trace"] = r.pop("trace")                  # keep the trace last in the JSON
+        return r
+
+    def _parse_input(self, question):
         if isinstance(question, bytes):
             question = question.decode("utf-8", errors="replace")
         if not isinstance(question, str):
@@ -426,9 +462,7 @@ class Pipeline:
         key = " ".join(w for w, _, _ in _words(q))    # formatting-free key for the exact cache
         if not key:
             return {"route": "invalid_input", "parse": None, "trace": ["no words in question"]}
-        r = self._parse(q, key)
-        r["parse"] = copy.deepcopy(r["parse"])       # callers can't edit what is stored
-        return r
+        return self._parse(q, key)
 
     def _parse(self, q, key):
         trace = []
@@ -471,23 +505,29 @@ class Pipeline:
         trace.append(f"L2 strict rules: reject ({r['reasons'][0]})")
 
         # Layer 3 ---------------------------------------------------------
+        tokens = 0
         try:
             parse = self.llm(q)
+            if isinstance(parse, tuple):             # llm may return (parse, tokens_used)
+                parse, tokens = parse
         except Exception as e:                       # timeout, 5xx, rate limit, network: don't crash
+            tokens = getattr(e, "tokens", 0) or 0     # a bad reply still cost tokens
             self.counts["llm_failed"] += 1
+            self.counts["tokens"] += tokens
             trace.append(f"L3 LLM: API ERROR {type(e).__name__}: {str(e)[:80]}"
                          + (" (template stays on probation)" if pending else ""))
-            return {"route": "llm_failed", "parse": None, "trace": trace}
+            return {"route": "llm_failed", "parse": None, "tokens": tokens, "trace": trace}
+        self.counts["tokens"] += tokens
         if parse is not None and not isinstance(parse, dict):
             self.counts["llm_failed"] += 1
             trace.append(f"L3 LLM: unusable answer of type {type(parse).__name__}")
-            return {"route": "llm_failed", "parse": None, "trace": trace}
+            return {"route": "llm_failed", "parse": None, "tokens": tokens, "trace": trace}
         if parse is None:
             self.counts["llm_failed"] += 1
             trace.append("L3 LLM: CALL NEEDED")
-            return {"route": "llm_needed", "parse": None, "trace": trace}
+            return {"route": "llm_needed", "parse": None, "tokens": tokens, "trace": trace}
         self.counts["llm"] += 1
-        trace.append("L3 LLM: called (1 call)")
+        trace.append(f"L3 LLM: called (1 call, {tokens} tokens)")
         if pending:
             if self.frames.confirm_or_drop(pending["record"], pending["parse"], parse):
                 self.counts["confirmed"] += 1
@@ -498,4 +538,4 @@ class Pipeline:
         frame = self.frames.learn(q, parse)
         trace.append(f"   learned frame: '{frame}'" if frame else "   no frame learned")
         self.exact[key] = copy.deepcopy(parse)
-        return {"route": "llm", "parse": parse, "trace": trace}
+        return {"route": "llm", "parse": parse, "tokens": tokens, "trace": trace}
