@@ -54,9 +54,10 @@ FRAME_NOUNS = {"application", "applications", "treatment", "treatments", "retent
 
 # Distinct intervention categories (the hidden set asks about one at a time). A synonym offered
 # for one category may not be the name of another: grazing is not a synonym of mowing.
-CATEGORIES = [("mow", "cutting"), ("graz", "livestock"), ("burn", "fire"), ("herbicid", "glyphosate"),
-              ("seeding", "sowing", "seed addition"), ("planting",), ("fertiliz", "fertilis"),
-              ("thinning",), ("harvest", "logging", "clearcut"), ("mulch",), ("fenc", "exclosure"),
+# Order matters: "grazing exclusion" must land in the exclusion/fencing category, not grazing.
+CATEGORIES = [("exclusion", "exclos", "fenc"), ("mow", "cutting"), ("graz", "livestock"), ("burn", "fire"),
+              ("herbicid", "glyphosate"), ("seeding", "sowing", "seed addition"), ("planting",),
+              ("fertiliz", "fertilis"), ("thinning",), ("harvest", "logging", "clearcut"), ("mulch",),
               ("irrigat",), ("inoculat",), ("scarif",)]
 
 UMBRELLA_RATIO = 5          # a term matching > 5x the nodes of the phrase (in context) is too broad
