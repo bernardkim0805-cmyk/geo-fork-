@@ -23,6 +23,13 @@ class Graph:
             self.edges_by_subject[e["subject"]].append(e["id"])
             self.edges_by_object[e["object"]].append(e["id"])
 
+        # IUCN-style ecosystem labels actually present on edges, e.g.
+        # "temperate_subhumid_grasslands". Read from the data, not hardcoded,
+        # so a different graph brings its own vocabulary.
+        self.contexts: set[str] = {
+            e["ecosystem_context"] for e in raw["edges"] if e.get("ecosystem_context")
+        }
+
     def node_text(self, node_id: str) -> str:
         """Searchable text for a node. `embedding_text` already joins name,
         entity_term, measured_attribute, qualifier and applied_to labels."""
