@@ -19,6 +19,33 @@ NEGATED_SUBJECT = re.compile(
 
 SIGN = {"increased": 1, "decreased": -1, "absent": -1, "removed": -1, "terminated": -1}
 
+# ---- fix 2.5: inverse attribute pairs. Each entry: (pair name, class A regex, class B regex).
+# "increase" in class A means "decrease" in class B and the other way round. Depth-type
+# patterns are tested first, so "Deeper water table position" counts as depth, not level.
+INVERSE_PAIRS = [
+    ("water_table",
+     ("depth", re.compile(r"water[- ]?table depth|depth to (the )?(water table|groundwater)|distance to (the )?water table|"
+                          r"depth of (the )?water table|deeper water[- ]?table|water[- ]?table .*\bdepth\b|\bdepth to water")),
+     ("level", re.compile(r"water[- ]?table (level|height|position|rise|elevation)|water level|groundwater level|"
+                          r"\bwater[- ]?table\b(?! depth)"))),
+    ("survival",
+     ("mortality", re.compile(r"\bmortalit|\bdeath|\bdied\b|\bdead\b|\bdie-?off")),
+     ("survival", re.compile(r"\bsurviv"))),
+]
+
+# ---- fix 2.6: second-order properties of an outcome. An edge about the variability of the
+# water table does not say whether the water table went up. Keyed by the word a question
+# would have to contain for the property to count as asked about.
+SECOND_ORDER = [
+    ("variability", re.compile(r"variab|varianc|fluctuat|\brange\b")),
+    ("seasonality", re.compile(r"seasonal")),
+    ("stability", re.compile(r"stabilit")),
+    ("heterogeneity", re.compile(r"heterogen")),
+    ("timing", re.compile(r"\btiming\b|\bphenolog")),
+    ("rate of change", re.compile(r"rate of change|decline rate|\brate of (increase|decrease)")),
+    ("similarity", re.compile(r"similar(ity)? to|resembl|comparable to")),
+]
+
 
 class Graph:
     def __init__(self, path="causal_graph.json"):
@@ -28,14 +55,20 @@ class Graph:
         self.edges = g["edges"]
         self.edge_by_id = {e["id"]: e for e in self.edges}
         self.docs = {d["document_id"]: d for d in g["source_documents"]}
-        # Precompute one lowercase searchable string per node.
+        # Precompute one lowercase searchable string per node, and one context string per edge.
         self.text = {nid: self._node_text(n) for nid, n in self.nodes.items()}
+        self.context = {e["id"]: self._edge_context(e) for e in self.edges}
 
     @staticmethod
     def _node_text(n):
         parts = [n.get("name"), n.get("embedding_text"), n.get("entity_term"),
                  n.get("measured_attribute"), n.get("applied_to")]
         return " | ".join(str(p) for p in parts if p).lower()
+
+    def _edge_context(self, e):
+        doc = self.docs.get(e.get("source_document"), {})
+        return " | ".join(str(x) for x in (e.get("ecosystem_context"), e.get("original_sentence"),
+                                           doc.get("title")) if x).lower().replace("_", " ")
 
     # ---------- direction of a single edge ----------
     def direction(self, e):
@@ -47,7 +80,7 @@ class Graph:
         q = self.nodes[e["object"]].get("state_or_change_qualifier")
         return {1: "increase", -1: "decrease"}.get(SIGN.get(q, 0), "unclear")
 
-    # ---------- finding candidate edges ----------
+    # ---------- finding candidate edges (fixes 2.2 and 2.3) ----------
     @staticmethod
     def compile_terms(terms):
         pats = []
@@ -55,31 +88,50 @@ class Graph:
             t = str(t).strip().lower()
             if not t:
                 continue
-            pats.append(NATIVE if t == "native" else r"\b" + re.escape(t))
+            # spaces in a term also match hyphens: "water table" finds "water-table depth"
+            pats.append(NATIVE if t == "native" else r"\b" + re.escape(t).replace(r"\ ", r"[\s-]+"))
         return re.compile("|".join(pats)) if pats else None
 
-    def candidates(self, cause_terms, cause_excl, out_terms, out_excl):
-        cause, out = self.compile_terms(cause_terms), self.compile_terms(out_terms)
-        c_ex, o_ex = self.compile_terms(cause_excl), self.compile_terms(out_excl)
-        if cause is None or out is None:
-            return []
-        # If the outcome is about natives, drop non-native / invasive objects.
-        if any(str(t).strip().lower() == "native" for t in out_terms) and not any(
-                re.search(NOT_NATIVE, str(t)) for t in out_terms):
-            o_ex = re.compile((o_ex.pattern + "|" if o_ex else "") + NOT_NATIVE)
-        found = []
+    def side_patterns(self, side):
+        """Compiled (head, modifiers, exclude) regexes for one side of a validated plan."""
+        head = self.compile_terms(side.get("head_terms") or side.get("terms"))
+        mods = self.compile_terms(side.get("modifier_terms"))
+        excl = self.compile_terms(side.get("exclude"))
+        allterms = [str(t).lower() for t in (side.get("head_terms") or []) + (side.get("modifier_terms") or [])]
+        # A side about natives must not match non-native / invasive nodes.
+        if "native" in allterms and not any(re.search(NOT_NATIVE, t) for t in allterms):
+            excl = re.compile((excl.pattern + "|" if excl else "") + NOT_NATIVE)
+        return head, mods, excl
+
+    def node_matches(self, pats, node_id, edge_id):
+        """Fix 2.2: the head must match the node; modifiers may match the node or the edge's
+        context (sentence, ecosystem, paper title); exclusions apply to the node."""
+        head, mods, excl = pats
+        if head is None:
+            return False
+        text = self.text[node_id]
+        if not head.search(text):
+            return False
+        if excl and excl.search(text):
+            return False
+        if mods and not (mods.search(text) or mods.search(self.context[edge_id])):
+            return False
+        return True
+
+    def candidates(self, plan):
+        """Edges whose SUBJECT matches the cause side and whose OBJECT matches the outcome side.
+        Returns (forward edges, number of edges that matched only in the reverse orientation)."""
+        cp, op = self.side_patterns(plan["cause"]), self.side_patterns(plan["outcome"])
+        found, reversed_n = [], 0
         for e in self.edges:
-            st, ot = self.text[e["subject"]], self.text[e["object"]]
-            if not cause.search(st) or not out.search(ot):
-                continue
-            if c_ex and c_ex.search(st):
-                continue
-            if o_ex and o_ex.search(ot):
-                continue
-            if NEGATED_SUBJECT.search(self.nodes[e["subject"]]["name"].lower()):
-                continue
-            found.append(e)
-        return found
+            fwd = self.node_matches(cp, e["subject"], e["id"]) and self.node_matches(op, e["object"], e["id"])
+            if fwd:
+                if NEGATED_SUBJECT.search(self.nodes[e["subject"]]["name"].lower()):
+                    continue
+                found.append(e)
+            elif self.node_matches(op, e["subject"], e["id"]) and self.node_matches(cp, e["object"], e["id"]):
+                reversed_n += 1                     # fix 2.3: runs the wrong way for this question
+        return found, reversed_n
 
     def spread_by_paper(self, edges, cap):
         """Keep at most `cap` edges, taking them round-robin across papers so one
@@ -95,19 +147,87 @@ class Graph:
             i += 1
         return out
 
+    # ---------- fix 2.5: polarity ----------
+    @staticmethod
+    def attribute_class(text):
+        """(pair name, class) for a node or phrase text, or None if no inverse pair applies."""
+        text = str(text).lower()
+        for pair, (a_name, a_re), (b_name, b_re) in INVERSE_PAIRS:
+            if a_re.search(text):
+                return pair, a_name
+            if b_re.search(text):
+                return pair, b_name
+        return None
+
+    def asked_class(self, outcome_side):
+        """What the question measures, from its own phrase first, then its head terms."""
+        for t in [outcome_side.get("phrase") or ""] + list(outcome_side.get("head_terms") or []):
+            c = self.attribute_class(t)
+            if c:
+                return c
+        return None
+
+    def normalise_direction(self, e, asked):
+        """(direction_raw, direction, inverted) for one edge against the asked attribute."""
+        raw = self.direction(e)
+        obj = self.attribute_class(self.nodes[e["object"]]["name"] + " | " + str(self.nodes[e["object"]].get("measured_attribute") or ""))
+        if asked and obj and obj[0] == asked[0] and obj[1] != asked[1] and raw in ("increase", "decrease"):
+            return raw, flip(raw), True
+        return raw, raw, False
+
+    # ---------- fix 2.6: second-order attributes ----------
+    def second_order(self, e, question):
+        """Reason string if the edge's object measures a second-order property the question
+        did not ask about, else None."""
+        obj = self.nodes[e["object"]]["name"].lower() + " | " + str(self.nodes[e["object"]].get("measured_attribute") or "").lower()
+        q = question.lower()
+        for name, pat in SECOND_ORDER:
+            if pat.search(obj) and not pat.search(q) and name.split()[0] not in q:
+                return f"object measures {name}, not the asked attribute"
+        return None
+
+    # ---------- fix 2.4: dedupe ----------
+    @staticmethod
+    def _norm(s):
+        return " ".join(re.sub(r"[^a-z0-9 ]", " ", str(s).lower()).split())
+
+    def dedupe(self, edges, directions):
+        """One edge per (paper, subject, object, direction). Returns (unique edges, dropped ids)."""
+        seen, out, dups = set(), [], []
+        for e in edges:
+            key = (e["source_document"], self._norm(self.nodes[e["subject"]]["name"]),
+                   self._norm(self.nodes[e["object"]]["name"]), directions[e["id"]])
+            if key in seen:
+                dups.append(e["id"])
+                continue
+            seen.add(key)
+            out.append(e)
+        return out, dups
+
 
 # ---------- aggregation: per paper first, then across papers (gotcha 6) ----------
 def flip(d):
     return {"increase": "decrease", "decrease": "increase"}.get(d, d)
 
 
-def aggregate(graph, edges, flipped_ids):
+def confidence_answered(n_papers, agreement):
+    """Fix 2.7: README defines confidence as the probability the answer is correct; this is the
+    team's calibration curve for it. Rises with the number of papers, falls with disagreement:
+    1 agreeing paper -> 0.57, 3 -> 0.78, 7 -> 0.88."""
+    return round(0.35 + 0.55 * agreement * (1 - 0.6 ** n_papers), 2)
+
+
+def confidence_no_evidence(had_candidates):
+    """0.50 when nothing matched either side's head; 0.40 when candidates existed but every one
+    was filtered out (evidence may exist that did not qualify)."""
+    return 0.40 if had_candidates else 0.50
+
+
+def aggregate(graph, edges, directions):
+    """`directions` maps edge id -> final direction (after polarity and LLM flips)."""
     per_paper = defaultdict(list)
     for e in edges:
-        d = graph.direction(e)
-        if e["id"] in flipped_ids:
-            d = flip(d)
-        per_paper[e["source_document"]].append(d)
+        per_paper[e["source_document"]].append(directions[e["id"]])
 
     verdicts = {}
     for doc, ds in per_paper.items():
@@ -140,6 +260,8 @@ def aggregate(graph, edges, flipped_ids):
             direction = "mixed"
         else:
             direction = top
+    if direction == "mixed":
+        agreement = max(vc.values()) / decided      # share of the largest group
 
     # Certainty: start from the typical edge grade, adjust GRADE-style.
     grades = sorted(GRADES.index(e.get("certainty_grade") or "low") for e in edges)
@@ -155,14 +277,7 @@ def aggregate(graph, edges, flipped_ids):
         level -= 1
     certainty = GRADES[max(0, min(3, level))]
 
-    # Confidence: a first guess, to be fitted on a dev set later.
-    conf = 0.45 + 0.08 * min(n_papers, 4) + 0.2 * max(0.0, agreement - 0.5)
-    if direction == "unclear":
-        conf = 0.35
-    elif direction == "mixed":
-        conf = min(conf, 0.6)
-    conf = round(max(0.3, min(0.9, conf)), 2)
-
+    conf = confidence_answered(n_papers, agreement)
     return {"direction": direction, "certainty": certainty, "confidence": conf,
             "papers": dict(verdicts), "paper_counts": dict(vc),
-            "agreement": round(agreement, 2), "n_papers": n_papers}
+            "agreement": round(agreement, 2), "n_papers": n_papers, "n_edges": len(edges)}
