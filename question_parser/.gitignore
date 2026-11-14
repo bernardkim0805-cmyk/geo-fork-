@@ -1,0 +1,6 @@
+# Written by the tests and by parse_question.py at run time; not source.
+frames.json
+frames_test_bank.json
+bank_results.json
+varied_results.json
+__pycache__/
