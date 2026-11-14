@@ -19,6 +19,13 @@ NEGATED_SUBJECT = re.compile(
 
 SIGN = {"increased": 1, "decreased": -1, "absent": -1, "removed": -1, "terminated": -1}
 
+# Outcome heads that are community / quantity metrics. "species richness" says nothing without
+# the group it counts, so for these heads a modifier the QUESTION itself names (pollinator,
+# bird, native) must be stated in the node or the edge context; other modifiers stay soft.
+METRIC_HEADS = {"abundance", "density", "richness", "diversity", "composition", "cover", "biomass",
+                "occurrence", "population", "populations", "numbers", "counts"}
+MAX_PARTIAL = 40            # modifier-unmatched candidates sent to the filter, after full matches
+
 # ---- fix 2.5: inverse attribute pairs. Each entry: (pair name, class A regex, class B regex).
 # "increase" in class A means "decrease" in class B and the other way round. Depth-type
 # patterns are tested first, so "Deeper water table position" counts as depth, not level.
@@ -122,6 +129,9 @@ class Graph:
         fully modifier-matched edges first. Returns (forward edges, ids whose modifiers were
         not found, number of edges that matched only in the reverse orientation)."""
         cp, op = self.side_patterns(plan["cause"]), self.side_patterns(plan["outcome"])
+        out = plan["outcome"]
+        o_required = (str(out.get("head") or "").lower() in METRIC_HEADS and
+                      any(m in (out.get("phrase") or "") for m in out.get("modifier_terms") or []))
         full, partial, reversed_n = [], [], 0
         for e in self.edges:
             s_ok, s_mods = self.node_matches(cp, e["subject"], e["id"])
@@ -129,9 +139,12 @@ class Graph:
             if s_ok and o_ok:
                 if NEGATED_SUBJECT.search(self.nodes[e["subject"]]["name"].lower()):
                     continue
+                if o_required and not o_mods:
+                    continue                        # richness of WHAT: the group must be stated
                 (full if (s_mods and o_mods) else partial).append(e)
             elif self.node_matches(op, e["subject"], e["id"])[0] and self.node_matches(cp, e["object"], e["id"])[0]:
                 reversed_n += 1                     # fix 2.3: runs the wrong way for this question
+        partial = self.spread_by_paper(partial, MAX_PARTIAL)
         return full + partial, [e["id"] for e in partial], reversed_n
 
     def spread_by_paper(self, edges, cap):

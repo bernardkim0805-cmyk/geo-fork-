@@ -186,6 +186,41 @@ class RecallGuardTests(unittest.TestCase):
                           "'mean seasonal methane flux' is a seasonal mean, not seasonality")
 
 
+class SecondRoundGuardTests(unittest.TestCase):
+    """The second rerun produced two wrong answers; these pin the corrections."""
+
+    def test_14_metric_outcomes_need_their_group_stated(self):
+        # D-009: 'Fencing -> higher species richness' says nothing about pollinators
+        plan = {"cause": {"label": "grazing exclusion", "head": "exclusion", "head_terms": ["grazing exclusion", "exclusion", "fencing"],
+                          "modifier_terms": ["grazing", "livestock"], "exclude": ["grazing"]},
+                "outcome": {"label": "pollinator diversity", "head": "diversity",
+                            "head_terms": ["pollinator diversity", "diversity", "richness", "abundance"],
+                            "modifier_terms": ["pollinator", "pollinators", "bees"], "exclude": []}}
+        p = PC.validate(plan, "What effect does grazing exclusion have on pollinator diversity?")
+        fwd, _, _ = G.candidates(p)
+        # the two edges the second rerun wrongly kept (plant richness under fencing, oak savanna)
+        self.assertNotIn("camo:edge_8a1705c68fa7", {e["id"] for e in fwd})
+        self.assertNotIn("camo:edge_5a393875b2f3", {e["id"] for e in fwd})
+        self.assertTrue(all(re.search(r"pollinat|bee", G.text[e["object"]] + G.context[e["id"]]) for e in fwd),
+                        "every candidate must state the pollinator group")
+        # but a life-stage modifier on a non-metric head (D-003, survival) stays soft
+        plan2 = {"cause": {"label": "tree shelters", "head": "shelters", "head_terms": ["tree shelters", "shelter"], "modifier_terms": ["tree"], "exclude": []},
+                 "outcome": {"label": "seedling survival", "head": "survival", "head_terms": ["seedling survival", "survival"], "modifier_terms": ["seedling"], "exclude": []}}
+        fwd2, _, _ = G.candidates(PC.validate(plan2, "What effect does tree shelters have on seedling survival?"))
+        self.assertIn("camo:edge_a2985e20a898", {e["id"] for e in fwd2})
+
+    def test_15_a_different_intervention_is_not_a_synonym(self):
+        plan = {"cause": {"label": "mowing", "head": "mowing", "head_terms": ["mowing", "cutting", "grazing", "defoliation", "harvesting"],
+                          "modifier_terms": [], "exclude": []},
+                "outcome": {"label": "bird abundance", "head": "abundance", "head_terms": ["bird abundance", "abundance", "density"],
+                            "modifier_terms": ["bird", "avian"], "exclude": []}}
+        p = PC.validate(plan, "What effect does mowing have on bird abundance?")
+        self.assertNotIn("grazing", p["cause"]["head_terms"])
+        self.assertNotIn("harvesting", p["cause"]["head_terms"])
+        self.assertIn("cutting", p["cause"]["head_terms"])
+        self.assertIn("grazing", {d["term"] for d in p["cause"]["dropped"]})
+
+
 class ConfidenceTests(unittest.TestCase):
     def test_9_confidence_depends_on_evidence(self):
         full = [confidence_answered(n, 1.0) for n in range(1, 8)]
