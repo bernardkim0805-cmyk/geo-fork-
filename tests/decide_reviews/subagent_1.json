@@ -1,0 +1,233 @@
+{
+ "DC-01": {
+  "status": "answered",
+  "direction": "increase",
+  "certainty": "moderate",
+  "drop_edges": [],
+  "reason": "Two randomized studies show herbicide raised native cover in most site-years, with two non-significant 1996 cohorts."
+ },
+ "DC-02": {
+  "status": "answered",
+  "direction": "increase",
+  "certainty": "moderate",
+  "drop_edges": [],
+  "reason": "Across four randomized trials fertilization usually increased seedling height/diameter, but responses were species- and season-dependent (several nulls for jack pine, tamarack, first-season height)."
+ },
+ "DC-03": {
+  "status": "answered",
+  "direction": "increase",
+  "certainty": "high",
+  "drop_edges": [
+   "camo:edge_d9cb4eae67b9",
+   "camo:edge_d52d471c626a"
+  ],
+  "reason": "Five independent randomized trials consistently show scarification increased conifer height vs unscarified controls (one null height-increment contrast); double- vs single-pass and scarified+fertilized contrasts are not clean tests."
+ },
+ "DC-04": {
+  "status": "answered",
+  "direction": "decrease",
+  "certainty": "moderate",
+  "drop_edges": [],
+  "reason": "Two studies (quasi-experimental/longitudinal) report rewetting reduced tree cover/biomass and shrub cover, though shrub biomass may rebound over time."
+ },
+ "DC-05": {
+  "status": "answered",
+  "direction": "increase",
+  "certainty": "high",
+  "drop_edges": [],
+  "reason": "Two randomized experiments at three sites consistently show liming raised soil pH vs unlimed controls."
+ },
+ "DC-06": {
+  "status": "answered",
+  "direction": "mixed",
+  "certainty": "moderate",
+  "drop_edges": [],
+  "reason": "Liming increased sugar maple sapling growth but had no effect on beech, overall height, or spruce height at most sites."
+ },
+ "DC-07": {
+  "status": "answered",
+  "direction": "increase",
+  "certainty": "moderate",
+  "drop_edges": [],
+  "reason": "Single quasi-experimental study: water table rose post-rewetting in most transects near dams, but not in a distant transect (one even deeper)."
+ },
+ "DC-08": {
+  "status": "answered",
+  "direction": "decrease",
+  "certainty": "low",
+  "drop_edges": [],
+  "reason": "One quasi-experimental grazed-vs-ungrazed comparison found lower litter mass and standing crop under grazing (associational)."
+ },
+ "DC-09": {
+  "status": "answered",
+  "direction": "decrease",
+  "certainty": "low",
+  "drop_edges": [],
+  "reason": "One study at one of several sites found lower exotic grass abundance with grass-specific herbicide, compared only against other treatments."
+ },
+ "DC-10": {
+  "status": "answered",
+  "direction": "decrease",
+  "certainty": "low",
+  "drop_edges": [],
+  "reason": "One randomized study found burn treatments (combined with glyphosate) lowered non-native forb and grass cover, so burning's effect is confounded with herbicide."
+ },
+ "DC-11": {
+  "status": "answered",
+  "direction": "mixed",
+  "certainty": "low",
+  "drop_edges": [
+   "camo:edge_3801e622aa5e"
+  ],
+  "reason": "Before-after comparisons without controls show no significant change for most metals, but Cu and Hg in sediment decreased and Hg/Zn in crabs differed in some years."
+ },
+ "DC-12": {
+  "status": "answered",
+  "direction": "no_effect",
+  "certainty": "moderate",
+  "drop_edges": [
+   "camo:edge_fbb8b192a273"
+  ],
+  "reason": "Two randomized studies found one-time mulching did not change native seedling densities; the 'increase' edge's sentence is about exotic species and does not support it."
+ },
+ "DC-13": {
+  "status": "answered",
+  "direction": "increase",
+  "certainty": "low",
+  "drop_edges": [
+   "camo:edge_36c656af6044"
+  ],
+  "reason": "One study found phenol levels generally higher in browsed (outside-exclosure) and heavily browsed saplings, with exceptions; associational; tannin edge's sentence only reports phenols."
+ },
+ "DC-14": {
+  "status": "answered",
+  "direction": "increase",
+  "certainty": "moderate",
+  "drop_edges": [],
+  "reason": "One randomized trial found weed removal increased seedling diameter and biomass, though effects varied by site and component."
+ },
+ "DC-15": {
+  "status": "answered",
+  "direction": "decrease",
+  "certainty": "moderate",
+  "drop_edges": [],
+  "reason": "Removing competing vegetation increased seedling diameter and biomass in one randomized trial, implying competition reduces conifer growth."
+ },
+ "DC-16": {
+  "status": "answered",
+  "direction": "decrease",
+  "certainty": "low",
+  "drop_edges": [],
+  "reason": "Edge encodes that unsheltered trees were browsed more, implying shelters reduce browsing, but the sentence mainly reports a species effect among unprotected trees."
+ },
+ "DC-17": {
+  "status": "answered",
+  "direction": "increase",
+  "certainty": "low",
+  "drop_edges": [],
+  "reason": "One exclosure study found saplings taller inside than outside moose exclosures (associational, quasi-experimental)."
+ },
+ "DC-18": {
+  "status": "answered",
+  "direction": "increase",
+  "certainty": "moderate",
+  "drop_edges": [],
+  "reason": "One randomized trial found exponential fertilization increased seedling height, diameter and biomass relative to conventional fertilization."
+ },
+ "DC-19": {
+  "status": "answered",
+  "direction": "unclear",
+  "certainty": "low",
+  "drop_edges": [],
+  "reason": "Mulch had only a borderline (p=0.06) effect on species assemblages in a single sampling date."
+ },
+ "DC-20": {
+  "status": "answered",
+  "direction": "no_effect",
+  "certainty": "low",
+  "drop_edges": [],
+  "reason": "A cross-sectional chronosequence found soil exchangeable K remained stable after forest conversion to fallow fields."
+ },
+ "DC-21": {
+  "status": "answered",
+  "direction": "mixed",
+  "certainty": "very_low",
+  "drop_edges": [],
+  "reason": "Movement models show bears moving closer to or further from seismic lines depending on sex, season, landcover and line vegetation height."
+ },
+ "DC-22": {
+  "status": "answered",
+  "direction": "increase",
+  "certainty": "moderate",
+  "drop_edges": [],
+  "reason": "One randomized experiment found base saturation 1.4-3x higher in limed soils vs controls at two depths."
+ },
+ "DC-23": {
+  "status": "answered",
+  "direction": "mixed",
+  "certainty": "moderate",
+  "drop_edges": [],
+  "reason": "Liming increased sugar maple sapling basal area and biomass growth but had no effect on American beech or overall height growth."
+ },
+ "DC-24": {
+  "status": "no_evidence",
+  "direction": null,
+  "certainty": null,
+  "drop_edges": [],
+  "reason": "No edges retrieved."
+ },
+ "DC-25": {
+  "status": "no_evidence",
+  "direction": null,
+  "certainty": null,
+  "drop_edges": [],
+  "reason": "No edges retrieved."
+ },
+ "DC-26": {
+  "status": "no_evidence",
+  "direction": null,
+  "certainty": null,
+  "drop_edges": [],
+  "reason": "No edges retrieved."
+ },
+ "DC-27": {
+  "status": "no_evidence",
+  "direction": null,
+  "certainty": null,
+  "drop_edges": [],
+  "reason": "No edges retrieved."
+ },
+ "DC-28": {
+  "status": "no_evidence",
+  "direction": null,
+  "certainty": null,
+  "drop_edges": [],
+  "reason": "No edges retrieved."
+ },
+ "DC-29": {
+  "status": "no_evidence",
+  "direction": null,
+  "certainty": null,
+  "drop_edges": [
+   "camo:edge_ee5aa30bcc2d"
+  ],
+  "reason": "Only edge describes fertilization moderating the scarification effect on GLD, not fertilization's direct effect."
+ },
+ "DC-30": {
+  "status": "answered",
+  "direction": "decrease",
+  "certainty": "moderate",
+  "drop_edges": [
+   "camo:edge_09d768e85a7e",
+   "camo:edge_538e4cf032df"
+  ],
+  "reason": "Randomized trial: total basal area was highest in uncut controls and lower in all cutting treatments (edge encoding of 'increased variation' contradicts sentence); other edges concern stock quality, not basal area."
+ },
+ "DC-31": {
+  "status": "answered",
+  "direction": "mixed",
+  "certainty": "low",
+  "drop_edges": [],
+  "reason": "Effects are interaction-dependent: scarification reduced conifer density in some cutting treatments, while birch/other hardwood/non-commercial densities became higher in raked plots after 15 years."
+ }
+}
