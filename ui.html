@@ -1,0 +1,1167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipeline Viewer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f7f6f2; --surface: #fff; --surface2: #f0efe9; --border: #e2e0d8;
+  --fg: #1a1916; --muted: #6b6960; --accent: #2d5a27; --accent-bg: #edf5ec;
+  --warn: #7a3a00; --warn-bg: #fff4ea; --err: #7a1a1a; --err-bg: #fff0f0;
+  --code-bg: #1e1e1e; --code-fg: #d4d4d4;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#111210;--surface:#1a1c18;--surface2:#222420;--border:#2e3029;
+  --fg:#e8e6e0;--muted:#8a8880;--accent:#6abf5e;--accent-bg:#1a2e18;
+  --warn:#e8a054;--warn-bg:#2a1e0e;--err:#e87070;--err-bg:#2a1010;
+  --code-bg:#0d0d0d;--code-fg:#d4d4d4;color-scheme:dark;
+}}
+:root[data-theme="dark"] {
+  --bg:#111210;--surface:#1a1c18;--surface2:#222420;--border:#2e3029;
+  --fg:#e8e6e0;--muted:#8a8880;--accent:#6abf5e;--accent-bg:#1a2e18;
+  --warn:#e8a054;--warn-bg:#2a1e0e;--err:#e87070;--err-bg:#2a1010;
+  --code-bg:#0d0d0d;--code-fg:#d4d4d4;color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:'Space Grotesk',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:260px 1fr;height:100vh;overflow:hidden}
+@media(max-width:680px){.layout{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:auto;overflow:auto}}
+
+/* Sidebar */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.sidebar-head{padding:16px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
+.app-title{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.app-sub{font-size:11px;color:var(--muted)}
+.upload-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;text-align:center;font-family:inherit}
+.upload-btn:hover{opacity:.9}
+.upload-btn input{display:none}
+.q-list{padding:8px;flex:1}
+.q-item{padding:9px 10px;border-radius:6px;cursor:pointer;display:flex;flex-direction:column;gap:3px;border:1px solid transparent;margin-bottom:2px}
+.q-item:hover{background:var(--surface2)}
+.q-item.active{background:var(--accent-bg);border-color:var(--accent)}
+.q-id{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--accent)}
+.q-text{font-size:12px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.q-status{display:flex;gap:5px;align-items:center;margin-top:2px}
+.badge{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;display:inline-block}
+.badge-green{background:var(--accent-bg);color:var(--accent)}
+.badge-orange{background:var(--warn-bg);color:var(--warn)}
+.badge-red{background:var(--err-bg);color:var(--err)}
+.badge-grey{background:var(--surface2);color:var(--muted)}
+
+/* Main */
+.main{overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px}
+/* flex children shrink by default; without this every card is squeezed to fit
+   the viewport and its content clipped by .card{overflow:hidden} */
+.main > *{flex:0 0 auto}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--muted)}
+.empty-icon{font-size:40px;opacity:.4}
+.empty h2{font-size:16px;font-weight:600}
+.empty p{font-size:13px;text-align:center;max-width:300px}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.card-head{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-head-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.card-head-tag{font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:4px}
+.card-body{padding:14px}
+
+.q-full{font-size:15px;line-height:1.5;font-style:italic;color:var(--muted);padding:14px}
+
+/* Pipeline row */
+.pipeline-row{display:flex;gap:0;align-items:stretch}
+.p-step{flex:1;background:var(--surface);border:1px solid var(--border);padding:12px 14px;display:flex;flex-direction:column;gap:4px;position:relative}
+.p-step:not(:last-child){border-right:none}
+.p-step:first-child{border-radius:8px 0 0 8px}
+.p-step:last-child{border-radius:0 8px 8px 0}
+.p-step-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.p-step-val{font-size:13px;font-weight:600}
+.p-step-sub{font-size:11px;color:var(--muted)}
+.p-arrow{align-self:center;color:var(--border);font-size:14px;flex-shrink:0;padding:0 2px;background:var(--surface);position:relative;z-index:1}
+@media(max-width:600px){.pipeline-row{flex-direction:column}.p-step{border-radius:0!important;border-right:1px solid var(--border)!important}.p-step:first-child{border-radius:8px 8px 0 0!important}.p-step:last-child{border-radius:0 0 8px 8px!important}.p-arrow{transform:rotate(90deg);align-self:flex-start;padding:4px 14px}}
+
+/* Node grid */
+.node-grid{display:flex;flex-wrap:wrap;gap:6px;padding:12px}
+.node-pill{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--fg);font-family:'JetBrains Mono',monospace}
+.node-pill.intervention{border-color:#6366f1;background:#f0f0ff;color:#6366f1}
+.node-pill.outcome{border-color:#22d3ee;background:#f0feff;color:#0891b2}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .node-pill.intervention{background:#1e1e38;color:#818cf8}
+  :root:not([data-theme="light"]) .node-pill.outcome{background:#0e2a2e;color:#22d3ee}
+}
+:root[data-theme="dark"] .node-pill.intervention{background:#1e1e38;color:#818cf8}
+:root[data-theme="dark"] .node-pill.outcome{background:#0e2a2e;color:#22d3ee}
+
+/* Term chips */
+.terms{display:flex;flex-wrap:wrap;gap:5px;padding:12px}
+.term{font-size:11px;padding:2px 8px;border-radius:4px;background:var(--surface2);color:var(--muted);font-family:'JetBrains Mono',monospace}
+
+/* Answer box */
+.answer-box{padding:14px;font-size:14px;line-height:1.6}
+.answer-meta{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--border)}
+
+/* Confidence bar */
+.conf-bar-wrap{display:flex;align-items:center;gap:8px;font-size:12px}
+.conf-bar{height:6px;background:var(--surface2);border-radius:3px;width:100px;overflow:hidden}
+.conf-fill{height:100%;border-radius:3px;background:var(--accent)}
+
+/* Drop zone */
+.drop-zone{border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;transition:border-color .15s}
+.drop-zone.over{border-color:var(--accent);color:var(--accent)}
+
+/* Comparison */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.compare-grid{grid-template-columns:1fr}}
+.compare-col{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.compare-head{padding:8px 12px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.compare-body{padding:12px;font-size:13px}
+.stat-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border-bottom:none}
+.stat-key{color:var(--muted);font-size:12px}
+.stat-val{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:12px}
+
+/* key/value detail blocks */
+.kv{padding:4px 0}
+.kv > div{display:flex;gap:12px;padding:6px 14px;border-bottom:1px solid var(--border);font-size:12px;align-items:baseline}
+.kv > div:last-child{border-bottom:none}
+.kv span{width:150px;flex-shrink:0;color:var(--muted);font-size:11px}
+.kv b{font-weight:500;word-break:break-word}
+.kv i{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;
+  background:var(--surface2);padding:1px 6px;border-radius:3px;margin-right:4px;display:inline-block}
+
+/* Sub-questions */
+.pr-intro{padding:10px 14px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)}
+.pr-intro b{color:var(--fg);margin:0 3px}
+table.pr{width:100%;border-collapse:collapse;font-size:12px}
+table.pr th{text-align:left;padding:6px 12px;border-bottom:1px solid var(--border);
+  font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+table.pr td{padding:7px 12px;border-bottom:1px solid var(--border)}
+table.pr tr:last-child td{border-bottom:none}
+table.pr tr.dead td{opacity:.5}
+.pr-x{font-weight:600;white-space:nowrap}
+.pr-y{color:var(--fg)}
+.pr-arrow{color:var(--muted);padding:0 2px !important}
+.pr-n{text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap}
+.pr-n.warn{color:var(--amber,#f59e0b);font-weight:700}
+.pr-d{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap}
+.pr-d.live{color:var(--fg);font-weight:600}
+.pr-foot{padding:9px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.5}
+.pr-foot.warn{color:var(--amber,#f59e0b)}
+
+/* Funnel */
+.fn-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+@media(max-width:620px){.fn-grid{grid-template-columns:1fr}}
+.fn-side{padding:12px 14px;border-right:1px solid var(--border)}
+.fn-side:last-child{border-right:none}
+.fn-side-h{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px}
+.fn-step{display:flex;align-items:baseline;gap:8px;padding:2px 0}
+.fn-n{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;min-width:46px;text-align:right}
+.fn-l{font-size:11.5px;color:var(--muted)}
+.fn-step.drop .fn-n{color:var(--dec)}
+.fn-step.keep .fn-n{color:var(--inc)}
+.fb{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;margin:8px 0 2px}
+.fb-fill{height:100%;background:var(--inc);border-radius:3px}
+.fn-terms{margin-top:9px;border-top:1px solid var(--border);padding-top:7px}
+.fn-terms-h{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px}
+.fn-term{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:1.5px 0;color:var(--muted)}
+.fn-term b{color:var(--fg)}
+.fn-term.hot b{color:var(--dec)}
+.fn-term.hot span{color:var(--dec)}
+.fn-pass{border-top:1px solid var(--border)}
+table.fp{width:100%;border-collapse:collapse;font-size:11.5px}
+table.fp th{text-align:left;padding:5px 14px;border-bottom:1px solid var(--border);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+table.fp td{padding:6px 14px;border-bottom:1px solid var(--border)}
+table.fp tr:last-child td{border-bottom:none}
+table.fp tr.dim{opacity:.45}
+.fp-n{font-family:'JetBrains Mono',monospace;color:var(--muted);width:24px}
+.fp-name{font-size:12px}
+.fp-used{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(52,211,153,.15);color:var(--inc);padding:1px 5px;border-radius:3px;margin-left:5px}
+.fp-v{font-family:'JetBrains Mono',monospace;text-align:right;width:76px}
+.fp-v.drop{color:var(--dec)} .fp-v.keep{color:var(--inc);font-weight:700}
+.fp-desc{font-size:10px;color:var(--muted);margin-top:1px}
+.fn-flags{display:flex;flex-wrap:wrap;gap:8px;padding:9px 14px;border-top:1px solid var(--border)}
+.fn-flag{font-size:10.5px;color:var(--muted);background:var(--surface2);padding:3px 8px;border-radius:4px}
+.fn-flag.warn{color:var(--amber,#f59e0b)}
+.fn-ctx{padding:10px 14px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.fn-ctx-h{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-right:4px}
+.pill-ctx{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;border-radius:3px;background:var(--surface2);color:var(--muted)}
+.fn-dropped{padding:10px 14px;border-top:1px solid var(--border)}
+.fn-drop-row{display:flex;gap:9px;align-items:baseline;font-size:11px;color:var(--muted);padding:2.5px 0}
+.fn-drop-row i{opacity:.5;font-style:normal}
+.fn-drop-ctx{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--dec);min-width:180px;flex-shrink:0}
+
+/* Evidence graph */
+:root{--inc:#34d399;--dec:#f87171;--neu:#8b90ad}
+.graph-legend{
+  display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;
+  padding:9px 14px;border-bottom:1px solid var(--border);
+  font-size:11px;color:var(--muted);
+}
+.lg-grp{display:inline-flex;align-items:center;gap:5px}
+.lg-grp b{font-family:'JetBrains Mono',monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;opacity:.75;margin-right:2px}
+.graph-legend i.sw{display:inline-block;width:14px;height:3px;border-radius:2px;margin:0 3px 0 7px;vertical-align:middle}
+.graph-legend i.sw:first-of-type{margin-left:0}
+.graph-legend i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 3px 0 7px;vertical-align:middle}
+.graph-legend i.sw.dash{background:repeating-linear-gradient(90deg,var(--neu) 0 4px,transparent 4px 7px)}
+.legend-note{margin-left:auto;font-style:italic;opacity:.8}
+/* Experiments */
+table.ab{width:100%;border-collapse:collapse;font-size:11.5px}
+table.ab th{text-align:left;padding:7px 12px;border-bottom:1px solid var(--border);
+  font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+table.ab td{padding:7px 12px;border-bottom:1px solid var(--border)}
+table.ab tr:last-child td{border-bottom:none}
+table.ab .n{text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.ab-name{font-weight:600;white-space:nowrap}
+.ab-flag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  background:var(--surface2);color:var(--muted);padding:1px 6px;border-radius:3px;margin:1px 3px 1px 0;white-space:nowrap}
+.ab-none{color:var(--muted);font-style:italic;font-size:11px}
+table.ab td.best{color:var(--inc);font-weight:700}
+table.ab td.warn{color:var(--amber,#f59e0b)}
+table.ab td.hit{color:var(--inc)}
+table.ab td.miss{color:var(--muted);opacity:.5}
+.ab-sub{padding:9px 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);line-height:1.5}
+.ab-head2{padding:12px 14px 6px;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--muted);border-top:1px solid var(--border)}
+
+.panel{border-bottom:1px solid var(--border)}
+.panel:last-of-type{border-bottom:none}
+.panel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;background:var(--surface2)}
+.panel-q{font-size:12.5px;font-weight:700}
+.panel-head.grey .panel-q{color:var(--muted);font-weight:500;font-style:italic}
+.panel-n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.panel-tally{margin-left:auto;display:flex;gap:9px}
+.tl{font-family:'JetBrains Mono',monospace;font-size:10px;font-style:normal}
+.tl-inc{color:var(--inc)} .tl-dec{color:var(--dec)} .tl-neu{color:var(--neu)}
+.graph-wrap{overflow-x:auto;padding:6px 10px 12px}
+.graph-svg{display:block;width:100%;height:auto}
+.gh{font-size:9px;font-weight:700;letter-spacing:.11em;fill:var(--muted);font-family:'JetBrains Mono',monospace}
+.ghr{stroke:var(--border);stroke-width:1}
+.gl{font-size:12px;fill:var(--fg);font-family:'Inter',system-ui,sans-serif}
+.gl-management{fill:#a78bfa}
+.gl-taxon{fill:#fbbf24}
+.gq{font-size:10px;fill:var(--muted);font-family:'JetBrains Mono',monospace}
+.ge-g{cursor:pointer}
+.ge{fill:none;opacity:.6;transition:opacity .12s,stroke-width .12s}
+.ge-g:hover .ge{opacity:1;stroke-width:3.4}
+.ge.sel{opacity:1;stroke-width:3.8}
+.ge-inc{stroke:var(--inc)} .ge-dec{stroke:var(--dec)} .ge-neu{stroke:var(--neu)}
+.ge-neg{stroke-dasharray:5 4}
+.mk-inc{fill:var(--inc)} .mk-dec{fill:var(--dec)} .mk-neu{fill:var(--neu)}
+.ge-lbl{font-size:9px;font-family:'JetBrains Mono',monospace;opacity:.75;pointer-events:none}
+.ge-lbl-inc{fill:var(--inc)} .ge-lbl-dec{fill:var(--dec)} .ge-lbl-neu{fill:var(--neu)}
+
+/* edge table */
+.et-wrap{border-top:1px solid var(--border)}
+.et-head{padding:9px 14px;font-size:11px;color:var(--muted);font-weight:600}
+table.et{width:100%;border-collapse:collapse;font-size:11.5px}
+table.et th{
+  text-align:left;padding:5px 10px;border-bottom:1px solid var(--border);
+  font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;
+}
+table.et td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.et-row{cursor:pointer}
+.et-row:hover td{background:var(--surface2)}
+.et-dir{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;white-space:nowrap}
+.et-inc{color:var(--inc)} .et-dec{color:var(--dec)} .et-neu{color:var(--neu)}
+.et-n{color:var(--fg);line-height:1.45}
+.et-q{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted)}
+.et-p{color:var(--muted);text-align:center}
+.et-c{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;white-space:nowrap}
+.et-doc{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.edge-detail{
+  border-top:1px solid var(--border);padding:12px 14px;
+  font-size:12px;color:var(--muted);min-height:44px;
+}
+.ed-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:9px}
+.ed-node{font-weight:600;color:var(--fg);font-size:13px}
+.ed-pred{
+  font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:3px;background:var(--surface2);color:var(--muted);
+}
+.ed-pred.neg{background:rgba(248,113,113,.14);color:var(--dec)}
+.ed-row{display:flex;gap:10px;padding:2px 0}
+.ed-k{width:82px;flex-shrink:0;color:var(--muted);font-size:11px}
+.ed-v{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--fg);word-break:break-word}
+.ed-sent{
+  margin-top:10px;padding:9px 12px;background:var(--surface2);
+  border-left:2px solid var(--border);border-radius:0 5px 5px 0;
+  font-size:12px;line-height:1.55;color:var(--fg);font-style:italic;
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <div>
+        <div class="app-title">Pipeline Viewer</div>
+        <div class="app-sub">Load answers.trace.json to inspect</div>
+      </div>
+      <label class="upload-btn">
+        Load trace.json
+        <input type="file" accept=".json" id="file-input">
+      </label>
+      <div class="drop-zone" id="drop-zone">or drag &amp; drop here</div>
+    </div>
+    <div class="q-list" id="q-list">
+      <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">No trace loaded yet.</div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main" id="main">
+    <div class="empty">
+      <div class="empty-icon">🔬</div>
+      <h2>Load a trace file</h2>
+      <p>Run the pipeline with <code>--debug</code> then load the generated <code>answers.trace.json</code>.</p>
+      <p style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);padding:8px 12px;border-radius:6px;color:var(--muted)">
+        python -m lane2.cli questions.yaml answers.json --debug
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let traces = [];
+let selected = null;
+
+// File loading
+document.getElementById('file-input').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) loadFile(f);
+});
+
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f) loadFile(f);
+});
+
+function loadFile(f) {
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data && data.kind === 'ablations') {
+        document.getElementById('drop-zone').style.display = 'none';
+        renderAblations(data);
+        return;
+      }
+      // Handle wrong file: answers.json has {"team":..., "answers":[...]}
+      if (data && data.team && data.answers) {
+        showError('⚠ That\'s answers.json — please load answers.trace.json instead (same folder, written at the same time).');
+        return;
+      }
+      traces = Array.isArray(data) ? data : [data];
+      if (!traces[0] || !traces[0].id) {
+        showError('Unexpected file format. Load answers.trace.json (not answers.json).');
+        return;
+      }
+      document.getElementById('drop-zone').style.display = 'none';
+      renderSidebar();
+      if (traces.length > 0) selectTrace(0);
+    } catch(err) {
+      showError('Could not parse JSON: ' + err.message);
+    }
+  };
+  r.readAsText(f);
+}
+
+function showError(msg) {
+  document.getElementById('drop-zone').textContent = msg;
+  document.getElementById('drop-zone').style.borderColor = 'var(--err)';
+  document.getElementById('drop-zone').style.color = 'var(--err)';
+}
+
+// --- Experiments view (ablations.json) ------------------------------------
+const FLAG_LABEL = {
+  invariant_stems: 'invariant stems',
+  last_word: 'last-word expand',
+  loose_adjacency: 'loose adjacency',
+  drop_native: "drop 'native'",
+};
+
+function renderAblations(data) {
+  const runs = data.runs || [];
+  const cuts = data.cuts || ['10', '20', '50'];
+  const byStrategy = {};
+  runs.forEach(r => { (byStrategy[r.strategy] = byStrategy[r.strategy] || []).push(r); });
+
+  const best = {};
+  Object.entries(byStrategy).forEach(([s, rs]) => {
+    best[s] = {
+      recall_all: Math.max(...rs.map(r => r.recall_all)),
+      dir: Math.max(...rs.map(r => r.dir_ok)),
+    };
+  });
+
+  const qids = (runs[0] && runs[0].questions || []).map(q => q.id);
+
+  const section = ([strategy, rs]) => `
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Strategy ${esc(strategy)}</span>
+        <span class="card-head-tag badge badge-grey">${rs.length} configurations</span>
+      </div>
+      <table class="ab">
+        <tr>
+          <th>Configuration</th><th>Flags</th><th class="n">Edges</th>
+          ${cuts.map(c => `<th class="n">r@${c}</th>`).join('')}
+          <th class="n">r@all</th><th class="n">Direction</th>
+        </tr>
+        ${rs.map(r => `
+          <tr>
+            <td class="ab-name">${esc(r.name)}</td>
+            <td>${Object.entries(r.flags).filter(([, v]) => v)
+                  .map(([k]) => `<span class="ab-flag">${FLAG_LABEL[k] || k}</span>`).join('') || '<span class="ab-none">none</span>'}</td>
+            <td class="n ${r.edges > 800 ? 'warn' : ''}">${r.edges}</td>
+            ${cuts.map(c => `<td class="n">${pct(r.recall[c])}</td>`).join('')}
+            <td class="n ${r.recall_all === best[strategy].recall_all ? 'best' : ''}">${pct(r.recall_all)}</td>
+            <td class="n ${r.dir_ok === best[strategy].dir ? 'best' : ''}">${r.dir_ok}/${r.dir_n}</td>
+          </tr>`).join('')}
+      </table>
+      <div class="ab-sub">Recall is against the confirmed edges in tests/cases.yaml, which is a
+        partial list — read it as a lower bound and a way to compare runs, not as a score.</div>
+
+      <div class="ab-head2">Edges found per question</div>
+      <table class="ab">
+        <tr><th>Configuration</th>${qids.map(q => `<th class="n">${esc(q)}</th>`).join('')}</tr>
+        ${rs.map(r => `
+          <tr>
+            <td class="ab-name">${esc(r.name)}</td>
+            ${(r.questions || []).map(q => `
+              <td class="n ${q.hit ? 'hit' : (q.ref ? 'miss' : '')}"
+                  title="${q.hit}/${q.ref} confirmed · ${q.got} returned · nodes ${q.nodes[0]}x${q.nodes[1]} · expected ${q.expected} got ${q.ours}">
+                ${q.ref ? `${q.hit}/${q.ref}` : '–'}
+              </td>`).join('')}
+          </tr>`).join('')}
+      </table>
+      <div class="ab-sub">Cell shows confirmed edges found over confirmed edges listed. Hover for
+        node counts and the direction each configuration produced.</div>
+    </div>`;
+
+  document.getElementById('main').innerHTML =
+    `<div class="card"><div class="card-head"><span class="card-head-label">Experiments</span></div>
+       <div class="answer-box">Each row is one configuration of the retrieve pipeline, run over the
+       same questions with the same gold parses. Compare rows to see what a change actually buys.</div>
+     </div>` + Object.entries(byStrategy).map(section).join('');
+
+  document.getElementById('q-list').innerHTML =
+    `<div style="padding:14px;font-size:12px;color:var(--muted)">
+       Experiments loaded.<br><br>${runs.length} runs over ${qids.length} questions.
+       <br><br>Drop <code>answers.trace.json</code> to go back to the per-question view.
+     </div>`;
+  document.querySelector('.app-sub').textContent = `${runs.length} configurations compared`;
+}
+
+function pct(x) { return x == null ? '–' : `${Math.round(x * 100)}%`; }
+
+function autoLoad(data) {
+  if (data && data.kind === 'ablations') {
+    document.getElementById('drop-zone').style.display = 'none';
+    renderAblations(data);
+    return true;
+  }
+  traces = Array.isArray(data) ? data : [data];
+  if (!traces[0] || !traces[0].id) return false;
+  document.getElementById('drop-zone').style.display = 'none';
+  document.querySelector('.upload-btn').style.display = 'none';
+  renderSidebar();
+  selectTrace(0);
+  return true;
+}
+
+fetch('answers.trace.json')
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(autoLoad)
+  .catch(() => {});
+
+function dirBadge(d) {
+  if (!d) return `<span class="badge badge-grey">no_evidence</span>`;
+  const map = {increase:'badge-green', decrease:'badge-orange', no_effect:'badge-grey', mixed:'badge-orange', unclear:'badge-grey'};
+  return `<span class="badge ${map[d]||'badge-grey'}">${d}</span>`;
+}
+
+function statusBadge(s) {
+  return s === 'answered'
+    ? `<span class="badge badge-green">answered</span>`
+    : `<span class="badge badge-orange">no_evidence</span>`;
+}
+
+function methodBadge(m) {
+  const map = {regex:'badge-green', llm:'badge-orange', failed:'badge-red'};
+  return `<span class="badge ${map[m]||'badge-grey'}">${m||'?'}</span>`;
+}
+
+
+// --- Parse check: Shady's dev-only uncertainty score (branch actual-parse) --
+// score is 0-100, where 0 = the model is certain the parse captured the
+// question and 100 = certain it did not. null means no judgement: the check
+// was off, the call failed, or the reply was unusable. Never shown as a 0.
+function uncBadge(u) {
+  if (!u) return '';
+  const map = {low:'badge-green', moderate:'badge-orange', high:'badge-orange', very_high:'badge-red'};
+  const tip = esc(u.reason || '');
+  if (u.score == null) return `<span class="badge badge-grey" title="${tip}">unsure —</span>`;
+  return `<span class="badge ${map[u.band] || 'badge-grey'}" title="${tip}">unsure ${u.score}</span>`;
+}
+
+function tokBar(label, n, total) {
+  const w = total > 0 ? Math.round((n / total) * 100) : 0;
+  return `
+    <div style="display:flex;align-items:center;gap:8px;font-size:11px;padding:2px 0">
+      <span style="width:80px;color:var(--muted)">${label}</span>
+      <span style="flex:0 0 120px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
+        <span style="display:block;height:100%;width:${w}%;background:#6366f1"></span>
+      </span>
+      <span style="font-variant-numeric:tabular-nums">${(n||0).toLocaleString()}</span>
+    </div>`;
+}
+
+// Returns '' when a trace carries neither field, so older traces render as before.
+function renderParseCheck(t) {
+  const u = t.uncertainty;
+  const tk = t.tokens || {};
+  if (!u && !Object.keys(tk).length) return '';
+  const total = tk.total || 0;
+  const off = u && u.score == null;
+  return `
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Parse check</span>
+        ${u ? uncBadge(u) : ''}
+        ${u && u.cached ? `<span class="card-head-tag badge badge-grey">cached</span>` : ''}
+        <span style="margin-left:auto;font-size:11px;color:var(--muted)">Does the parse capture the question? · dev-only</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:10px 12px;border-right:1px solid var(--border)">
+          ${u ? `
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;color:${off ? 'var(--muted)' : 'inherit'}">${off ? '—' : u.score}</span>
+              <span style="font-size:11px;color:var(--muted)">/ 100 uncertainty${off ? '' : ` · ${String(u.band||'').replace('_',' ')}`}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.45">${esc(u.reason || '')}</div>
+          ` : `<div style="font-size:12px;color:var(--muted)">No uncertainty score in this trace. Re-run with <code>--uncertainty</code>.</div>`}
+        </div>
+        <div style="padding:10px 12px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">LLM tokens</div>
+          ${tokBar('parse', tk.parse, total)}
+          ${tokBar('ground', tk.ground, total)}
+          ${tokBar('check', tk.uncertainty, total)}
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;border-top:1px solid var(--border);padding-top:4px">
+            total <b style="color:var(--text);font-variant-numeric:tabular-nums">${total.toLocaleString()}</b>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderSidebar() {
+  const list = document.getElementById('q-list');
+  list.innerHTML = traces.map((t, i) => {
+    const ans = t.answer || {};
+    const dir = ans.direction;
+    return `
+      <div class="q-item" id="qi-${i}" onclick="selectTrace(${i})">
+        <div class="q-id">${t.id}</div>
+        <div class="q-text">${t.question}</div>
+        <div class="q-status">
+          ${statusBadge(ans.status)}
+          ${dir ? dirBadge(dir) : ''}
+          ${t.parse ? methodBadge(t.parse.method) : ''}
+          ${uncBadge(t.uncertainty)}
+        </div>
+      </div>`;
+  }).join('');
+  const total = traces.reduce((s,t) => s + ((t.tokens||{}).total || 0), 0);
+  const uncTok = traces.reduce((s,t) => s + ((t.tokens||{}).uncertainty || 0), 0);
+  document.querySelector('.app-sub').textContent =
+    `${traces.length} questions · ${total.toLocaleString()} LLM tokens`
+    + (uncTok ? ` (${uncTok.toLocaleString()} on parse checks)` : '');
+}
+
+// --- Sub-questions --------------------------------------------------------
+// A question naming several causes or effects is searched once per (X,Y) pair,
+// each judged on its own, because a finding can hold for glyphosate and not for
+// herbicides generally.
+function renderPairs(pairs, parse) {
+  if (!pairs || pairs.length < 2) return '';
+  const answered = pairs.filter(p => p.status === 'answered').length;
+  const dirs = [...new Set(pairs.filter(p => p.direction).map(p => p.direction))];
+
+  const row = p => {
+    const dead = p.status !== 'answered';
+    const anchorBad = (p.anchor || []).some(a => a === 0);
+    return `<tr class="${dead ? 'dead' : ''}">
+      <td class="pr-x">${esc(p.intervention)}</td>
+      <td class="pr-arrow">→</td>
+      <td class="pr-y">${esc(p.outcome)}</td>
+      <td class="pr-n ${anchorBad ? 'warn' : ''}" title="nodes matched on each side">
+        ${(p.nodes || []).join(' × ')}</td>
+      <td class="pr-n">${p.edges}</td>
+      <td class="pr-d ${dead ? '' : 'live'}">${esc(String(p.direction ?? 'no evidence'))}</td>
+      <td class="pr-n">${p.certainty ? esc(p.certainty) : '–'}</td>
+      <td class="pr-n">${p.confidence ?? '–'}</td>
+    </tr>`;
+  };
+
+  return `
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-label">Sub-questions</span>
+      <span class="card-head-tag badge badge-grey">${pairs.length} pairs · ${answered} answered</span>
+    </div>
+    <div class="pr-intro">${esc((parse.interventions || []).join(', '))}
+      <b>×</b> ${esc((parse.outcomes || []).join(', '))} — each searched and judged separately.</div>
+    <table class="pr">
+      <tr><th>Cause</th><th></th><th>Effect</th><th class="pr-n">nodes</th>
+          <th class="pr-n">edges</th><th>direction</th><th class="pr-n">certainty</th><th class="pr-n">conf</th></tr>
+      ${pairs.map(row).join('')}
+    </table>
+    ${dirs.length > 1 ? `<div class="pr-foot">The pairs disagree (${dirs.map(esc).join(', ')}),
+      which is why the combined answer is mixed. A finding can be true of one and not the other.</div>` : ''}
+    ${pairs.some(p => (p.anchor || []).some(a => a === 0))
+      ? `<div class="pr-foot warn">An amber node count means the question's own wording matched nothing
+         on that side; any edges there came from the text-match fallback.</div>` : ''}
+  </div>`;
+}
+
+// --- Funnel: counts before and after each filter --------------------------
+function bar(kept, total) {
+  const pct = total ? Math.round(100 * kept / total) : 0;
+  return `<div class="fb"><div class="fb-fill" style="width:${pct}%"></div></div>`;
+}
+
+function fside(title, s, cap) {
+  if (!s || !s.text_matched) return '';
+  const terms = s.per_term || {};
+  const top = Object.entries(terms).slice(0, 6);
+  return `<div class="fn-side">
+    <div class="fn-side-h">${title}</div>
+    <div class="fn-step"><span class="fn-n">${s.text_matched}</span><span class="fn-l">nodes matched the text</span></div>
+    ${s.dropped_wrong_type ? `<div class="fn-step drop"><span class="fn-n">−${s.dropped_wrong_type}</span><span class="fn-l">wrong entity_type (${cap})</span></div>` : ''}
+    <div class="fn-step keep"><span class="fn-n">${s.kept}</span><span class="fn-l">kept</span></div>
+    ${bar(s.kept, s.text_matched)}
+    ${top.length ? `<div class="fn-terms"><div class="fn-terms-h">hits per term</div>${
+      top.map(([t, n]) => `<div class="fn-term${n > 100 ? ' hot' : ''}"><span>${esc(t)}</span><b>${n}</b></div>`).join('')
+    }</div>` : ''}
+  </div>`;
+}
+
+function renderFunnel(g, r) {
+  const gs = (g && g.stats) || {};
+  const rs = (r && r.stats) || {};
+  const passes = rs.passes || [];
+  if (!gs.intervention && !passes.length) return '';
+
+  const PASS_DESC = {
+    direct: 'both sides grounded to nodes — strongest',
+    outcome_text: 'subject grounded, object keyword-matched',
+    intervention_text: 'object grounded, subject keyword-matched',
+  };
+  const passRows = passes.map(p => `
+    <tr class="${p.found ? '' : 'dim'}">
+      <td class="fp-name">${esc(p.name)}<div class="fp-desc">${PASS_DESC[p.name] || ''}</div></td>
+      <td class="fp-v">${p.found}</td>
+      <td class="fp-v keep">${p.new ? '+' + p.new : '0'}</td>
+    </tr>`).join('');
+
+  return `
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-label">Funnel — before &amp; after each filter</span>
+      ${(rs.contexts && rs.contexts.length)
+        ? `<span class="card-head-tag badge badge-grey">${rs.contexts.length} ecosystem filter${rs.contexts.length > 1 ? 's' : ''}</span>`
+        : `<span class="card-head-tag badge badge-grey">no ecosystem filter</span>`}
+    </div>
+
+    <div class="fn-grid">
+      ${fside('Intervention (X)', gs.intervention, 'cause types')}
+      ${fside('Outcome (Y)', gs.outcome, 'outcome types')}
+    </div>
+
+    ${passes.length ? `
+    <div class="fn-pass">
+      <div class="fn-side-h" style="padding:10px 14px 4px">Retrieve passes — all run, results unioned (${rs.total} unique edges)</div>
+      <table class="fp">
+        <tr><th>Pass</th><th>Found</th><th>New</th></tr>
+        ${passRows}
+      </table>
+      ${(rs.reverse_found || rs.out_of_context) ? `<div class="fn-flags">
+        ${rs.reverse_found ? `<span class="fn-flag">${rs.reverse_found} reverse Y→X claim${rs.reverse_found > 1 ? 's' : ''} — excluded from edge_ids</span>` : ''}
+        ${rs.out_of_context ? `<span class="fn-flag warn">${rs.out_of_context} of ${rs.total} outside the question's ecosystem — kept, flagged for decide</span>` : ''}
+      </div>` : ''}
+    </div>` : ''}
+
+    ${(rs.contexts && rs.contexts.length) ? `
+    <div class="fn-ctx">
+      <span class="fn-ctx-h">Allowed ecosystems</span>
+      ${rs.contexts.map(c => `<span class="pill-ctx">${esc(c)}</span>`).join('')}
+    </div>` : ''}
+
+    ${(r.reverse && r.reverse.length) ? `
+    <div class="fn-dropped">
+      <div class="fn-side-h" style="margin-bottom:7px">Reverse claims (Y→X) — excluded from edge_ids, shown for review</div>
+      ${r.reverse.map(e => `<div class="fn-drop-row">
+        <span class="fn-drop-ctx">${esc(e.predicate || '')}</span>
+        <span>${esc((e.subject||{}).name || '?')} <i>→</i> ${esc((e.object||{}).name || '?')}</span>
+      </div>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
+
+// --- Evidence graph -------------------------------------------------------
+// Bipartite layout: cause nodes left, effect nodes right, one line per claim.
+const EDGE_DIR = {increased:'inc', decreased:'dec'};
+// predicates that reverse the meaning of the object's qualifier
+const FLIP = new Set(['prevents','disrupts','reduces']);
+
+function edgeClass(e) {
+  if (e.negated) return 'neu';
+  let d = EDGE_DIR[e.object && e.object.qualifier] || null;
+  if (d && FLIP.has(e.predicate)) d = (d === 'inc' ? 'dec' : 'inc');
+  return d || 'neu';
+}
+
+const CERT_W = {moderate:2.4, low:1.5, very_low:0.8};
+
+let _graphEdges = [];
+
+const DIR_LABEL = {inc:'▲ increase', dec:'▼ decrease', neu:'– no change'};
+
+// A question naming two outcomes is two X->Y questions sharing one search.
+// One merged graph hides which evidence answers which half, so split them.
+function renderPanels(edges, parse) {
+  const outcomes = (parse && parse.outcomes) || [];
+  if (outcomes.length < 2) return `<div class="graph-wrap">${renderGraph(edges)}</div>`;
+
+  const panels = outcomes.map(o => {
+    const sub = edges.filter(e => (e.answers || []).includes(o));
+    return {o, sub};
+  }).filter(p => p.sub.length);
+
+  const claimed = new Set();
+  panels.forEach(p => p.sub.forEach(e => claimed.add(e.id)));
+  const rest = edges.filter(e => !claimed.has(e.id));
+  if (rest.length) panels.push({o: 'not attributable to one outcome', sub: rest, grey: true});
+
+  if (!panels.length) return `<div class="graph-wrap">${renderGraph(edges)}</div>`;
+
+  return panels.map(p => `
+    <div class="panel">
+      <div class="panel-head ${p.grey ? 'grey' : ''}">
+        <span class="panel-q">${esc(p.o)}</span>
+        <span class="panel-n">${p.sub.length} edge${p.sub.length > 1 ? 's' : ''}</span>
+        ${p.grey ? '' : `<span class="panel-tally">${tallyOf(p.sub)}</span>`}
+      </div>
+      <div class="graph-wrap">${renderGraph(p.sub)}</div>
+    </div>`).join('');
+}
+
+function tallyOf(edges) {
+  const t = {inc: 0, dec: 0, neu: 0};
+  edges.forEach(e => { t[edgeClass(e)]++; });
+  return ['inc', 'dec', 'neu']
+    .filter(k => t[k])
+    .map(k => `<i class="tl tl-${k}">${DIR_LABEL[k]} ${t[k]}</i>`).join('');
+}
+
+function renderGraph(edges) {
+  _graphEdges = edges;
+  // collapse to unique nodes per side, preserving first-seen order
+  const L = [], R = [], li = new Map(), ri = new Map();
+  edges.forEach(e => {
+    const s = e.subject || {}, o = e.object || {};
+    if (!li.has(s.id)) { li.set(s.id, L.length); L.push(s); }
+    if (!ri.has(o.id)) { ri.set(o.id, R.length); R.push(o); }
+  });
+
+  // names wrap instead of truncating, so rows have variable height
+  const padY = 36, colW = 340, gap = 230, lineH = 14, rowPad = 14;
+  const W = colW * 2 + gap;
+
+  // the graph has many distinct nodes sharing a name ("Richness" four times
+  // over); number the repeats so a line can be traced to a specific one
+  const tag = ns => {
+    const seen = {};
+    ns.forEach(n => { seen[n.name] = (seen[n.name] || 0) + 1; });
+    const run = {};
+    return ns.map(n => {
+      if ((seen[n.name] || 0) < 2) return n.name;
+      run[n.name] = (run[n.name] || 0) + 1;
+      return `${n.name} (${run[n.name]})`;
+    });
+  };
+  const LN = tag(L), RN = tag(R);
+  const LW = LN.map(s => wrapText(s, 40));
+  // the " [increased]" suffix shares the last line, so wrap a little narrower
+  const RW = RN.map((s, i) => wrapText(s, R[i].qualifier
+    ? Math.max(24, 40 - R[i].qualifier.length - 3) : 40));
+
+  // lay rows out independently per side, then align each side's block
+  const rowTops = w => {
+    const tops = [];
+    let y = padY;
+    w.forEach(lines => { tops.push(y); y += lines.length * lineH + rowPad; });
+    return {tops, end: y};
+  };
+  const lay = rowTops(LW), ray = rowTops(RW);
+  const H = Math.max(lay.end, ray.end) + 8;
+  // vertical centre of a row = its top + half its text block
+  const yL = i => lay.tops[i] + (LW[i].length * lineH) / 2;
+  const yR = i => ray.tops[i] + (RW[i].length * lineH) / 2;
+  const yAt = i => yL(i);
+
+  const lines = edges.map((e, k) => {
+    const x1 = colW + 6, x2 = colW + gap - 6;
+    const y1 = yL(li.get((e.subject || {}).id));
+    const y2 = yR(ri.get((e.object || {}).id));
+    const mx = (x1 + x2) / 2;
+    const cls = edgeClass(e);
+    const w = CERT_W[e.certainty] || 1;
+    return `<g class="ge-g" data-k="${k}" onclick="showEdge(${k})">
+      <path d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"
+        class="ge ge-${cls}${e.negated ? ' ge-neg' : ''}" stroke-width="${w}"
+        marker-end="url(#arrow-${cls})" data-k="${k}"/>
+      <title>${esc(labelFor(e))}</title>
+    </g>`;
+  }).join('');
+
+  // one <tspan> per wrapped line; qualifier goes on its own line at the end
+  // qualifier trails the name, on the same line, so the label reads as a
+  // sentence: "Native species richness [decreased]"
+  const nodeLabel = (n, wrapped, x, top, anchor, side) => {
+    const cls = (n.type || '').split('_')[0];
+    const qual = (side === 'r' && n.qualifier) ? ` [${n.qualifier}]` : '';
+    const last = wrapped.length - 1;
+    const spans = wrapped.map((ln, i) => {
+      const tail = (i === last && qual) ? `<tspan class="gq">${esc(qual)}</tspan>` : '';
+      return `<tspan x="${x}" dy="${i === 0 ? 0 : lineH}">${esc(ln)}${tail}</tspan>`;
+    }).join('');
+    return `<text x="${x}" y="${top + 10}" class="gl gl-${cls}" text-anchor="${anchor}">${spans}</text>`;
+  };
+
+  const defs = ['inc', 'dec', 'neu'].map(c =>
+    `<marker id="arrow-${c}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6"
+       markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="mk mk-${c}"/></marker>`
+  ).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" class="graph-svg" preserveAspectRatio="xMidYMin meet">
+    <defs>${defs}</defs>
+    <text x="${colW}" y="16" class="gh" text-anchor="end">CAUSE  (intervention)</text>
+    <text x="${colW + gap}" y="16" class="gh">EFFECT  (outcome)</text>
+    <line x1="0" y1="24" x2="${W}" y2="24" class="ghr"/>
+    <g>${lines}</g>
+    <g>${L.map((n, i) => nodeLabel(n, LW[i], colW - 12, lay.tops[i], 'end', 'l')).join('')}</g>
+    <g>${R.map((n, i) => nodeLabel(n, RW[i], colW + gap + 12, ray.tops[i], 'start', 'r')).join('')}</g>
+  </svg>`;
+}
+
+// greedy word wrap; SVG text has no automatic wrapping
+function wrapText(s, maxChars, firstLineIndent) {
+  const words = String(s == null ? '?' : s).split(/\s+/);
+  const lines = [];
+  let cur = '';
+  for (const w of words) {
+    const budget = maxChars - (lines.length === 0 ? (firstLineIndent || 0) : 0);
+    if (!cur) { cur = w; continue; }
+    if ((cur + ' ' + w).length <= budget) cur += ' ' + w;
+    else { lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur);
+  return lines.length ? lines : ['?'];
+}
+
+function renderEdgeTable(edges) {
+  if (!edges || !edges.length) return '';
+  const rows = edges.map((e, k) => {
+    const cls = edgeClass(e);
+    const o = e.object || {}, s = e.subject || {};
+    return `<tr onclick="showEdge(${k})" class="et-row">
+      <td class="et-dir et-${cls}">${DIR_LABEL[cls]}</td>
+      <td class="et-n">${esc(s.name || '?')}</td>
+      <td class="et-p">${e.negated ? '✕' : '→'}</td>
+      <td class="et-n">${esc(o.name || '?')}${o.qualifier ? ` <span class="et-q">[${esc(o.qualifier)}]</span>` : ''}</td>
+      <td class="et-c">${esc(e.certainty || '')}</td>
+      <td class="et-c">${esc((e.evidence || '').replace(/_/g, ' '))}</td>
+      <td class="et-doc" title="${esc(e.doc || '')}">${esc(e.doc || '')}</td>
+    </tr>`;
+  }).join('');
+  const papers = new Set(edges.map(e => e.doc).filter(Boolean)).size;
+  return `<div class="et-wrap">
+    <div class="et-head">All ${edges.length} edges · ${papers} distinct ${papers === 1 ? 'study' : 'studies'}</div>
+    <table class="et">
+      <tr><th>Direction</th><th>Cause</th><th></th><th>Effect</th><th>Certainty</th><th>Evidence</th><th>Study (DOI)</th></tr>
+      ${rows}
+    </table>
+  </div>`;
+}
+
+function labelFor(e) {
+  const o = e.object || {};
+  return `${(e.subject||{}).name} —${e.predicate}${e.negated ? ' (NOT)' : ''}→ ${o.name} [${o.qualifier || '?'}], ${e.certainty}`;
+}
+
+function showEdge(k) {
+  const e = _graphEdges[k];
+  if (!e) return;
+  const o = e.object || {}, s = e.subject || {};
+  const row = (label, val) => val
+    ? `<div class="ed-row"><span class="ed-k">${label}</span><span class="ed-v">${esc(String(val))}</span></div>` : '';
+  document.getElementById('edge-detail').innerHTML = `
+    <div class="ed-head">
+      <span class="ed-node">${esc(s.name || '?')}</span>
+      <span class="ed-pred ${e.negated ? 'neg' : ''}">${e.negated ? 'NO RELATIONSHIP' : esc(e.predicate || '')}</span>
+      <span class="ed-node">${esc(o.name || '?')}</span>
+    </div>
+    ${row('direction', o.qualifier)}
+    ${row('certainty', e.certainty)}
+    ${row('evidence', e.evidence)}
+    ${row('strength', e.strength)}
+    ${row('language', e.causal_language)}
+    ${row('ecosystem', e.context)}
+    ${row('edge id', e.id)}
+    ${row('paper', e.doc)}
+    ${e.sentence ? `<div class="ed-sent">“${esc(e.sentence)}”</div>` : ''}`;
+  document.querySelectorAll('.ge').forEach(p => p.classList.toggle('sel', p.dataset.k === String(k)));
+}
+
+function trunc(s, n) { s = String(s == null ? '?' : s); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function selectTrace(i) {
+  selected = i;
+  document.querySelectorAll('.q-item').forEach((el,j) => el.classList.toggle('active', j===i));
+  renderMain(traces[i]);
+}
+
+// A throw anywhere inside the template below abandons the whole string, so the
+// page silently keeps whatever it showed before. Surface the error instead.
+function renderMain(t) {
+  try {
+    renderMainInner(t);
+  } catch (err) {
+    document.getElementById('main').innerHTML = `
+      <div class="card">
+        <div class="card-head"><span class="card-head-label" style="color:var(--dec)">Render error</span></div>
+        <div class="answer-box">
+          <p>The page could not draw this question. The trace loaded fine; the fault is in the viewer.</p>
+          <pre style="margin-top:10px;white-space:pre-wrap;font-size:11px">${esc(err && err.stack || String(err))}</pre>
+        </div>
+      </div>`;
+    throw err;
+  }
+}
+
+function renderMainInner(t) {
+  const ans = t.answer || {};
+  const p = t.parse || {};
+  const g = t.ground || {};
+  const r = t.retrieve || {};
+  const d = t.decide || {};
+  const tok = t.tokens || {};
+
+  const xNodes = (g.intervention_nodes || []);
+  const yNodes = (g.outcome_nodes || []);
+  // the node lists are truncated for display; use the real counts when present
+  const xCount = g.intervention_count ?? xNodes.length;
+  const yCount = g.outcome_count ?? yNodes.length;
+  const terms_x = (g.intervention_terms || []);
+  const terms_y = (g.outcome_terms || []);
+
+  const confPct = Math.round((d.confidence || 0) * 100);
+
+  document.getElementById('main').innerHTML = `
+
+    <!-- Question -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Question</span>
+        <span class="card-head-tag badge badge-grey">${t.id}</span>
+      </div>
+      <div class="q-full">${t.question}</div>
+    </div>
+
+    <!-- Pipeline summary row -->
+    <div class="pipeline-row">
+      <div class="p-step">
+        <div class="p-step-name">Parse</div>
+        <div class="p-step-val">${methodBadge(p.method)}</div>
+        <div class="p-step-sub">${p.intervention ? `X: ${p.intervention}` : '—'}</div>
+        <div class="p-step-sub">${p.outcome ? `Y: ${p.outcome}` : '—'}</div>
+        ${(t.uncertainty || tok.total) ? `<div class="p-step-sub" style="margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          ${uncBadge(t.uncertainty)}
+          ${tok.total ? `<span title="parse ${tok.parse||0} + ground ${tok.ground||0} + check ${tok.uncertainty||0} tokens" style="font-variant-numeric:tabular-nums;cursor:help">${(tok.total||0).toLocaleString()} tok</span>` : ''}
+        </div>` : ''}
+      </div>
+      <div class="p-arrow">▶</div>
+      <div class="p-step">
+        <div class="p-step-name">Ground</div>
+        <div class="p-step-val">${xCount} × ${yCount}</div>
+        <div class="p-step-sub">intervention × outcome nodes</div>
+      </div>
+      <div class="p-arrow">▶</div>
+      <div class="p-step">
+        <div class="p-step-name">Retrieve</div>
+        <div class="p-step-val">${r.edge_count ?? 0} edges</div>
+        <div class="p-step-sub">connecting X→Y</div>
+      </div>
+      <div class="p-arrow">▶</div>
+      <div class="p-step">
+        <div class="p-step-name">Decide</div>
+        <div class="p-step-val">${dirBadge(d.direction)}</div>
+        <div class="p-step-sub">${d.certainty || '—'} certainty</div>
+      </div>
+    </div>
+
+    <!-- Parse check + token spend -->
+    ${renderParseCheck(t)}
+
+    <!-- Ground detail -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Ground</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--muted)">What terms were searched, what nodes matched</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border)">
+        <div style="border-right:1px solid var(--border)">
+          <div style="padding:8px 12px;font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.07em">Intervention (X)</div>
+          <div class="terms">${terms_x.map(t=>`<span class="term">${t}</span>`).join('')||'<span style="color:var(--muted);font-size:12px;padding:4px">none</span>'}</div>
+          <div style="padding:4px 12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">${xCount} nodes matched${xCount > xNodes.length ? ` — showing first ${xNodes.length}` : ''}</div>
+          <div class="node-grid">${xNodes.map(n=>`<span class="node-pill intervention" title="${n.id}">${n.name}</span>`).join('')}</div>
+        </div>
+        <div>
+          <div style="padding:8px 12px;font-size:11px;font-weight:700;color:#0891b2;text-transform:uppercase;letter-spacing:.07em">Outcome (Y)</div>
+          <div class="terms">${terms_y.map(t=>`<span class="term">${t}</span>`).join('')||'<span style="color:var(--muted);font-size:12px;padding:4px">none</span>'}</div>
+          <div style="padding:4px 12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">${yCount} nodes matched${yCount > yNodes.length ? ` — showing first ${yNodes.length}` : ''}</div>
+          <div class="node-grid">${yNodes.map(n=>`<span class="node-pill outcome" title="${n.id}">${n.name}</span>`).join('')}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Everything parse decided, including what is usually dropped -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Parse detail</span>
+        <span class="card-head-tag badge badge-grey">${esc(p.method || '?')}</span>
+      </div>
+      <div class="kv">
+        <div><span>mode</span><b>${esc(p.mode || 'effect')}</b></div>
+        <div><span>kind (from yaml)</span><b>${esc(t.kind || '—')}</b></div>
+        <div><span>interventions</span><b>${(p.interventions || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
+        <div><span>outcomes</span><b>${(p.outcomes || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
+        <div><span>pairs</span><b>${(p.pairs || []).length}</b></div>
+        ${p.presumed && Object.keys(p.presumed).length
+          ? `<div><span>presumed direction</span><b>${esc(JSON.stringify(p.presumed))}</b></div>` : ''}
+      </div>
+    </div>
+
+    <!-- Sub-questions: one row per X->Y pair -->
+    ${renderPairs(t.pairs, p)}
+
+    <!-- Funnel: what each filter removed -->
+    ${renderFunnel(g, r)}
+
+    <!-- Evidence graph -->
+    ${(r.edges && r.edges.length) ? `
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Evidence Graph</span>
+        <span class="card-head-tag badge badge-grey">${r.edges.length} of ${r.edge_count} edges</span>
+      </div>
+      <div class="graph-legend">
+        <span class="lg-grp"><b>line</b>
+          <i class="sw" style="background:var(--inc)"></i>increase
+          <i class="sw" style="background:var(--dec)"></i>decrease
+          <i class="sw" style="background:var(--neu)"></i>other
+          <i class="sw dash"></i>no relationship
+        </span>
+        <span class="lg-grp"><b>text</b>
+          <i class="dot" style="background:#a78bfa"></i>intervention
+          <i class="dot" style="background:#fbbf24"></i>taxon
+          <i class="dot" style="background:var(--fg)"></i>variable
+        </span>
+        <span class="lg-grp"><b>[word]</b> the effect's recorded change, which is what decide reads</span>
+        <span class="legend-note">thickness = certainty · hover a line · click for the source sentence</span>
+      </div>
+      ${renderPanels(r.edges, p)}
+      ${renderEdgeTable(r.edges)}
+      <div id="edge-detail" class="edge-detail">Click any edge or row to see its claim.</div>
+    </div>` : ''}
+
+    <!-- Retrieve + Decide -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="card">
+        <div class="card-head"><span class="card-head-label">Retrieve</span></div>
+        <div class="card-body">
+          <div style="font-size:28px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)">${r.edge_count ?? 0}</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px">edges found</div>
+          ${(r.edge_ids||[]).slice(0,8).map(id=>`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);padding:2px 0;border-bottom:1px solid var(--border)">${id}</div>`).join('')}
+          ${(r.edge_ids||[]).length > 8 ? `<div style="font-size:11px;color:var(--muted);padding-top:6px">+ ${r.edge_ids.length - 8} more</div>` : ''}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-head-label">Decide</span></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+          <div class="stat-row"><span class="stat-key">Status</span>${statusBadge(d.status)}</div>
+          <div class="stat-row"><span class="stat-key">Direction</span>${dirBadge(d.direction)}</div>
+          <div class="stat-row"><span class="stat-key">Certainty</span><span class="stat-val">${d.certainty||'—'}</span></div>
+          <div class="stat-row">
+            <span class="stat-key">Confidence</span>
+            <div class="conf-bar-wrap">
+              <div class="conf-bar"><div class="conf-fill" style="width:${confPct}%"></div></div>
+              <span class="stat-val">${confPct}%</span>
+            </div>
+          </div>
+          ${d.tally && Object.keys(d.tally).length ? `
+          <div style="font-size:11px;color:var(--muted);padding-top:4px">
+            ${Object.entries(d.tally).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span style="margin-right:8px">${k}: <b>${v}</b></span>`).join('')}
+          </div>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- Tokens -->
+    <div class="card">
+      <div class="card-head"><span class="card-head-label">LLM Tokens</span></div>
+      <div class="card-body" style="display:flex;gap:28px;align-items:baseline">
+        <div>
+          <div style="font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)">${tok.total ?? 0}</div>
+          <div style="font-size:11px;color:var(--muted)">total this question</div>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:600;font-family:'JetBrains Mono',monospace">${tok.parse ?? 0}</div>
+          <div style="font-size:11px;color:var(--muted)">parse</div>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:600;font-family:'JetBrains Mono',monospace">${tok.ground ?? 0}</div>
+          <div style="font-size:11px;color:var(--muted)">ground</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Answer -->
+    <div class="card">
+      <div class="card-head"><span class="card-head-label">Final Answer</span></div>
+      <div class="answer-box">${ans.answer || '—'}</div>
+      ${ans.searched_for ? `<div style="padding:8px 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">Searched for: ${ans.searched_for}</div>` : ''}
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
