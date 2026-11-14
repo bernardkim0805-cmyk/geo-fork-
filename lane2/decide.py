@@ -45,17 +45,24 @@ CONFIG = {
     "conf_no_evidence_gap": 0.75,    # both sides grounded, nothing joins them
     "conf_no_evidence_miss": 0.55,   # a side grounded to nothing (maybe our miss)
     "conf_parse_failed": 0.3,
-    "bad_input_penalty": 0.9,        # x confidence when some edge_ids were unusable
+    "bad_input_penalty": 0.9,
+    # B1: sign words in a node name, used when the object has no up/down qualifier
+    "name_plus": r"\b(increas\w*|higher|greater|more|enhanc\w*|elevat\w*|rais\w*|ris(e|ing)|larger|improv\w*|gain\w*)\b",
+    "name_minus": r"\b(decreas\w*|lower|reduc\w*|fewer|less|loss|lost|declin\w*|smaller|diminish\w*)\b",
+    # B2/B3: edges that don't state X's effect on the LEVEL of Y -> excluded like R1
+    "variation_object": r"\b(variation|variability|variance|heterogeneity)\b",
+    "interaction_subject": r"\binteraction|\s[x\u00d7]\s|\band (year|time)\b",        # x confidence when some edge_ids were unusable
 }
 GRADES = ["very_low", "low", "moderate", "high"]
 DIRS = ("increase", "decrease", "no_effect")
+ABSTAIN = "abstain"   # cited as context, but carries no direction vote (B1, B5)
 
 
 @dataclass
 class EdgeVote:
     edge_id: str
     doc: str
-    direction: Optional[str]      # increase|decrease|no_effect|unclear|None (=excluded)
+    direction: Optional[str]      # increase|decrease|no_effect|abstain|None (=excluded)
     weight: float = 0.0
     head_to_head: bool = False    # compared to another treatment / reference, not "nothing"
     associative: bool = False
@@ -88,6 +95,17 @@ def read_edge(edge: dict, graph, query: Query) -> EdgeVote:
         v.reason = f"excluded: predicate {pred}"
         return v
 
+    # B2/B3: interaction subjects and "variation in Y" objects say nothing about
+    # what X does to the level of Y
+    subj_name = graph.nodes[edge["subject"]].get("name") or ""
+    obj_name = graph.nodes[edge["object"]].get("name") or ""
+    if re.search(CONFIG["interaction_subject"], subj_name, re.I):
+        v.reason = "excluded: interaction subject"
+        return v
+    if re.search(CONFIG["variation_object"], obj_name, re.I):
+        v.reason = "excluded: variation-in object"
+        return v
+
     cw, v.head_to_head = _comparator_weight(edge)
     lang = edge.get("causal_language")
     lw = CONFIG["language_weight"].get(lang, 0.75)
@@ -107,21 +125,41 @@ def read_edge(edge: dict, graph, query: Query) -> EdgeVote:
         v.direction, v.reason = "no_effect", "object unchanged"
         return v
 
+    subj_q = graph.nodes[edge["subject"]].get("state_or_change_qualifier")
+    # B5: an 'unchanged' subject means X itself didn't vary, so it can't say what X does
+    if subj_q == "unchanged":
+        v.direction, v.reason = ABSTAIN, "subject unchanged"
+        return v
+
     # R4: subject sign x predicate sign x object sign
     o = CONFIG["object_sign"].get(obj_q)
+    from_name = False
+    if o is None:  # B1: fall back to sign words in the object's name
+        o, from_name = _name_sign(obj_name), True
     p = CONFIG["predicate_sign"].get(pred)
     if o is None or p is None:
-        v.direction, v.reason = "unclear", f"no sign (predicate={pred}, object={obj_q})"
+        v.direction, v.reason = ABSTAIN, f"no sign (predicate={pred}, object={obj_q})"
         return v
     s = 1
-    subj_q = graph.nodes[edge["subject"]].get("state_or_change_qualifier")
     if subj_q in CONFIG["negative_subject_qualifiers"]:
         asks_about_removal = re.search(CONFIG["removal_words"], (query.intervention or "") + " ", re.I)
         if not asks_about_removal:
             s, v.flipped_subject = -1, True
     v.direction = "increase" if s * p * o > 0 else "decrease"
-    v.reason = f"sign {s}*{p}*{o}" + (" (subject flipped)" if v.flipped_subject else "")
+    v.reason = (f"sign {s}*{p}*{o}" + (" (object sign from name)" if from_name else "")
+                + (" (subject flipped)" if v.flipped_subject else ""))
     return v
+
+
+def _name_sign(name: str) -> Optional[int]:
+    """B1: +1/-1 if the name has only up-words or only down-words, else None."""
+    plus = re.search(CONFIG["name_plus"], name or "", re.I)
+    minus = re.search(CONFIG["name_minus"], name or "", re.I)
+    if plus and not minus:
+        return 1
+    if minus and not plus:
+        return -1
+    return None
 
 
 # --------------------------------------------------------------------------
@@ -197,14 +235,16 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
     votes = [read_edge(graph.edges[e], graph, query) for e in usable]
     voting = [v for v in votes if v.direction is not None]
     if not voting:
-        note = "; only indirect edges (mediates/moderates/...) were found" if votes else ""
+        note = ("; only edges that don't give X's direct effect on Y's level were found "
+                "(mediates/moderates, interactions, variation-only)") if votes else ""
         if bad:
             note += f"; {len(bad)} edge id(s) were missing from the graph"
         d = _no_evidence(query, g, note)
         d.votes = votes
         return d
 
-    papers = _paper_votes(voting)
+    all_papers = _paper_votes(voting)
+    papers = [p for p in all_papers if p["share"]] or all_papers  # abstain-only papers sit out
     totals = defaultdict(float)
     for p in papers:
         for d_, s in p["share"].items():
@@ -255,7 +295,11 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
                      "their direction was inverted.")
     excluded = len(votes) - len(voting)
     if excluded:
-        notes.append(f"{excluded} indirect edge(s) (mediates/moderates/...) not counted.")
+        notes.append(f"{excluded} edge(s) not counted: indirect (mediates/moderates/...), "
+                     "interaction or variation-only.")
+    abstained = sum(1 for v in voting if v.direction == ABSTAIN)
+    if abstained:
+        notes.append(f"{abstained} edge(s) cited as context only: no up/down direction.")
 
     tally = defaultdict(int)
     for p in papers:

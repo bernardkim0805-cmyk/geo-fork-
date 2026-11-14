@@ -89,9 +89,35 @@ class ReadEdge(unittest.TestCase):
         v = read_edge(self.g.edges[e], self.g, q("browsing exclusion", "sapling height"))
         self.assertEqual(v.direction, "increase")
 
-    def test_R4_present_object_is_unclear(self):
-        e = self.g.edge(self.treat, "causes", self.g.node("composition", "present"))
-        self.assertEqual(read_edge(self.g.edges[e], self.g, q()).direction, "unclear")
+    def test_B1_present_object_without_sign_words_abstains(self):
+        e = self.g.edge(self.treat, "causes", self.g.node("distinct composition", "present"))
+        self.assertEqual(read_edge(self.g.edges[e], self.g, q()).direction, "abstain")
+
+    def test_B1_unsigned_object_takes_sign_from_name(self):
+        up = self.g.edge(self.treat, "causes", self.g.node("higher native cover", None))
+        down = self.g.edge(self.treat, "causes", self.g.node("reduced seedling survival", "present"))
+        self.assertEqual(read_edge(self.g.edges[up], self.g, q()).direction, "increase")
+        self.assertEqual(read_edge(self.g.edges[down], self.g, q()).direction, "decrease")
+
+    def test_B1_name_with_both_signs_abstains(self):
+        e = self.g.edge(self.treat, "causes", self.g.node("Increased CEC and decreased H", None))
+        self.assertEqual(read_edge(self.g.edges[e], self.g, q()).direction, "abstain")
+
+    def test_B2_variation_object_is_excluded(self):
+        e = self.g.edge(self.treat, "associated_with", self.g.node("variation in basal area", "increased"))
+        self.assertIsNone(read_edge(self.g.edges[e], self.g, q()).direction)
+
+    def test_B3_interaction_subject_is_excluded(self):
+        for name in ("interaction of scarification and year", "scarification x cutting",
+                     "scarification treatment and time"):
+            subj = self.g.node(name, "occurred", "management_intervention")
+            e = self.g.edge(subj, "causes", self.g.node("seedling density", "increased"))
+            self.assertIsNone(read_edge(self.g.edges[e], self.g, q()).direction, name)
+
+    def test_B5_unchanged_subject_abstains(self):
+        subj = self.g.node("water table position", "unchanged")
+        e = self.g.edge(subj, "causes", self.g.node("moss cover", "increased"))
+        self.assertEqual(read_edge(self.g.edges[e], self.g, q()).direction, "abstain")
 
     def test_head_to_head_halves_weight_but_control_label_is_rescued(self):
         y = self.g.node("survival", "increased")
@@ -158,6 +184,19 @@ class Aggregate(unittest.TestCase):
     def test_only_excluded_edges_is_no_evidence(self):
         d = run(self.g, [self.g.edge(self.x, "moderates", self.up)])
         self.assertEqual(d.status, "no_evidence")
+
+    def test_B1_abstaining_paper_does_not_dilute_the_vote(self):
+        eids = [self.g.edge(self.x, "causes", self.up, doc="a"),
+                self.g.edge(self.x, "causes", self.up, doc="b"),
+                self.g.edge(self.x, "causes", self.g.node("distinct community", "present"), doc="c")]
+        d = run(self.g, eids)
+        self.assertEqual(d.direction, "increase")
+        self.assertEqual(d.tally, {"increase": 2})
+        self.assertEqual(len(d.edge_ids), 3)  # the abstaining edge is still cited as context
+
+    def test_B1_only_abstaining_edges_is_unclear(self):
+        d = run(self.g, [self.g.edge(self.x, "causes", self.g.node("distinct community", "present"))])
+        self.assertEqual((d.status, d.direction), ("answered", "unclear"))
 
     def test_confidence_in_range(self):
         eids = [self.g.edge(self.x, "causes", self.up, doc=f"d{i}") for i in range(20)]

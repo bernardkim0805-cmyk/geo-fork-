@@ -15,13 +15,16 @@ CausalPredicateEnum "variable level" sign composition).
 | --- | --- |
 | R1. `predicate` is `mediates`, `moderates`, `regulates` or `precedes` → excluded, not cited | These don't state a direct X → Y effect |
 | R2. `negated: true` or `causal_language: no_relationship` → `no_effect` | Canonical null result. The object's qualifier is the *tested* direction; ignore it |
-| R3. Object qualifier `unchanged` → `no_effect` | Team decision (2026-11-13). The schema treats it as "maintained", not as a null result. Revisit later |
+| B2. Object name says "variation / variability / variance / heterogeneity in Y" → excluded, not cited | Says Y differed among treatments, not whether X raised or lowered it |
+| B3. Subject is an interaction ("interaction of…", "X × Y", "X and year/time") → excluded, not cited | An "it depends" result, not X's own effect |
+| R3. Object qualifier `unchanged` → `no_effect` | Team decision (2026-11-13), confirmed in review 2026-11-14 (DC-19, DC-20 pass). Labels are noisy (DC-21: grizzly movement), which aggregation absorbs |
+| B5. Subject qualifier `unchanged` → abstain (cited, no vote) | X itself didn't vary, so the edge can't say what X does |
 | R4. Otherwise **direction = subject sign × predicate sign × object sign** | Schema's variable-level convention. Using only the object's sign flips edges |
 
 Signs:
 
 - **Predicate:** `causes` / `contributes_to` / `enables` = +1. `prevents` / `disrupts` = −1. `associated_with` / `correlated_with` = +1, but they get a lower weight (unsigned association).
-- **Object:** `increased` / `introduced` / `initiated` = +1. `decreased` / `removed` / `absent` / `terminated` / `interrupted` / `aborted` = −1. `present` / `occurred` / `ongoing` / none = **unclear** (no up or down).
+- **Object:** `increased` / `introduced` / `initiated` = +1. `decreased` / `removed` / `absent` / `terminated` / `interrupted` / `aborted` = −1. `present` / `occurred` / `ongoing` / none = no sign → **B1:** take the sign from words in the object's name (higher/greater/more/… = +1, lower/reduced/fewer/loss/… = −1). If the name has none, or both kinds, the edge **abstains**: it is cited as context but doesn't vote.
 - **Subject:** −1 if the qualifier is `removed` / `absent` / `decreased` / `terminated` / `interrupted` / `aborted`, **unless the question itself asks about a removal** (its intervention phrase contains a word like removal, exclusion, reduction, thinning, control, suppression, absence). Otherwise +1.
   - "What effect does **fertilization** have on survival?" + `absence of fertilization` [absent] causes `increased survival` → **decrease**
   - "What effect does **browsing exclusion** have on height?" + `release from moose browsing` [removed] → `increased height` → **increase** (no flip: the removal is the question's own subject)
@@ -48,9 +51,10 @@ Signs:
 ## 3. Combine: count papers, not edges
 
 - Inside each `source_document`, the paper's weighted votes become a share over {increase, decrease, no_effect}. Each paper counts once, at the weight of its strongest edge, so one paper with 10 edges can't outvote four papers.
+- Papers whose edges all abstain sit out (they don't dilute the vote, tally or certainty).
 - Across papers: the top direction holding ≥ `MAJORITY` (0.66) of the total → that direction. Otherwise `mixed`. If no paper has a readable direction → `unclear`.
 - Cite only the edges that voted (R1-excluded edges are never cited).
-- If every retrieved edge was excluded by R1, the status is `no_evidence`, and `searched_for` says that only indirect edges were found.
+- If every retrieved edge was excluded (R1, B2, B3), the status is `no_evidence`, and `searched_for` says so.
 
 ## 4. Certainty (strength of the evidence)
 
