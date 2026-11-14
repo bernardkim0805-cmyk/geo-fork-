@@ -36,6 +36,18 @@ class Query:
     tokens: int = 0              # LLM tokens spent parsing (0 if regex hit)
     interventions: list[str] = field(default_factory=list)
     outcomes: list[str] = field(default_factory=list)
+    # one (cause, effect) per sub-question. Each is searched and judged on its
+    # own, because a finding can hold for glyphosate and not for herbicides
+    # generally, and one merged search cannot tell the two apart.
+    pairs: list[tuple[str, str]] = field(default_factory=list)
+    # effect | interaction | gap_map | trajectory. Decided before extraction,
+    # so a question about the evidence itself is not forced into cause/effect.
+    mode: str = "effect"
+    # outcome phrase -> the direction the question takes for granted, e.g. b3
+    # asks whether herbicides "also reduce" native cover. Recording it lets the
+    # answer disagree with the premise instead of quietly answering a different
+    # question. Only question_parser fills this in.
+    presumed: dict[str, list[str]] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         # keep the single and plural forms consistent whichever one was set
@@ -47,6 +59,8 @@ class Query:
             self.outcomes = [self.outcome]
         elif self.outcomes and not self.outcome:
             self.outcome = self.outcomes[0]
+        if not self.pairs and self.intervention and self.outcome:
+            self.pairs = [(self.intervention, self.outcome)]
 
 
 @dataclass
@@ -60,6 +74,10 @@ class Grounding:
     contexts: list[str] = field(default_factory=list)  # ecosystem_context values the
                                  # question is restricted to; empty means no restriction
     stats: dict = field(default_factory=dict)  # how many nodes each filter dropped
+    # outcome phrase -> the node ids it grounded to. A question asking about
+    # cover AND richness is two separate X->Y questions sharing one search, and
+    # merging them hides which evidence answers which half.
+    outcome_groups: dict[str, list[str]] = field(default_factory=dict)
 
 
 @dataclass
@@ -81,6 +99,13 @@ class Evidence:
     out_of_context: list[str] = field(default_factory=list)
     # claims pointing Y->X. NOT in edge_ids — citing one would invert direction.
     reverse_edge_ids: list[str] = field(default_factory=list)
+    # edge id -> rank score. edge_ids is sorted by this, best first, so taking
+    # the first N is a principled cut rather than an arbitrary one.
+    scores: dict[str, float] = field(default_factory=dict)
+    # What retrieve matched the phrases to. Grounding stopped being a pipeline
+    # stage and became retrieve's first step, but decide still needs the terms
+    # and node counts to explain what was searched.
+    grounding: "Grounding" = field(default_factory=lambda: Grounding())
 
 
 @dataclass
