@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipeline Viewer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f7f6f2; --surface: #fff; --surface2: #f0efe9; --border: #e2e0d8;
+  --fg: #1a1916; --muted: #6b6960; --accent: #2d5a27; --accent-bg: #edf5ec;
+  --warn: #7a3a00; --warn-bg: #fff4ea; --err: #7a1a1a; --err-bg: #fff0f0;
+  --code-bg: #1e1e1e; --code-fg: #d4d4d4;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#111210;--surface:#1a1c18;--surface2:#222420;--border:#2e3029;
+  --fg:#e8e6e0;--muted:#8a8880;--accent:#6abf5e;--accent-bg:#1a2e18;
+  --warn:#e8a054;--warn-bg:#2a1e0e;--err:#e87070;--err-bg:#2a1010;
+  --code-bg:#0d0d0d;--code-fg:#d4d4d4;color-scheme:dark;
+}}
+:root[data-theme="dark"] {
+  --bg:#111210;--surface:#1a1c18;--surface2:#222420;--border:#2e3029;
+  --fg:#e8e6e0;--muted:#8a8880;--accent:#6abf5e;--accent-bg:#1a2e18;
+  --warn:#e8a054;--warn-bg:#2a1e0e;--err:#e87070;--err-bg:#2a1010;
+  --code-bg:#0d0d0d;--code-fg:#d4d4d4;color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:'Space Grotesk',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:260px 1fr;height:100vh;overflow:hidden}
+@media(max-width:680px){.layout{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:auto;overflow:auto}}
+
+/* Sidebar */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.sidebar-head{padding:16px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
+.app-title{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.app-sub{font-size:11px;color:var(--muted)}
+.upload-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;text-align:center;font-family:inherit}
+.upload-btn:hover{opacity:.9}
+.upload-btn input{display:none}
+.q-list{padding:8px;flex:1}
+.q-item{padding:9px 10px;border-radius:6px;cursor:pointer;display:flex;flex-direction:column;gap:3px;border:1px solid transparent;margin-bottom:2px}
+.q-item:hover{background:var(--surface2)}
+.q-item.active{background:var(--accent-bg);border-color:var(--accent)}
+.q-id{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--accent)}
+.q-text{font-size:12px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.q-status{display:flex;gap:5px;align-items:center;margin-top:2px}
+.badge{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;display:inline-block}
+.badge-green{background:var(--accent-bg);color:var(--accent)}
+.badge-orange{background:var(--warn-bg);color:var(--warn)}
+.badge-red{background:var(--err-bg);color:var(--err)}
+.badge-grey{background:var(--surface2);color:var(--muted)}
+
+/* Main */
+.main{overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px}
+/* flex children shrink by default; without this every card is squeezed to fit
+   the viewport and its content clipped by .card{overflow:hidden} */
+.main > *{flex:0 0 auto}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--muted)}
+.empty-icon{font-size:40px;opacity:.4}
+.empty h2{font-size:16px;font-weight:600}
+.empty p{font-size:13px;text-align:center;max-width:300px}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.card-head{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-head-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.card-head-tag{font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;padding:2px 7px;border-radius:4px}
+.card-body{padding:14px}
+
+.q-full{font-size:15px;line-height:1.5;font-style:italic;color:var(--muted);padding:14px}
+
+/* Pipeline row */
+.pipeline-row{display:flex;gap:0;align-items:stretch}
+.p-step{flex:1;background:var(--surface);border:1px solid var(--border);padding:12px 14px;display:flex;flex-direction:column;gap:4px;position:relative}
+.p-step:not(:last-child){border-right:none}
+.p-step:first-child{border-radius:8px 0 0 8px}
+.p-step:last-child{border-radius:0 8px 8px 0}
+.p-step-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.p-step-val{font-size:13px;font-weight:600}
+.p-step-sub{font-size:11px;color:var(--muted)}
+.p-arrow{align-self:center;color:var(--border);font-size:14px;flex-shrink:0;padding:0 2px;background:var(--surface);position:relative;z-index:1}
+@media(max-width:600px){.pipeline-row{flex-direction:column}.p-step{border-radius:0!important;border-right:1px solid var(--border)!important}.p-step:first-child{border-radius:8px 8px 0 0!important}.p-step:last-child{border-radius:0 0 8px 8px!important}.p-arrow{transform:rotate(90deg);align-self:flex-start;padding:4px 14px}}
+
+/* Node grid */
+.node-grid{display:flex;flex-wrap:wrap;gap:6px;padding:12px}
+.node-pill{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--fg);font-family:'JetBrains Mono',monospace}
+.node-pill.intervention{border-color:#6366f1;background:#f0f0ff;color:#6366f1}
+.node-pill.outcome{border-color:#22d3ee;background:#f0feff;color:#0891b2}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .node-pill.intervention{background:#1e1e38;color:#818cf8}
+  :root:not([data-theme="light"]) .node-pill.outcome{background:#0e2a2e;color:#22d3ee}
+}
+:root[data-theme="dark"] .node-pill.intervention{background:#1e1e38;color:#818cf8}
+:root[data-theme="dark"] .node-pill.outcome{background:#0e2a2e;color:#22d3ee}
+
+/* Term chips */
+.terms{display:flex;flex-wrap:wrap;gap:5px;padding:12px}
+.term{font-size:11px;padding:2px 8px;border-radius:4px;background:var(--surface2);color:var(--muted);font-family:'JetBrains Mono',monospace}
+
+/* Answer box */
+.answer-box{padding:14px;font-size:14px;line-height:1.6}
+.answer-meta{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--border)}
+
+/* Confidence bar */
+.conf-bar-wrap{display:flex;align-items:center;gap:8px;font-size:12px}
+.conf-bar{height:6px;background:var(--surface2);border-radius:3px;width:100px;overflow:hidden}
+.conf-fill{height:100%;border-radius:3px;background:var(--accent)}
+
+/* Drop zone */
+.drop-zone{border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;transition:border-color .15s}
+.drop-zone.over{border-color:var(--accent);color:var(--accent)}
+
+/* Comparison */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.compare-grid{grid-template-columns:1fr}}
+.compare-col{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.compare-head{padding:8px 12px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.compare-body{padding:12px;font-size:13px}
+.stat-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border-bottom:none}
+.stat-key{color:var(--muted);font-size:12px}
+.stat-val{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:12px}
+
+/* Funnel */
+.fn-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+@media(max-width:620px){.fn-grid{grid-template-columns:1fr}}
+.fn-side{padding:12px 14px;border-right:1px solid var(--border)}
+.fn-side:last-child{border-right:none}
+.fn-side-h{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px}
+.fn-step{display:flex;align-items:baseline;gap:8px;padding:2px 0}
+.fn-n{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;min-width:46px;text-align:right}
+.fn-l{font-size:11.5px;color:var(--muted)}
+.fn-step.drop .fn-n{color:var(--dec)}
+.fn-step.keep .fn-n{color:var(--inc)}
+.fb{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;margin:8px 0 2px}
+.fb-fill{height:100%;background:var(--inc);border-radius:3px}
+.fn-terms{margin-top:9px;border-top:1px solid var(--border);padding-top:7px}
+.fn-terms-h{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px}
+.fn-term{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:1.5px 0;color:var(--muted)}
+.fn-term b{color:var(--fg)}
+.fn-term.hot b{color:var(--dec)}
+.fn-term.hot span{color:var(--dec)}
+.fn-pass{border-top:1px solid var(--border)}
+table.fp{width:100%;border-collapse:collapse;font-size:11.5px}
+table.fp th{text-align:left;padding:5px 14px;border-bottom:1px solid var(--border);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+table.fp td{padding:6px 14px;border-bottom:1px solid var(--border)}
+table.fp tr:last-child td{border-bottom:none}
+table.fp tr.dim{opacity:.45}
+.fp-n{font-family:'JetBrains Mono',monospace;color:var(--muted);width:24px}
+.fp-name{font-size:12px}
+.fp-used{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(52,211,153,.15);color:var(--inc);padding:1px 5px;border-radius:3px;margin-left:5px}
+.fp-v{font-family:'JetBrains Mono',monospace;text-align:right;width:76px}
+.fp-v.drop{color:var(--dec)} .fp-v.keep{color:var(--inc);font-weight:700}
+.fp-desc{font-size:10px;color:var(--muted);margin-top:1px}
+.fn-flags{display:flex;flex-wrap:wrap;gap:8px;padding:9px 14px;border-top:1px solid var(--border)}
+.fn-flag{font-size:10.5px;color:var(--muted);background:var(--surface2);padding:3px 8px;border-radius:4px}
+.fn-flag.warn{color:var(--amber,#f59e0b)}
+.fn-ctx{padding:10px 14px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.fn-ctx-h{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-right:4px}
+.pill-ctx{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;border-radius:3px;background:var(--surface2);color:var(--muted)}
+.fn-dropped{padding:10px 14px;border-top:1px solid var(--border)}
+.fn-drop-row{display:flex;gap:9px;align-items:baseline;font-size:11px;color:var(--muted);padding:2.5px 0}
+.fn-drop-row i{opacity:.5;font-style:normal}
+.fn-drop-ctx{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--dec);min-width:180px;flex-shrink:0}
+
+/* Evidence graph */
+:root{--inc:#34d399;--dec:#f87171;--neu:#8b90ad}
+.graph-legend{
+  display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+  padding:9px 14px;border-bottom:1px solid var(--border);
+  font-size:11px;color:var(--muted);
+}
+.graph-legend i.sw{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.graph-legend i.sw.dash{background:repeating-linear-gradient(90deg,var(--neu) 0 4px,transparent 4px 7px)}
+.legend-note{margin-left:auto;font-style:italic;opacity:.8}
+.graph-wrap{overflow-x:auto;padding:6px 10px 12px}
+.graph-svg{display:block;width:100%;height:auto}
+.gh{font-size:9px;font-weight:700;letter-spacing:.11em;fill:var(--muted);font-family:'JetBrains Mono',monospace}
+.ghr{stroke:var(--border);stroke-width:1}
+.gl{font-size:12px;fill:var(--fg);font-family:'Inter',system-ui,sans-serif}
+.gl-management{fill:#a78bfa}
+.gl-taxon{fill:#fbbf24}
+.gq{font-size:10px;fill:var(--muted);font-family:'JetBrains Mono',monospace}
+.ge-g{cursor:pointer}
+.ge{fill:none;opacity:.6;transition:opacity .12s,stroke-width .12s}
+.ge-g:hover .ge{opacity:1;stroke-width:3.4}
+.ge.sel{opacity:1;stroke-width:3.8}
+.ge-inc{stroke:var(--inc)} .ge-dec{stroke:var(--dec)} .ge-neu{stroke:var(--neu)}
+.ge-neg{stroke-dasharray:5 4}
+.mk-inc{fill:var(--inc)} .mk-dec{fill:var(--dec)} .mk-neu{fill:var(--neu)}
+.ge-lbl{font-size:9px;font-family:'JetBrains Mono',monospace;opacity:.75;pointer-events:none}
+.ge-lbl-inc{fill:var(--inc)} .ge-lbl-dec{fill:var(--dec)} .ge-lbl-neu{fill:var(--neu)}
+
+/* edge table */
+.et-wrap{border-top:1px solid var(--border)}
+.et-head{padding:9px 14px;font-size:11px;color:var(--muted);font-weight:600}
+table.et{width:100%;border-collapse:collapse;font-size:11.5px}
+table.et th{
+  text-align:left;padding:5px 10px;border-bottom:1px solid var(--border);
+  font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;
+}
+table.et td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.et-row{cursor:pointer}
+.et-row:hover td{background:var(--surface2)}
+.et-dir{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;white-space:nowrap}
+.et-inc{color:var(--inc)} .et-dec{color:var(--dec)} .et-neu{color:var(--neu)}
+.et-n{color:var(--fg);line-height:1.45}
+.et-q{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted)}
+.et-p{color:var(--muted);text-align:center}
+.et-c{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;white-space:nowrap}
+.et-doc{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.edge-detail{
+  border-top:1px solid var(--border);padding:12px 14px;
+  font-size:12px;color:var(--muted);min-height:44px;
+}
+.ed-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:9px}
+.ed-node{font-weight:600;color:var(--fg);font-size:13px}
+.ed-pred{
+  font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:3px;background:var(--surface2);color:var(--muted);
+}
+.ed-pred.neg{background:rgba(248,113,113,.14);color:var(--dec)}
+.ed-row{display:flex;gap:10px;padding:2px 0}
+.ed-k{width:82px;flex-shrink:0;color:var(--muted);font-size:11px}
+.ed-v{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--fg);word-break:break-word}
+.ed-sent{
+  margin-top:10px;padding:9px 12px;background:var(--surface2);
+  border-left:2px solid var(--border);border-radius:0 5px 5px 0;
+  font-size:12px;line-height:1.55;color:var(--fg);font-style:italic;
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <div>
+        <div class="app-title">Pipeline Viewer</div>
+        <div class="app-sub">Load answers.trace.json to inspect</div>
+      </div>
+      <label class="upload-btn">
+        Load trace.json
+        <input type="file" accept=".json" id="file-input">
+      </label>
+      <div class="drop-zone" id="drop-zone">or drag &amp; drop here</div>
+    </div>
+    <div class="q-list" id="q-list">
+      <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">No trace loaded yet.</div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main" id="main">
+    <div class="empty">
+      <div class="empty-icon">🔬</div>
+      <h2>Load a trace file</h2>
+      <p>Run the pipeline with <code>--debug</code> then load the generated <code>answers.trace.json</code>.</p>
+      <p style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface2);padding:8px 12px;border-radius:6px;color:var(--muted)">
+        python -m lane2.cli questions.yaml answers.json --debug
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let traces = [];
+let selected = null;
+
+// File loading
+document.getElementById('file-input').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) loadFile(f);
+});
+
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f) loadFile(f);
+});
+
+function loadFile(f) {
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      // Handle wrong file: answers.json has {"team":..., "answers":[...]}
+      if (data && data.team && data.answers) {
+        showError('⚠ That\'s answers.json — please load answers.trace.json instead (same folder, written at the same time).');
+        return;
+      }
+      traces = Array.isArray(data) ? data : [data];
+      if (!traces[0] || !traces[0].id) {
+        showError('Unexpected file format. Load answers.trace.json (not answers.json).');
+        return;
+      }
+      document.getElementById('drop-zone').style.display = 'none';
+      renderSidebar();
+      if (traces.length > 0) selectTrace(0);
+    } catch(err) {
+      showError('Could not parse JSON: ' + err.message);
+    }
+  };
+  r.readAsText(f);
+}
+
+function showError(msg) {
+  document.getElementById('drop-zone').textContent = msg;
+  document.getElementById('drop-zone').style.borderColor = 'var(--err)';
+  document.getElementById('drop-zone').style.color = 'var(--err)';
+}
+
+function autoLoad(data) {
+  traces = Array.isArray(data) ? data : [data];
+  if (!traces[0] || !traces[0].id) return false;
+  document.getElementById('drop-zone').style.display = 'none';
+  document.querySelector('.upload-btn').style.display = 'none';
+  renderSidebar();
+  selectTrace(0);
+  return true;
+}
+
+fetch('answers.trace.json')
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(autoLoad)
+  .catch(() => {});
+
+function dirBadge(d) {
+  if (!d) return `<span class="badge badge-grey">no_evidence</span>`;
+  const map = {increase:'badge-green', decrease:'badge-orange', no_effect:'badge-grey', mixed:'badge-orange', unclear:'badge-grey'};
+  return `<span class="badge ${map[d]||'badge-grey'}">${d}</span>`;
+}
+
+function statusBadge(s) {
+  return s === 'answered'
+    ? `<span class="badge badge-green">answered</span>`
+    : `<span class="badge badge-orange">no_evidence</span>`;
+}
+
+function methodBadge(m) {
+  const map = {regex:'badge-green', llm:'badge-orange', failed:'badge-red'};
+  return `<span class="badge ${map[m]||'badge-grey'}">${m||'?'}</span>`;
+}
+
+function renderSidebar() {
+  const list = document.getElementById('q-list');
+  list.innerHTML = traces.map((t, i) => {
+    const ans = t.answer || {};
+    const dir = ans.direction;
+    return `
+      <div class="q-item" id="qi-${i}" onclick="selectTrace(${i})">
+        <div class="q-id">${t.id}</div>
+        <div class="q-text">${t.question}</div>
+        <div class="q-status">
+          ${statusBadge(ans.status)}
+          ${dir ? dirBadge(dir) : ''}
+          ${t.parse ? methodBadge(t.parse.method) : ''}
+        </div>
+      </div>`;
+  }).join('');
+  const total = traces.reduce((s,t) => s + ((t.tokens||{}).total || 0), 0);
+  document.querySelector('.app-sub').textContent =
+    `${traces.length} questions · ${total.toLocaleString()} LLM tokens`;
+}
+
+// --- Funnel: counts before and after each filter --------------------------
+function bar(kept, total) {
+  const pct = total ? Math.round(100 * kept / total) : 0;
+  return `<div class="fb"><div class="fb-fill" style="width:${pct}%"></div></div>`;
+}
+
+function fside(title, s, cap) {
+  if (!s || !s.text_matched) return '';
+  const terms = s.per_term || {};
+  const top = Object.entries(terms).slice(0, 6);
+  return `<div class="fn-side">
+    <div class="fn-side-h">${title}</div>
+    <div class="fn-step"><span class="fn-n">${s.text_matched}</span><span class="fn-l">nodes matched the text</span></div>
+    ${s.dropped_wrong_type ? `<div class="fn-step drop"><span class="fn-n">−${s.dropped_wrong_type}</span><span class="fn-l">wrong entity_type (${cap})</span></div>` : ''}
+    <div class="fn-step keep"><span class="fn-n">${s.kept}</span><span class="fn-l">kept</span></div>
+    ${bar(s.kept, s.text_matched)}
+    ${top.length ? `<div class="fn-terms"><div class="fn-terms-h">hits per term</div>${
+      top.map(([t, n]) => `<div class="fn-term${n > 100 ? ' hot' : ''}"><span>${esc(t)}</span><b>${n}</b></div>`).join('')
+    }</div>` : ''}
+  </div>`;
+}
+
+function renderFunnel(g, r) {
+  const gs = (g && g.stats) || {};
+  const rs = (r && r.stats) || {};
+  const passes = rs.passes || [];
+  if (!gs.intervention && !passes.length) return '';
+
+  const PASS_DESC = {
+    direct: 'both sides grounded to nodes — strongest',
+    outcome_text: 'subject grounded, object keyword-matched',
+    intervention_text: 'object grounded, subject keyword-matched',
+  };
+  const passRows = passes.map(p => `
+    <tr class="${p.found ? '' : 'dim'}">
+      <td class="fp-name">${esc(p.name)}<div class="fp-desc">${PASS_DESC[p.name] || ''}</div></td>
+      <td class="fp-v">${p.found}</td>
+      <td class="fp-v keep">${p.new ? '+' + p.new : '0'}</td>
+    </tr>`).join('');
+
+  return `
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-label">Funnel — before &amp; after each filter</span>
+      ${(rs.contexts && rs.contexts.length)
+        ? `<span class="card-head-tag badge badge-grey">${rs.contexts.length} ecosystem filter${rs.contexts.length > 1 ? 's' : ''}</span>`
+        : `<span class="card-head-tag badge badge-grey">no ecosystem filter</span>`}
+    </div>
+
+    <div class="fn-grid">
+      ${fside('Intervention (X)', gs.intervention, 'cause types')}
+      ${fside('Outcome (Y)', gs.outcome, 'outcome types')}
+    </div>
+
+    ${passes.length ? `
+    <div class="fn-pass">
+      <div class="fn-side-h" style="padding:10px 14px 4px">Retrieve passes — all run, results unioned (${rs.total} unique edges)</div>
+      <table class="fp">
+        <tr><th>Pass</th><th>Found</th><th>New</th></tr>
+        ${passRows}
+      </table>
+      ${(rs.reverse_found || rs.out_of_context) ? `<div class="fn-flags">
+        ${rs.reverse_found ? `<span class="fn-flag">${rs.reverse_found} reverse Y→X claim${rs.reverse_found > 1 ? 's' : ''} — excluded from edge_ids</span>` : ''}
+        ${rs.out_of_context ? `<span class="fn-flag warn">${rs.out_of_context} of ${rs.total} outside the question's ecosystem — kept, flagged for decide</span>` : ''}
+      </div>` : ''}
+    </div>` : ''}
+
+    ${(rs.contexts && rs.contexts.length) ? `
+    <div class="fn-ctx">
+      <span class="fn-ctx-h">Allowed ecosystems</span>
+      ${rs.contexts.map(c => `<span class="pill-ctx">${esc(c)}</span>`).join('')}
+    </div>` : ''}
+
+    ${(r.reverse && r.reverse.length) ? `
+    <div class="fn-dropped">
+      <div class="fn-side-h" style="margin-bottom:7px">Reverse claims (Y→X) — excluded from edge_ids, shown for review</div>
+      ${r.reverse.map(e => `<div class="fn-drop-row">
+        <span class="fn-drop-ctx">${esc(e.predicate || '')}</span>
+        <span>${esc((e.subject||{}).name || '?')} <i>→</i> ${esc((e.object||{}).name || '?')}</span>
+      </div>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
+
+// --- Evidence graph -------------------------------------------------------
+// Bipartite layout: cause nodes left, effect nodes right, one line per claim.
+const EDGE_DIR = {increased:'inc', decreased:'dec'};
+// predicates that reverse the meaning of the object's qualifier
+const FLIP = new Set(['prevents','disrupts','reduces']);
+
+function edgeClass(e) {
+  if (e.negated) return 'neu';
+  let d = EDGE_DIR[e.object && e.object.qualifier] || null;
+  if (d && FLIP.has(e.predicate)) d = (d === 'inc' ? 'dec' : 'inc');
+  return d || 'neu';
+}
+
+const CERT_W = {moderate:2.4, low:1.5, very_low:0.8};
+
+let _graphEdges = [];
+
+const DIR_LABEL = {inc:'▲ increase', dec:'▼ decrease', neu:'– no change'};
+
+function renderGraph(edges) {
+  _graphEdges = edges;
+  // collapse to unique nodes per side, preserving first-seen order
+  const L = [], R = [], li = new Map(), ri = new Map();
+  edges.forEach(e => {
+    const s = e.subject || {}, o = e.object || {};
+    if (!li.has(s.id)) { li.set(s.id, L.length); L.push(s); }
+    if (!ri.has(o.id)) { ri.set(o.id, R.length); R.push(o); }
+  });
+
+  // names wrap instead of truncating, so rows have variable height
+  const padY = 36, colW = 340, gap = 230, lineH = 14, rowPad = 14;
+  const W = colW * 2 + gap;
+
+  const wrapAll = ns => ns.map(n => wrapText(n.name, 40));
+  const LW = wrapAll(L), RW = wrapAll(R);
+
+  // lay rows out independently per side, then align each side's block
+  const rowTops = w => {
+    const tops = [];
+    let y = padY;
+    w.forEach(lines => { tops.push(y); y += lines.length * lineH + rowPad; });
+    return {tops, end: y};
+  };
+  const lay = rowTops(LW), ray = rowTops(RW);
+  const H = Math.max(lay.end, ray.end) + 8;
+  // vertical centre of a row = its top + half its text block
+  const yL = i => lay.tops[i] + (LW[i].length * lineH) / 2;
+  const yR = i => ray.tops[i] + (RW[i].length * lineH) / 2;
+  const yAt = i => yL(i);
+
+  const lines = edges.map((e, k) => {
+    const x1 = colW + 6, x2 = colW + gap - 6;
+    const y1 = yL(li.get((e.subject || {}).id));
+    const y2 = yR(ri.get((e.object || {}).id));
+    const mx = (x1 + x2) / 2;
+    const cls = edgeClass(e);
+    const w = CERT_W[e.certainty] || 1;
+    return `<g class="ge-g" data-k="${k}" onclick="showEdge(${k})">
+      <path d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"
+        class="ge ge-${cls}${e.negated ? ' ge-neg' : ''}" stroke-width="${w}"
+        marker-end="url(#arrow-${cls})" data-k="${k}"/>
+      <text x="${mx}" y="${(y1 + y2) / 2 - 5}" class="ge-lbl ge-lbl-${cls}" text-anchor="middle"
+        >${e.negated ? 'no relationship' : esc(e.predicate || '')}</text>
+      <title>${esc(labelFor(e))}</title>
+    </g>`;
+  }).join('');
+
+  // one <tspan> per wrapped line; qualifier goes on its own line at the end
+  const nodeLabel = (n, wrapped, x, top, anchor, side) => {
+    const cls = (n.type || '').split('_')[0];
+    const spans = wrapped.map((ln, i) =>
+      `<tspan x="${x}" dy="${i === 0 ? 0 : lineH}">${esc(ln)}</tspan>`).join('');
+    const q = (side === 'r' && n.qualifier)
+      ? `<tspan x="${x}" dy="${lineH}" class="gq">[${esc(n.qualifier)}]</tspan>` : '';
+    return `<text x="${x}" y="${top + 10}" class="gl gl-${cls}" text-anchor="${anchor}">${spans}${q}</text>`;
+  };
+
+  const defs = ['inc', 'dec', 'neu'].map(c =>
+    `<marker id="arrow-${c}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6"
+       markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="mk mk-${c}"/></marker>`
+  ).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" class="graph-svg" preserveAspectRatio="xMidYMin meet">
+    <defs>${defs}</defs>
+    <text x="${colW}" y="16" class="gh" text-anchor="end">CAUSE  (intervention)</text>
+    <text x="${colW + gap}" y="16" class="gh">EFFECT  (outcome)</text>
+    <line x1="0" y1="24" x2="${W}" y2="24" class="ghr"/>
+    <g>${lines}</g>
+    <g>${L.map((n, i) => nodeLabel(n, LW[i], colW - 12, lay.tops[i], 'end', 'l')).join('')}</g>
+    <g>${R.map((n, i) => nodeLabel(n, RW[i], colW + gap + 12, ray.tops[i], 'start', 'r')).join('')}</g>
+  </svg>`;
+}
+
+// greedy word wrap; SVG text has no automatic wrapping
+function wrapText(s, maxChars) {
+  const words = String(s == null ? '?' : s).split(/\s+/);
+  const lines = [];
+  let cur = '';
+  for (const w of words) {
+    if (!cur) { cur = w; continue; }
+    if ((cur + ' ' + w).length <= maxChars) cur += ' ' + w;
+    else { lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur);
+  return lines.length ? lines : ['?'];
+}
+
+function renderEdgeTable(edges) {
+  if (!edges || !edges.length) return '';
+  const rows = edges.map((e, k) => {
+    const cls = edgeClass(e);
+    const o = e.object || {}, s = e.subject || {};
+    return `<tr onclick="showEdge(${k})" class="et-row">
+      <td class="et-dir et-${cls}">${DIR_LABEL[cls]}</td>
+      <td class="et-n">${esc(s.name || '?')}</td>
+      <td class="et-p">${e.negated ? '✕' : '→'}</td>
+      <td class="et-n">${esc(o.name || '?')}${o.qualifier ? ` <span class="et-q">[${esc(o.qualifier)}]</span>` : ''}</td>
+      <td class="et-c">${esc(e.certainty || '')}</td>
+      <td class="et-c">${esc((e.evidence || '').replace(/_/g, ' '))}</td>
+      <td class="et-doc" title="${esc(e.doc || '')}">${esc(e.doc || '')}</td>
+    </tr>`;
+  }).join('');
+  const papers = new Set(edges.map(e => e.doc).filter(Boolean)).size;
+  return `<div class="et-wrap">
+    <div class="et-head">All ${edges.length} edges · ${papers} distinct ${papers === 1 ? 'study' : 'studies'}</div>
+    <table class="et">
+      <tr><th>Direction</th><th>Cause</th><th></th><th>Effect</th><th>Certainty</th><th>Evidence</th><th>Study (DOI)</th></tr>
+      ${rows}
+    </table>
+  </div>`;
+}
+
+function labelFor(e) {
+  const o = e.object || {};
+  return `${(e.subject||{}).name} —${e.predicate}${e.negated ? ' (NOT)' : ''}→ ${o.name} [${o.qualifier || '?'}], ${e.certainty}`;
+}
+
+function showEdge(k) {
+  const e = _graphEdges[k];
+  if (!e) return;
+  const o = e.object || {}, s = e.subject || {};
+  const row = (label, val) => val
+    ? `<div class="ed-row"><span class="ed-k">${label}</span><span class="ed-v">${esc(String(val))}</span></div>` : '';
+  document.getElementById('edge-detail').innerHTML = `
+    <div class="ed-head">
+      <span class="ed-node">${esc(s.name || '?')}</span>
+      <span class="ed-pred ${e.negated ? 'neg' : ''}">${e.negated ? 'NO RELATIONSHIP' : esc(e.predicate || '')}</span>
+      <span class="ed-node">${esc(o.name || '?')}</span>
+    </div>
+    ${row('direction', o.qualifier)}
+    ${row('certainty', e.certainty)}
+    ${row('evidence', e.evidence)}
+    ${row('strength', e.strength)}
+    ${row('language', e.causal_language)}
+    ${row('ecosystem', e.context)}
+    ${row('edge id', e.id)}
+    ${row('paper', e.doc)}
+    ${e.sentence ? `<div class="ed-sent">“${esc(e.sentence)}”</div>` : ''}`;
+  document.querySelectorAll('.ge').forEach(p => p.classList.toggle('sel', p.dataset.k === String(k)));
+}
+
+function trunc(s, n) { s = String(s == null ? '?' : s); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function selectTrace(i) {
+  selected = i;
+  document.querySelectorAll('.q-item').forEach((el,j) => el.classList.toggle('active', j===i));
+  renderMain(traces[i]);
+}
+
+function renderMain(t) {
+  const ans = t.answer || {};
+  const p = t.parse || {};
+  const g = t.ground || {};
+  const r = t.retrieve || {};
+  const d = t.decide || {};
+  const tok = t.tokens || {};
+
+  const xNodes = (g.intervention_nodes || []);
+  const yNodes = (g.outcome_nodes || []);
+  // the node lists are truncated for display; use the real counts when present
+  const xCount = g.intervention_count ?? xNodes.length;
+  const yCount = g.outcome_count ?? yNodes.length;
+  const terms_x = (g.intervention_terms || []);
+  const terms_y = (g.outcome_terms || []);
+
+  const confPct = Math.round((d.confidence || 0) * 100);
+
+  document.getElementById('main').innerHTML = `
+
+    <!-- Question -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Question</span>
+        <span class="card-head-tag badge badge-grey">${t.id}</span>
+      </div>
+      <div class="q-full">${t.question}</div>
+    </div>
+
+    <!-- Pipeline summary row -->
+    <div class="pipeline-row">
+      <div class="p-step">
+        <div class="p-step-name">Parse</div>
+        <div class="p-step-val">${methodBadge(p.method)}</div>
+        <div class="p-step-sub">${p.intervention ? `X: ${p.intervention}` : '—'}</div>
+        <div class="p-step-sub">${p.outcome ? `Y: ${p.outcome}` : '—'}</div>
+      </div>
+      <div class="p-arrow">▶</div>
+      <div class="p-step">
+        <div class="p-step-name">Ground</div>
+        <div class="p-step-val">${xCount} × ${yCount}</div>
+        <div class="p-step-sub">intervention × outcome nodes</div>
+      </div>
+      <div class="p-arrow">▶</div>
+      <div class="p-step">
+        <div class="p-step-name">Retrieve</div>
+        <div class="p-step-val">${r.edge_count ?? 0} edges</div>
+        <div class="p-step-sub">connecting X→Y</div>
+      </div>
+      <div class="p-arrow">▶</div>
+      <div class="p-step">
+        <div class="p-step-name">Decide</div>
+        <div class="p-step-val">${dirBadge(d.direction)}</div>
+        <div class="p-step-sub">${d.certainty || '—'} certainty</div>
+      </div>
+    </div>
+
+    <!-- Ground detail -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Ground</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--muted)">What terms were searched, what nodes matched</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border)">
+        <div style="border-right:1px solid var(--border)">
+          <div style="padding:8px 12px;font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.07em">Intervention (X)</div>
+          <div class="terms">${terms_x.map(t=>`<span class="term">${t}</span>`).join('')||'<span style="color:var(--muted);font-size:12px;padding:4px">none</span>'}</div>
+          <div style="padding:4px 12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">${xCount} nodes matched${xCount > xNodes.length ? ` — showing first ${xNodes.length}` : ''}</div>
+          <div class="node-grid">${xNodes.map(n=>`<span class="node-pill intervention" title="${n.id}">${n.name}</span>`).join('')}</div>
+        </div>
+        <div>
+          <div style="padding:8px 12px;font-size:11px;font-weight:700;color:#0891b2;text-transform:uppercase;letter-spacing:.07em">Outcome (Y)</div>
+          <div class="terms">${terms_y.map(t=>`<span class="term">${t}</span>`).join('')||'<span style="color:var(--muted);font-size:12px;padding:4px">none</span>'}</div>
+          <div style="padding:4px 12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">${yCount} nodes matched${yCount > yNodes.length ? ` — showing first ${yNodes.length}` : ''}</div>
+          <div class="node-grid">${yNodes.map(n=>`<span class="node-pill outcome" title="${n.id}">${n.name}</span>`).join('')}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Funnel: what each filter removed -->
+    ${renderFunnel(g, r)}
+
+    <!-- Evidence graph -->
+    ${(r.edges && r.edges.length) ? `
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Evidence Graph</span>
+        <span class="card-head-tag badge badge-grey">${r.edges.length} of ${r.edge_count} edges</span>
+      </div>
+      <div class="graph-legend">
+        <span><i class="sw" style="background:var(--inc)"></i>increase</span>
+        <span><i class="sw" style="background:var(--dec)"></i>decrease</span>
+        <span><i class="sw" style="background:var(--neu)"></i>unchanged / other</span>
+        <span><i class="sw dash"></i>negated (no relationship)</span>
+        <span class="legend-note">line thickness = certainty · click an edge for the source sentence</span>
+      </div>
+      <div class="graph-wrap">${renderGraph(r.edges)}</div>
+      ${renderEdgeTable(r.edges)}
+      <div id="edge-detail" class="edge-detail">Click any edge or row to see its claim.</div>
+    </div>` : ''}
+
+    <!-- Retrieve + Decide -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="card">
+        <div class="card-head"><span class="card-head-label">Retrieve</span></div>
+        <div class="card-body">
+          <div style="font-size:28px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)">${r.edge_count ?? 0}</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px">edges found</div>
+          ${(r.edge_ids||[]).slice(0,8).map(id=>`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);padding:2px 0;border-bottom:1px solid var(--border)">${id}</div>`).join('')}
+          ${(r.edge_ids||[]).length > 8 ? `<div style="font-size:11px;color:var(--muted);padding-top:6px">+ ${r.edge_ids.length - 8} more</div>` : ''}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-head-label">Decide</span></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+          <div class="stat-row"><span class="stat-key">Status</span>${statusBadge(d.status)}</div>
+          <div class="stat-row"><span class="stat-key">Direction</span>${dirBadge(d.direction)}</div>
+          <div class="stat-row"><span class="stat-key">Certainty</span><span class="stat-val">${d.certainty||'—'}</span></div>
+          <div class="stat-row">
+            <span class="stat-key">Confidence</span>
+            <div class="conf-bar-wrap">
+              <div class="conf-bar"><div class="conf-fill" style="width:${confPct}%"></div></div>
+              <span class="stat-val">${confPct}%</span>
+            </div>
+          </div>
+          ${d.tally && Object.keys(d.tally).length ? `
+          <div style="font-size:11px;color:var(--muted);padding-top:4px">
+            ${Object.entries(d.tally).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span style="margin-right:8px">${k}: <b>${v}</b></span>`).join('')}
+          </div>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- Tokens -->
+    <div class="card">
+      <div class="card-head"><span class="card-head-label">LLM Tokens</span></div>
+      <div class="card-body" style="display:flex;gap:28px;align-items:baseline">
+        <div>
+          <div style="font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)">${tok.total ?? 0}</div>
+          <div style="font-size:11px;color:var(--muted)">total this question</div>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:600;font-family:'JetBrains Mono',monospace">${tok.parse ?? 0}</div>
+          <div style="font-size:11px;color:var(--muted)">parse</div>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:600;font-family:'JetBrains Mono',monospace">${tok.ground ?? 0}</div>
+          <div style="font-size:11px;color:var(--muted)">ground</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Answer -->
+    <div class="card">
+      <div class="card-head"><span class="card-head-label">Final Answer</span></div>
+      <div class="answer-box">${ans.answer || '—'}</div>
+      ${ans.searched_for ? `<div style="padding:8px 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">Searched for: ${ans.searched_for}</div>` : ''}
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
