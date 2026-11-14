@@ -2,6 +2,9 @@
 # Written by us for testing; NOT the organizers' questions. questions.yaml is
 # left untouched. Expected answers are unverified: hand-check and record them
 # in tests/cases.yaml as you go.
+#
+# D-001..D-010 came with the lane2 skeleton; D-01..D-10 came with the agent trial.
+# Both pipelines (run.sh with PIPELINE=lane2 or PIPELINE=agent) read this file.
 questions:
   - id: D-001
     question: What effect does mulch & surface cover have on invasive / non-native species abundance?
@@ -24,3 +27,24 @@ questions:
   # possible trap: cause and effect reversed
   - id: D-010
     question: What effect does water table position have on peatland restoration?
+
+  - id: D-01
+    question: What effect does herbicide application have on native plant cover and richness?
+  - id: D-02
+    question: What effect does mulch & surface cover have on invasive / non-native species abundance?
+  - id: D-03
+    question: What effect does peatland rewetting have on methane emissions?
+  - id: D-04
+    question: What effect does nursery fertilization have on seedling growth?
+  - id: D-05
+    question: What effect does prescribed burning have on invasive / non-native species abundance?
+  - id: D-06
+    question: What effect does mowing have on bird abundance?
+  - id: D-07
+    question: What effect does seeding native species have on native plant cover?
+  - id: D-08
+    question: What effect does coarse woody debris retention have on small mammal abundance?
+  - id: D-09
+    question: What effect does herbicide application have on invasive / non-native species abundance?
+  - id: D-10
+    question: What effect does livestock grazing have on soil organic carbon?

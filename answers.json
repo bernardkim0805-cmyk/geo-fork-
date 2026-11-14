@@ -1,0 +1,230 @@
+{
+  "team": "Team Geo",
+  "answers": [
+    {
+      "id": "c3",
+      "status": "answered",
+      "answer": "seed-mix species increases establishment, persistence, and self-seeding in Ontario ELC ecosite types, based on 1 claims from 1 studies (per-study verdicts: 1 increase). Example (Richardson 2010): \"in general more species and more individuals established in plots seeded with alvar species compared to those seeded with weed species (Fig. 2).\"",
+      "direction": "increase",
+      "confidence": 0.63,
+      "certainty": "low",
+      "edge_ids": [
+        "camo:edge_47e880513c6d"
+      ],
+      "searched_for": null,
+      "extras": [
+        "outputs/traces/c3.json"
+      ]
+    },
+    {
+      "id": "c4-modified",
+      "status": "answered",
+      "answer": "Tree planting stock traits and site preparation has mixed effects on Tree survival and growth, based on 46 claims from 24 studies (per-study verdicts: 3 decrease, 10 increase, 6 mixed, 5 no effect). Example (Thiffaul 2010): \"The use of herbicide significantly increased 15-year GLD and volume index of all three conifer species, but only black spruce responded positively to fertilization at planting.\"",
+      "direction": "mixed",
+      "confidence": 0.6,
+      "certainty": "low",
+      "edge_ids": [
+        "camo:edge_4ec17738dc6f",
+        "camo:edge_03bff5e0e13a",
+        "camo:edge_e38c58232c25",
+        "camo:edge_9e35062af2b1",
+        "camo:edge_fe44dfe5c234",
+        "camo:edge_050c8a66dffe",
+        "camo:edge_7ab0be2fbee4",
+        "camo:edge_23af0f739ba4",
+        "camo:edge_c1fd608d4dc0",
+        "camo:edge_4f04e54a5a8e",
+        "camo:edge_7cdafd935f18",
+        "camo:edge_9281925694ee",
+        "camo:edge_dad3a7219bd8",
+        "camo:edge_e80b786f8846",
+        "camo:edge_fc2578cba71d",
+        "camo:edge_796198d71504",
+        "camo:edge_4d072325ce12",
+        "camo:edge_9577f358fa11",
+        "camo:edge_9effdf688704",
+        "camo:edge_19f1809393fe",
+        "camo:edge_3029569325b5",
+        "camo:edge_ec88dfefec20",
+        "camo:edge_b0ad08c6034c",
+        "camo:edge_ed5dd4b0434b",
+        "camo:edge_4b3f99da883a",
+        "camo:edge_1d04058f3b30",
+        "camo:edge_7fd63852f9f5",
+        "camo:edge_894318c7bd16",
+        "camo:edge_ee5aa30bcc2d",
+        "camo:edge_3b7abdbb0d9f",
+        "camo:edge_63ab1bf37e5d",
+        "camo:edge_fff30734db77",
+        "camo:edge_b66575e39aff",
+        "camo:edge_086c4a29d347",
+        "camo:edge_bd707e39d4b1",
+        "camo:edge_95c3fe533a25",
+        "camo:edge_c9c65248a463",
+        "camo:edge_0f789e287f0c",
+        "camo:edge_e17870ec1320",
+        "camo:edge_a25fa6d32c9f",
+        "camo:edge_7249c1e3c118",
+        "camo:edge_748f5cbaeab8",
+        "camo:edge_7199c3f205fe",
+        "camo:edge_34a7e01db4b1",
+        "camo:edge_f4e272d94588",
+        "camo:edge_6b9afb321f2c"
+      ],
+      "searched_for": null,
+      "extras": [
+        "outputs/traces/c4-modified.json"
+      ]
+    },
+    {
+      "id": "c7",
+      "status": "answered",
+      "answer": "Created marshes has mixed effects on Biodiversity and function comparable to natural reference wetlands, based on 3 claims from 3 studies (per-study verdicts: 1 decrease, 2 no effect). Example (McLACHLAN 2001): \"When only native species were analyzed, there were no overall differences in species richness, Shannon Weaver index, or evenness between restored and reference sites (MANOVA: Wilks' lambda (WL) 5 0.88, *F*3,30 5 1.38;...\"",
+      "direction": "mixed",
+      "confidence": 0.6,
+      "certainty": "very_low",
+      "edge_ids": [
+        "camo:edge_0961f414b372",
+        "camo:edge_1941cf4291bf",
+        "camo:edge_4fb19c08e929"
+      ],
+      "searched_for": null,
+      "extras": [
+        "outputs/traces/c7.json"
+      ]
+    },
+    {
+      "id": "c13-modified",
+      "status": "answered",
+      "answer": "Wildfire in boreal forests decreases Conifer regeneration failure, based on 7 claims from 3 studies (per-study verdicts: 2 decrease, 1 mixed). Example (Brown 2012): \"Total (X<sup>2</sup> = 87.00, df = 2, p < 0.001) and viable (X<sup>2</sup> = 13.35, df = 2, p = 0.001) black spruce seed rain counts differed significantly among fire history classes (Table 1). This difference was due...\"",
+      "direction": "decrease",
+      "confidence": 0.72,
+      "certainty": "low",
+      "edge_ids": [
+        "camo:edge_adafd09cfb41",
+        "camo:edge_0a918ec7ae8b",
+        "camo:edge_7df11c8ca338",
+        "camo:edge_44367055d6ec",
+        "camo:edge_531b195503af",
+        "camo:edge_8a79ce3ea0d9",
+        "camo:edge_ca7cb3312e5d"
+      ],
+      "searched_for": null,
+      "extras": [
+        "outputs/traces/c13-modified.json"
+      ]
+    },
+    {
+      "id": "c16-modified",
+      "status": "answered",
+      "answer": "The system failed on this question; no reliable answer.",
+      "direction": "unclear",
+      "confidence": 0.1,
+      "certainty": "very_low",
+      "edge_ids": [],
+      "searched_for": null,
+      "extras": [
+        "outputs/traces/c16-modified.json"
+      ]
+    },
+    {
+      "id": "b1",
+      "status": "answered",
+      "answer": "Forestry practices (partial harvesting, clearcutting, retained woody debris, riparian retention) increases Biodiversity maintenance or recovery, based on 8 claims from 5 studies (per-study verdicts: 5 increase). Example (Chandler 2017): \"Species richness increased in all zones (ESSF, *n* = 2; ICH, *n* = 2; and SBS, *n* = 6) between the first year after burning (44, 39, and 58 species respectively) and the end of the monitoring\"",
+      "direction": "increase",
+      "confidence": 0.87,
+      "certainty": "low",
+      "edge_ids": [
+        "camo:edge_6b4137227797",
+        "camo:edge_cb0dab201fb9",
+        "camo:edge_8780ab776c3e",
+        "camo:edge_d733403a2702",
+        "camo:edge_261dd8ad2d1e",
+        "camo:edge_d881d3e3cbe4",
+        "camo:edge_9bf2ef47df73",
+        "camo:edge_6d717fa3b5bc"
+      ],
+      "searched_for": null,
+      "extras": [
+        "outputs/traces/b1.json"
+      ]
+    },
+    {
+      "id": "b2",
+      "status": "answered",
+      "answer": "Restoration actions (peatland rewetting, moss layer transfer, salt marsh realignment) increases Carbon sink status and methane emissions, based on 2 claims from 2 studies (per-study verdicts: 1 increase, 1 unclear). Example (Wilhelm 2015): \"Positive values indicate a net warming effect; negative values indicate a net cooling effect. Values for methane fluxes and daytime GWP are given in units of CO2-equivalence, assuming methane has 28 times the global w...\"",
+      "direction": "increase",
+      "confidence": 0.71,
+      "certainty": "moderate",
+      "edge_ids": [
+        "camo:edge_911a1a3de5b4",
+        "camo:edge_e8fa313e4ced"
+      ],
+      "searched_for": null,
+      "extras": [
+        "outputs/traces/b2.json"
+      ]
+    },
+    {
+      "id": "b3",
+      "status": "answered",
+      "answer": "Herbicide application decreases Native plant cover and richness, based on 8 claims from 4 studies (per-study verdicts: 4 decrease). Example (Stanley 2011): \"The MBG treatment resulted in a small but significant reduction in native graminoids (Figure 2b).\"",
+      "direction": "decrease",
+      "confidence": 0.87,
+      "certainty": "high",
+      "edge_ids": [
+        "camo:edge_5d2d2e187ed3",
+        "camo:edge_8328e65d2d95",
+        "camo:edge_7c23399b6d26",
+        "camo:edge_51647ba04964",
+        "camo:edge_ca84e687f0af",
+        "camo:edge_55bf80c7aa17",
+        "camo:edge_0288ae550545",
+        "camo:edge_56d20d1473dc"
+      ],
+      "searched_for": null,
+      "extras": [
+        "outputs/traces/b3.json"
+      ]
+    },
+    {
+      "id": "b4",
+      "status": "answered",
+      "answer": "Contaminants (oil sands tailings, PCBs, acid deposition) has mixed effects on Wildlife and aquatic community effects and recovery, based on 3 claims from 2 studies (per-study verdicts: 1 decrease, 1 increase). Example (Gentes 2006): \"Nestlings on NW were 11.4 times more likely to die than those on the PC site (95% CI of the odds ratio ¼ 1.4e91.9, P ¼ 0.02).\"",
+      "direction": "mixed",
+      "confidence": 0.6,
+      "certainty": "low",
+      "edge_ids": [
+        "camo:edge_fa465baa4074",
+        "camo:edge_dad3a7219bd8",
+        "camo:edge_fd235fdc71f7"
+      ],
+      "searched_for": null,
+      "extras": [
+        "outputs/traces/b4.json"
+      ]
+    },
+    {
+      "id": "b5",
+      "status": "answered",
+      "answer": "Multiple stressors has mixed effects on Recovery limitation, based on 8 claims from 1 studies (per-study verdicts: 1 mixed). Example (White 2017): \"in contrast to trends observed for ΔNBRregrowth values, wildfire areas generally had lower average RI values (0.55, σ = 0.62); compared to harvest areas (0.61, σ = 0.67; [Fig. 9](#page-10-0)A\"",
+      "direction": "mixed",
+      "confidence": 0.53,
+      "certainty": "very_low",
+      "edge_ids": [
+        "camo:edge_4c78d788f9e0",
+        "camo:edge_4b74d70f1104",
+        "camo:edge_4294a11c140d",
+        "camo:edge_b6fcaeee45eb",
+        "camo:edge_6b4137227797",
+        "camo:edge_2df6435352cb",
+        "camo:edge_13fa9ab84d1e",
+        "camo:edge_8108657fe94e"
+      ],
+      "searched_for": null,
+      "extras": [
+        "outputs/traces/b5.json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "id": "D-02",
+  "question": "What effect does mulch & surface cover have on invasive / non-native species abundance?",
+  "plan": {
+    "cause": {
+      "label": "Mulch & surface cover",
+      "terms": [
+        "mulch",
+        "straw",
+        "wood chip",
+        "surface cover",
+        "ground cover",
+        "litter",
+        "organic matter",
+        "fabric"
+      ],
+      "exclude": [
+        "herbicide",
+        "tilling",
+        "mowing"
+      ]
+    },
+    "outcome": {
+      "label": "Invasive / non-native species abundance",
+      "terms": [
+        "invasive",
+        "non-native",
+        "exotic",
+        "alien",
+        "weedy",
+        "weed"
+      ],
+      "attributes": [
+        "abundance",
+        "density",
+        "cover",
+        "frequency",
+        "biomass"
+      ],
+      "exclude": [
+        "native",
+        "indigenous"
+      ]
+    }
+  },
+  "n_candidates": 6,
+  "kept": [
+    "camo:edge_4af8274686bd",
+    "camo:edge_7ef2e1e59dd8",
+    "camo:edge_b3831f4af80e",
+    "camo:edge_0535e981ca40",
+    "camo:edge_18ac0bfc5067"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_eab8132a3509"
+  ],
+  "aggregate": {
+    "direction": "mixed",
+    "certainty": "very_low",
+    "confidence": 0.53,
+    "papers": {
+      "10.3368/er.25.2.85": "mixed"
+    },
+    "paper_counts": {
+      "mixed": 1
+    },
+    "agreement": 0.0,
+    "n_papers": 1
+  },
+  "edges": [
+    {
+      "id": "camo:edge_4af8274686bd",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
+      "predicate": "causes",
+      "object": "increased density of garlic mustard, dame's rocket, and celandine shoots",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."
+    },
+    {
+      "id": "camo:edge_7ef2e1e59dd8",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
+      "predicate": "causes",
+      "object": "decreased density of garlic mustard, dame's rocket, and celandine shoots",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."
+    },
+    {
+      "id": "camo:edge_b3831f4af80e",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
+      "predicate": "causes",
+      "object": "increased density of garlic mustard, dame's rocket, and celandine seeds",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."
+    },
+    {
+      "id": "camo:edge_0535e981ca40",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "single application of glyphosate, hand-pulling, clipping, or 5 cm mulch",
+      "predicate": "causes",
+      "object": "decreased density of garlic mustard, dame's rocket, and celandine seeds",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "Significant differences are due to increases in exotic species in single treatments and decreases in extended treatments."
+    },
+    {
+      "id": "camo:edge_18ac0bfc5067",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "one-time mulching",
+      "predicate": "causes",
+      "object": "decreased shoot numbers of the three exotic species by 2006",
+      "paper": "10.3368/er.25.2.85",
+      "grade": "moderate",
+      "sentence": "Mulching significantly reduced shoot numbers of the three exotic species by 2006 and it did not affect native species."
+    }
+  ]
+}

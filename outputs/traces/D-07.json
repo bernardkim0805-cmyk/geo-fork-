@@ -1,0 +1,329 @@
+{
+  "id": "D-07",
+  "question": "What effect does seeding native species have on native plant cover?",
+  "plan": {
+    "cause": {
+      "label": "Seeding native species",
+      "terms": [
+        "seed",
+        "seeding",
+        "sow",
+        "sowing",
+        "broadcast",
+        "drill",
+        "planting",
+        "establishment"
+      ],
+      "exclude": [
+        "transplant",
+        "cutting",
+        "vegetative"
+      ]
+    },
+    "outcome": {
+      "label": "Native plant cover",
+      "terms": [
+        "native",
+        "forb",
+        "grass",
+        "shrub",
+        "herb",
+        "wildflower",
+        "indigenous"
+      ],
+      "attributes": [
+        "cover",
+        "abundance",
+        "density",
+        "percent",
+        "proportion"
+      ],
+      "exclude": [
+        "invasive",
+        "exotic",
+        "non-native",
+        "alien",
+        "weedy"
+      ]
+    }
+  },
+  "n_candidates": 67,
+  "kept": [
+    "camo:edge_fa6a08157524",
+    "camo:edge_9da7c43b6f62",
+    "camo:edge_6019569cbdf7",
+    "camo:edge_efdd37d6a4fa",
+    "camo:edge_d8c58369a0ad",
+    "camo:edge_8688f007fdee",
+    "camo:edge_3c7763584a58",
+    "camo:edge_072d0c252866",
+    "camo:edge_9790ed9e85aa",
+    "camo:edge_948b5fdf1f56",
+    "camo:edge_c615d417e151",
+    "camo:edge_ee4c659ad61f",
+    "camo:edge_169cefccb4b7",
+    "camo:edge_c1f9939279ee",
+    "camo:edge_cbe20c1fbaf8",
+    "camo:edge_1d642419fa78",
+    "camo:edge_4ec708debcc7"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_4bd4b6b5fb64",
+    "camo:edge_9b6265bc0de7",
+    "camo:edge_129e97b2f12d",
+    "camo:edge_1b11b0807f61",
+    "camo:edge_318e73112017",
+    "camo:edge_c03f41e488e2",
+    "camo:edge_c914e6807a80",
+    "camo:edge_f0be8e27a29f",
+    "camo:edge_54b5e7cf526f",
+    "camo:edge_a94ebe6e3fe7",
+    "camo:edge_4164faf23bd4",
+    "camo:edge_4bd201e72073",
+    "camo:edge_d9613438d671",
+    "camo:edge_5ded15409571",
+    "camo:edge_69f3ef635991",
+    "camo:edge_75ecd71f9266",
+    "camo:edge_cdfb32b156f4",
+    "camo:edge_3cb374a2d4eb",
+    "camo:edge_5bbe7a6625f5",
+    "camo:edge_90f9ccbb80ba",
+    "camo:edge_b37e1aa34a90",
+    "camo:edge_fa643657cf56",
+    "camo:edge_405ba4aa84f0",
+    "camo:edge_b8744ac5f78d",
+    "camo:edge_5e6e8497d41d",
+    "camo:edge_89d406d5dcbd",
+    "camo:edge_6188aa2e271c",
+    "camo:edge_31ab18fd98cd",
+    "camo:edge_98e267f5f84a",
+    "camo:edge_239d1c9de6f2",
+    "camo:edge_8523016ba4e6",
+    "camo:edge_7698a33c49b6",
+    "camo:edge_51c7a44f92e7",
+    "camo:edge_cc2fe09cd951",
+    "camo:edge_afe4b7c4e031",
+    "camo:edge_7a13ecfa1f81",
+    "camo:edge_a535cc3007c5",
+    "camo:edge_468e013c3775",
+    "camo:edge_8a0cb7bc3af2",
+    "camo:edge_9e8a7eeb8253",
+    "camo:edge_9502ec875e6f",
+    "camo:edge_90c57d4c5e22",
+    "camo:edge_75add238e019",
+    "camo:edge_0eee5af30a61",
+    "camo:edge_9435ddc2f120",
+    "camo:edge_88183e8dd33d",
+    "camo:edge_872a4ce3f4c7",
+    "camo:edge_dbaf555271a2",
+    "camo:edge_c641160f3447",
+    "camo:edge_49d28fcf8d39"
+  ],
+  "aggregate": {
+    "direction": "mixed",
+    "certainty": "low",
+    "confidence": 0.6,
+    "papers": {
+      "10.3368/er.29.1-2.35": "increase",
+      "10.1046/j.1526-100X.2003.rec0217.x": "no_effect",
+      "10.1890/02-5296": "increase",
+      "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2": "no_effect"
+    },
+    "paper_counts": {
+      "increase": 2,
+      "no_effect": 2
+    },
+    "agreement": 0.5,
+    "n_papers": 4
+  },
+  "edges": [
+    {
+      "id": "camo:edge_fa6a08157524",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "seed addition",
+      "predicate": "causes",
+      "object": "increased total cover of natives",
+      "paper": "10.3368/er.29.1-2.35",
+      "grade": "moderate",
+      "sentence": "Seed addition caused a small but significant increase in total cover of natives; unseeded plots averaged 22.4%, while seeded plots averaged 24% *F*1,45 = 4.88, *p* = 0.03)."
+    },
+    {
+      "id": "camo:edge_9da7c43b6f62",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "seed addition",
+      "predicate": "causes",
+      "object": "Total cover of native species",
+      "paper": "10.1046/j.1526-100X.2003.rec0217.x",
+      "grade": "moderate",
+      "sentence": "The total cover of native species in 2000 was significantly higher in plots receiving herbicide (Fig. 5, F 11.48) and clipping (F 4.71) but was unaffected by seed addition (F 2.98)."
+    },
+    {
+      "id": "camo:edge_6019569cbdf7",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "seed addition",
+      "predicate": "causes",
+      "object": "increased cover of native annuals",
+      "paper": "10.3368/er.29.1-2.35",
+      "grade": "moderate",
+      "sentence": "The cover of native annuals was also greater in seeded plots (1.8%) than in unseeded (1.3%) (*F*1,45 = 42.1, *p* < 0.0001)"
+    },
+    {
+      "id": "camo:edge_efdd37d6a4fa",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "seed addition",
+      "predicate": "causes",
+      "object": "Cover of native perennial graminoids or forbs",
+      "paper": "10.3368/er.29.1-2.35",
+      "grade": "moderate",
+      "sentence": "but seed addition did not affect cover of native perennial graminoids or forbs (see Appendix 1)."
+    },
+    {
+      "id": "camo:edge_d8c58369a0ad",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "seed addition",
+      "predicate": "causes",
+      "object": "higher percent cover of native species",
+      "paper": "10.1890/02-5296",
+      "grade": "moderate",
+      "sentence": "Native species cover was significantly increased by seed addition in plots sown in 1994 and 1995 (Appendix C, *data not shown"
+    },
+    {
+      "id": "camo:edge_8688f007fdee",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Broadcast seeding method",
+      "predicate": "causes",
+      "object": "higher percent cover of native species",
+      "paper": "10.1890/02-5296",
+      "grade": "moderate",
+      "sentence": "In 1994 plots, broadcast plots had significantly higher cover of native species than did unseeded plots, and drilled plots were intermediate."
+    },
+    {
+      "id": "camo:edge_3c7763584a58",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Drilling seeding",
+      "predicate": "causes",
+      "object": "higher percent cover of native species",
+      "paper": "10.1890/02-5296",
+      "grade": "moderate",
+      "sentence": "In 1995 plots, however, native cover was significantly higher in drilled plots, and did not vary between unseeded and broadcast plots."
+    },
+    {
+      "id": "camo:edge_072d0c252866",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Seeding treatment",
+      "predicate": "causes",
+      "object": "decreased native species cover",
+      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
+      "grade": "moderate",
+      "sentence": "The cover of native species in the valley was unaffected by seeding, but on the tableland native species cover was significantly decreased in broadcast plots in\n\n![](_page_8_Figure_3.jpeg)\n\nFIG."
+    },
+    {
+      "id": "camo:edge_9790ed9e85aa",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "Seeding treatment",
+      "predicate": "causes",
+      "object": "Native cover",
+      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
+      "grade": "low",
+      "sentence": "The cover of native species in the valley was unaffected by seeding, but on the tableland native species cover was significantly decreased in broadcast plots in\n\n![](_page_8_Figure_3.jpeg)\n\nFIG."
+    },
+    {
+      "id": "camo:edge_948b5fdf1f56",
+      "direction": "unclear",
+      "flipped": false,
+      "subject": "seeding method (broadcasting vs drilling)",
+      "predicate": "associated_with",
+      "object": "Native cover",
+      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
+      "grade": "moderate",
+      "sentence": "Seeding method was associated with native cover in Valley plots seeded in 1996."
+    },
+    {
+      "id": "camo:edge_c615d417e151",
+      "direction": "unclear",
+      "flipped": false,
+      "subject": "seeding method (broadcasting vs drilling)",
+      "predicate": "associated_with",
+      "object": "Cover of native species",
+      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
+      "grade": "moderate",
+      "sentence": "Seeding method was associated with native cover in Tableland plots seeded in 1995."
+    },
+    {
+      "id": "camo:edge_ee4c659ad61f",
+      "direction": "unclear",
+      "flipped": false,
+      "subject": "seeding method (broadcasting vs drilling)",
+      "predicate": "associated_with",
+      "object": "Cover of native species",
+      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
+      "grade": "moderate",
+      "sentence": "Seeding method was associated with native cover in Tableland plots seeded in 1996."
+    },
+    {
+      "id": "camo:edge_169cefccb4b7",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "seeding method (broadcasting vs drilling)",
+      "predicate": "causes",
+      "object": "Native cover",
+      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
+      "grade": "moderate",
+      "sentence": "Seeding method had no significant effect on native cover in Valley plots seeded in 1994."
+    },
+    {
+      "id": "camo:edge_c1f9939279ee",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "Seeding method in Valley plots seeded in 1995",
+      "predicate": "causes",
+      "object": "Native cover",
+      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
+      "grade": "moderate",
+      "sentence": "Seeding method had no significant effect on native cover in Valley plots seeded in 1995."
+    },
+    {
+      "id": "camo:edge_cbe20c1fbaf8",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "Seeding method in Valley plots seeded in 1995",
+      "predicate": "causes",
+      "object": "Native cover",
+      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
+      "grade": "moderate",
+      "sentence": "Seeding method had no significant effect on native cover in Valley plots seeded in 1996."
+    },
+    {
+      "id": "camo:edge_1d642419fa78",
+      "direction": "unclear",
+      "flipped": false,
+      "subject": "Seeding method in Tableland plots seeded in 1994",
+      "predicate": "associated_with",
+      "object": "Native cover",
+      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
+      "grade": "moderate",
+      "sentence": "Seeding method was associated with native cover in Tableland plots seeded in 1994."
+    },
+    {
+      "id": "camo:edge_4ec708debcc7",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "seeding method (broadcasting vs drilling)",
+      "predicate": "causes",
+      "object": "Native cover",
+      "paper": "10.1890/1051-0761(2003)013[0137:COGROY]2.0.CO;2",
+      "grade": "low",
+      "sentence": "Seeding method had no significant effect on native cover in Tableland plots seeded in 1996."
+    }
+  ]
+}

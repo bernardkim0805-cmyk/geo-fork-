@@ -1,0 +1,95 @@
+{
+  "id": "D-10",
+  "question": "What effect does livestock grazing have on soil organic carbon?",
+  "plan": {
+    "cause": {
+      "label": "Livestock grazing",
+      "terms": [
+        "livestock",
+        "grazing",
+        "cattle",
+        "sheep",
+        "goat",
+        "horse",
+        "trampling",
+        "herbivory"
+      ],
+      "exclude": [
+        "grazing exclusion",
+        "no grazing",
+        "ungrazed"
+      ]
+    },
+    "outcome": {
+      "label": "Soil organic carbon",
+      "terms": [
+        "soil",
+        "carbon",
+        "soc",
+        "co2",
+        "sequestration"
+      ],
+      "attributes": [
+        "level",
+        "concentration",
+        "stock",
+        "content",
+        "change"
+      ],
+      "exclude": [
+        "atmospheric",
+        "plant",
+        "root",
+        "litter"
+      ]
+    }
+  },
+  "n_candidates": 5,
+  "kept": [
+    "camo:edge_41d8fc19f522",
+    "camo:edge_3811dfc7069f"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_025288605f5e",
+    "camo:edge_743ede6b951e",
+    "camo:edge_96d974a9352f"
+  ],
+  "aggregate": {
+    "direction": "mixed",
+    "certainty": "very_low",
+    "confidence": 0.53,
+    "papers": {
+      "10.1017/S0376892910000184": "mixed"
+    },
+    "paper_counts": {
+      "mixed": 1
+    },
+    "agreement": 0.0,
+    "n_papers": 1
+  },
+  "edges": [
+    {
+      "id": "camo:edge_41d8fc19f522",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "Grazing",
+      "predicate": "causes",
+      "object": "Per cent organic carbon in soils",
+      "paper": "10.1017/S0376892910000184",
+      "grade": "moderate",
+      "sentence": "There was no significant difference in bulk density ( F1,17 = 1.3 , p = 0.271) or per cent organic carbon between grazed and ungrazed soils ( F1,17 = 0.4 , p = 0.536)."
+    },
+    {
+      "id": "camo:edge_3811dfc7069f",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Grazing",
+      "predicate": "associated_with",
+      "object": "Increased soil carbon density",
+      "paper": "10.1017/S0376892910000184",
+      "grade": "moderate",
+      "sentence": "In contrast, average soil carbon density of the grazed soil (0.032 gC cm<sup>-3</sup>) was significantly higher than in ungrazed soil (0.025 gC cm<sup>-3</sup>) ( $F_{1,17} = 25.1$ , p < 0.001)."
+    }
+  ]
+}
