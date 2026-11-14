@@ -45,6 +45,7 @@ CONFIG = {
     "conf_no_evidence_gap": 0.75,    # both sides grounded, nothing joins them
     "conf_no_evidence_miss": 0.55,   # a side grounded to nothing (maybe our miss)
     "conf_parse_failed": 0.3,
+    "bad_input_penalty": 0.9,        # x confidence when some edge_ids were unusable
 }
 GRADES = ["very_low", "low", "moderate", "high"]
 DIRS = ("increase", "decrease", "no_effect")
@@ -68,7 +69,7 @@ class EdgeVote:
 # 1. Read one edge
 # --------------------------------------------------------------------------
 def _comparator_weight(edge: dict) -> tuple[float, bool]:
-    comp = (edge.get("comparator") or [{}])[0]
+    comp = (edge.get("comparator") or [{}])[0] or {}
     ctype = comp.get("comparator_type")
     desc = comp.get("comparator_description") or ""
     if ctype == "alternative_treatment" and re.search(CONFIG["control_words"], desc, re.I):
@@ -172,15 +173,33 @@ def _no_evidence(query: Query, g: Grounding, extra_note: str = "") -> Decision:
                     searched_for=describe_search(query, g) + extra_note)
 
 
+def _usable_edges(edge_ids, graph) -> tuple[list[str], list[str]]:
+    """F1/F2: dedupe (keep order); drop ids not in the graph or with a missing node."""
+    usable, bad, seen = [], [], set()
+    for eid in edge_ids or []:
+        if eid in seen:
+            continue
+        seen.add(eid)
+        e = graph.edges.get(eid)
+        if e is None or e.get("subject") not in graph.nodes or e.get("object") not in graph.nodes:
+            bad.append(eid)
+        else:
+            usable.append(eid)
+    return usable, bad
+
+
 def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
     if query.parse_method == "failed":
         return Decision(status="no_evidence", confidence=CONFIG["conf_parse_failed"],
                         searched_for="could not parse an intervention and outcome from the question")
 
-    votes = [read_edge(graph.edges[e], graph, query) for e in ev.edge_ids]
+    usable, bad = _usable_edges(ev.edge_ids, graph)
+    votes = [read_edge(graph.edges[e], graph, query) for e in usable]
     voting = [v for v in votes if v.direction is not None]
     if not voting:
         note = "; only indirect edges (mediates/moderates/...) were found" if votes else ""
+        if bad:
+            note += f"; {len(bad)} edge id(s) were missing from the graph"
         d = _no_evidence(query, g, note)
         d.votes = votes
         return d
@@ -226,6 +245,9 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
         conf *= top_share
     if all_h2h:
         conf *= CONFIG["head_to_head_penalty"]
+    if bad:
+        conf *= CONFIG["bad_input_penalty"]
+        notes.append(f"{len(bad)} edge id(s) skipped: not in the graph or missing a node.")
 
     flipped = sum(1 for v in voting if v.flipped_subject)
     if flipped:

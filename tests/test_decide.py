@@ -164,5 +164,51 @@ class Aggregate(unittest.TestCase):
         self.assertLessEqual(run(self.g, eids).confidence, 0.95)
 
 
+class BadInput(unittest.TestCase):
+    """F1-F3: decide never throws on bad edge input."""
+
+    def setUp(self):
+        self.g = FakeGraph()
+        self.x = self.g.node("fertilization", "introduced", "management_intervention")
+        self.up = self.g.node("survival", "increased")
+        self.good = self.g.edge(self.x, "causes", self.up, doc="a")
+
+    def test_unknown_edge_id_is_skipped_with_note_and_penalty(self):
+        clean = run(self.g, [self.good])
+        d = run(self.g, [self.good, "camo:edge_doesnotexist"])
+        self.assertEqual((d.status, d.direction, d.edge_ids), ("answered", "increase", [self.good]))
+        self.assertLess(d.confidence, clean.confidence)
+        self.assertTrue(any("skipped" in n for n in d.notes))
+
+    def test_edge_with_missing_node_is_skipped(self):
+        broken = self.g.edge(self.x, "causes", "n_missing", doc="b")
+        d = run(self.g, [self.good, broken])
+        self.assertEqual(d.edge_ids, [self.good])
+
+    def test_only_bad_ids_is_no_evidence(self):
+        d = run(self.g, ["camo:edge_nope", "camo:edge_nada"])
+        self.assertEqual(d.status, "no_evidence")
+        self.assertIn("missing from the graph", d.searched_for)
+
+    def test_duplicate_ids_are_deduped(self):
+        d = run(self.g, [self.good, self.good, self.good])
+        self.assertEqual(d.edge_ids, [self.good])
+
+    def test_empty_or_null_comparator_does_not_throw(self):
+        e1 = self.g.edge(self.x, "causes", self.up, doc="c")
+        self.g.edges[e1]["comparator"] = []
+        e2 = self.g.edge(self.x, "causes", self.up, doc="d")
+        self.g.edges[e2]["comparator"] = [None]
+        e3 = self.g.edge(self.x, "causes", self.up, doc="e")
+        del self.g.edges[e3]["comparator"]
+        d = run(self.g, [e1, e2, e3])
+        self.assertEqual(d.direction, "increase")
+
+    def test_none_edge_list_is_no_evidence(self):
+        from lane2.decide import decide as _decide
+        d = _decide(q(), Grounding(), Evidence(edge_ids=None), self.g)
+        self.assertEqual(d.status, "no_evidence")
+
+
 if __name__ == "__main__":
     unittest.main()

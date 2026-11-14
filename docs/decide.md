@@ -67,3 +67,10 @@ The graph contains no `high` grades.
 ## 6. Notes for render
 
 `Decision.notes` carries plain-English caveats (head-to-head comparisons, excluded edges, flipped subjects) so render can be honest without re-deriving anything.
+
+## 7. Bad input (never throws)
+
+- `edge_ids` are deduplicated (first occurrence kept).
+- An id that is not in the graph, or whose subject/object node is missing, is skipped. Confidence × `bad_input_penalty` (0.9) and a note is added.
+- If nothing usable is left → `no_evidence`, and `searched_for` mentions the missing ids.
+- An empty, `None` or `[None]` comparator falls back to the default comparator weight.
