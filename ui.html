@@ -124,6 +124,34 @@ body{background:var(--bg);color:var(--fg);font-family:'Space Grotesk',sans-serif
 .stat-key{color:var(--muted);font-size:12px}
 .stat-val{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:12px}
 
+/* key/value detail blocks */
+.kv{padding:4px 0}
+.kv > div{display:flex;gap:12px;padding:6px 14px;border-bottom:1px solid var(--border);font-size:12px;align-items:baseline}
+.kv > div:last-child{border-bottom:none}
+.kv span{width:150px;flex-shrink:0;color:var(--muted);font-size:11px}
+.kv b{font-weight:500;word-break:break-word}
+.kv i{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;
+  background:var(--surface2);padding:1px 6px;border-radius:3px;margin-right:4px;display:inline-block}
+
+/* Sub-questions */
+.pr-intro{padding:10px 14px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)}
+.pr-intro b{color:var(--fg);margin:0 3px}
+table.pr{width:100%;border-collapse:collapse;font-size:12px}
+table.pr th{text-align:left;padding:6px 12px;border-bottom:1px solid var(--border);
+  font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+table.pr td{padding:7px 12px;border-bottom:1px solid var(--border)}
+table.pr tr:last-child td{border-bottom:none}
+table.pr tr.dead td{opacity:.5}
+.pr-x{font-weight:600;white-space:nowrap}
+.pr-y{color:var(--fg)}
+.pr-arrow{color:var(--muted);padding:0 2px !important}
+.pr-n{text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap}
+.pr-n.warn{color:var(--amber,#f59e0b);font-weight:700}
+.pr-d{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap}
+.pr-d.live{color:var(--fg);font-weight:600}
+.pr-foot{padding:9px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.5}
+.pr-foot.warn{color:var(--amber,#f59e0b)}
+
 /* Funnel */
 .fn-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
 @media(max-width:620px){.fn-grid{grid-template-columns:1fr}}
@@ -169,13 +197,45 @@ table.fp tr.dim{opacity:.45}
 /* Evidence graph */
 :root{--inc:#34d399;--dec:#f87171;--neu:#8b90ad}
 .graph-legend{
-  display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+  display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;
   padding:9px 14px;border-bottom:1px solid var(--border);
   font-size:11px;color:var(--muted);
 }
-.graph-legend i.sw{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.lg-grp{display:inline-flex;align-items:center;gap:5px}
+.lg-grp b{font-family:'JetBrains Mono',monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;opacity:.75;margin-right:2px}
+.graph-legend i.sw{display:inline-block;width:14px;height:3px;border-radius:2px;margin:0 3px 0 7px;vertical-align:middle}
+.graph-legend i.sw:first-of-type{margin-left:0}
+.graph-legend i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 3px 0 7px;vertical-align:middle}
 .graph-legend i.sw.dash{background:repeating-linear-gradient(90deg,var(--neu) 0 4px,transparent 4px 7px)}
 .legend-note{margin-left:auto;font-style:italic;opacity:.8}
+/* Experiments */
+table.ab{width:100%;border-collapse:collapse;font-size:11.5px}
+table.ab th{text-align:left;padding:7px 12px;border-bottom:1px solid var(--border);
+  font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+table.ab td{padding:7px 12px;border-bottom:1px solid var(--border)}
+table.ab tr:last-child td{border-bottom:none}
+table.ab .n{text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.ab-name{font-weight:600;white-space:nowrap}
+.ab-flag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;
+  background:var(--surface2);color:var(--muted);padding:1px 6px;border-radius:3px;margin:1px 3px 1px 0;white-space:nowrap}
+.ab-none{color:var(--muted);font-style:italic;font-size:11px}
+table.ab td.best{color:var(--inc);font-weight:700}
+table.ab td.warn{color:var(--amber,#f59e0b)}
+table.ab td.hit{color:var(--inc)}
+table.ab td.miss{color:var(--muted);opacity:.5}
+.ab-sub{padding:9px 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);line-height:1.5}
+.ab-head2{padding:12px 14px 6px;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--muted);border-top:1px solid var(--border)}
+
+.panel{border-bottom:1px solid var(--border)}
+.panel:last-of-type{border-bottom:none}
+.panel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;background:var(--surface2)}
+.panel-q{font-size:12.5px;font-weight:700}
+.panel-head.grey .panel-q{color:var(--muted);font-weight:500;font-style:italic}
+.panel-n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.panel-tally{margin-left:auto;display:flex;gap:9px}
+.tl{font-family:'JetBrains Mono',monospace;font-size:10px;font-style:normal}
+.tl-inc{color:var(--inc)} .tl-dec{color:var(--dec)} .tl-neu{color:var(--neu)}
 .graph-wrap{overflow-x:auto;padding:6px 10px 12px}
 .graph-svg{display:block;width:100%;height:auto}
 .gh{font-size:9px;font-weight:700;letter-spacing:.11em;fill:var(--muted);font-family:'JetBrains Mono',monospace}
@@ -292,6 +352,11 @@ function loadFile(f) {
   r.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
+      if (data && data.kind === 'ablations') {
+        document.getElementById('drop-zone').style.display = 'none';
+        renderAblations(data);
+        return;
+      }
       // Handle wrong file: answers.json has {"team":..., "answers":[...]}
       if (data && data.team && data.answers) {
         showError('⚠ That\'s answers.json — please load answers.trace.json instead (same folder, written at the same time).');
@@ -318,7 +383,95 @@ function showError(msg) {
   document.getElementById('drop-zone').style.color = 'var(--err)';
 }
 
+// --- Experiments view (ablations.json) ------------------------------------
+const FLAG_LABEL = {
+  invariant_stems: 'invariant stems',
+  last_word: 'last-word expand',
+  loose_adjacency: 'loose adjacency',
+  drop_native: "drop 'native'",
+};
+
+function renderAblations(data) {
+  const runs = data.runs || [];
+  const cuts = data.cuts || ['10', '20', '50'];
+  const byStrategy = {};
+  runs.forEach(r => { (byStrategy[r.strategy] = byStrategy[r.strategy] || []).push(r); });
+
+  const best = {};
+  Object.entries(byStrategy).forEach(([s, rs]) => {
+    best[s] = {
+      recall_all: Math.max(...rs.map(r => r.recall_all)),
+      dir: Math.max(...rs.map(r => r.dir_ok)),
+    };
+  });
+
+  const qids = (runs[0] && runs[0].questions || []).map(q => q.id);
+
+  const section = ([strategy, rs]) => `
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Strategy ${esc(strategy)}</span>
+        <span class="card-head-tag badge badge-grey">${rs.length} configurations</span>
+      </div>
+      <table class="ab">
+        <tr>
+          <th>Configuration</th><th>Flags</th><th class="n">Edges</th>
+          ${cuts.map(c => `<th class="n">r@${c}</th>`).join('')}
+          <th class="n">r@all</th><th class="n">Direction</th>
+        </tr>
+        ${rs.map(r => `
+          <tr>
+            <td class="ab-name">${esc(r.name)}</td>
+            <td>${Object.entries(r.flags).filter(([, v]) => v)
+                  .map(([k]) => `<span class="ab-flag">${FLAG_LABEL[k] || k}</span>`).join('') || '<span class="ab-none">none</span>'}</td>
+            <td class="n ${r.edges > 800 ? 'warn' : ''}">${r.edges}</td>
+            ${cuts.map(c => `<td class="n">${pct(r.recall[c])}</td>`).join('')}
+            <td class="n ${r.recall_all === best[strategy].recall_all ? 'best' : ''}">${pct(r.recall_all)}</td>
+            <td class="n ${r.dir_ok === best[strategy].dir ? 'best' : ''}">${r.dir_ok}/${r.dir_n}</td>
+          </tr>`).join('')}
+      </table>
+      <div class="ab-sub">Recall is against the confirmed edges in tests/cases.yaml, which is a
+        partial list — read it as a lower bound and a way to compare runs, not as a score.</div>
+
+      <div class="ab-head2">Edges found per question</div>
+      <table class="ab">
+        <tr><th>Configuration</th>${qids.map(q => `<th class="n">${esc(q)}</th>`).join('')}</tr>
+        ${rs.map(r => `
+          <tr>
+            <td class="ab-name">${esc(r.name)}</td>
+            ${(r.questions || []).map(q => `
+              <td class="n ${q.hit ? 'hit' : (q.ref ? 'miss' : '')}"
+                  title="${q.hit}/${q.ref} confirmed · ${q.got} returned · nodes ${q.nodes[0]}x${q.nodes[1]} · expected ${q.expected} got ${q.ours}">
+                ${q.ref ? `${q.hit}/${q.ref}` : '–'}
+              </td>`).join('')}
+          </tr>`).join('')}
+      </table>
+      <div class="ab-sub">Cell shows confirmed edges found over confirmed edges listed. Hover for
+        node counts and the direction each configuration produced.</div>
+    </div>`;
+
+  document.getElementById('main').innerHTML =
+    `<div class="card"><div class="card-head"><span class="card-head-label">Experiments</span></div>
+       <div class="answer-box">Each row is one configuration of the retrieve pipeline, run over the
+       same questions with the same gold parses. Compare rows to see what a change actually buys.</div>
+     </div>` + Object.entries(byStrategy).map(section).join('');
+
+  document.getElementById('q-list').innerHTML =
+    `<div style="padding:14px;font-size:12px;color:var(--muted)">
+       Experiments loaded.<br><br>${runs.length} runs over ${qids.length} questions.
+       <br><br>Drop <code>answers.trace.json</code> to go back to the per-question view.
+     </div>`;
+  document.querySelector('.app-sub').textContent = `${runs.length} configurations compared`;
+}
+
+function pct(x) { return x == null ? '–' : `${Math.round(x * 100)}%`; }
+
 function autoLoad(data) {
+  if (data && data.kind === 'ablations') {
+    document.getElementById('drop-zone').style.display = 'none';
+    renderAblations(data);
+    return true;
+  }
   traces = Array.isArray(data) ? data : [data];
   if (!traces[0] || !traces[0].id) return false;
   document.getElementById('drop-zone').style.display = 'none';
@@ -350,6 +503,69 @@ function methodBadge(m) {
   return `<span class="badge ${map[m]||'badge-grey'}">${m||'?'}</span>`;
 }
 
+
+// --- Parse check: Shady's dev-only uncertainty score (branch actual-parse) --
+// score is 0-100, where 0 = the model is certain the parse captured the
+// question and 100 = certain it did not. null means no judgement: the check
+// was off, the call failed, or the reply was unusable. Never shown as a 0.
+function uncBadge(u) {
+  if (!u) return '';
+  const map = {low:'badge-green', moderate:'badge-orange', high:'badge-orange', very_high:'badge-red'};
+  const tip = esc(u.reason || '');
+  if (u.score == null) return `<span class="badge badge-grey" title="${tip}">unsure —</span>`;
+  return `<span class="badge ${map[u.band] || 'badge-grey'}" title="${tip}">unsure ${u.score}</span>`;
+}
+
+function tokBar(label, n, total) {
+  const w = total > 0 ? Math.round((n / total) * 100) : 0;
+  return `
+    <div style="display:flex;align-items:center;gap:8px;font-size:11px;padding:2px 0">
+      <span style="width:80px;color:var(--muted)">${label}</span>
+      <span style="flex:0 0 120px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
+        <span style="display:block;height:100%;width:${w}%;background:#6366f1"></span>
+      </span>
+      <span style="font-variant-numeric:tabular-nums">${(n||0).toLocaleString()}</span>
+    </div>`;
+}
+
+// Returns '' when a trace carries neither field, so older traces render as before.
+function renderParseCheck(t) {
+  const u = t.uncertainty;
+  const tk = t.tokens || {};
+  if (!u && !Object.keys(tk).length) return '';
+  const total = tk.total || 0;
+  const off = u && u.score == null;
+  return `
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Parse check</span>
+        ${u ? uncBadge(u) : ''}
+        ${u && u.cached ? `<span class="card-head-tag badge badge-grey">cached</span>` : ''}
+        <span style="margin-left:auto;font-size:11px;color:var(--muted)">Does the parse capture the question? · dev-only</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:10px 12px;border-right:1px solid var(--border)">
+          ${u ? `
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;color:${off ? 'var(--muted)' : 'inherit'}">${off ? '—' : u.score}</span>
+              <span style="font-size:11px;color:var(--muted)">/ 100 uncertainty${off ? '' : ` · ${String(u.band||'').replace('_',' ')}`}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.45">${esc(u.reason || '')}</div>
+          ` : `<div style="font-size:12px;color:var(--muted)">No uncertainty score in this trace. Re-run with <code>--uncertainty</code>.</div>`}
+        </div>
+        <div style="padding:10px 12px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">LLM tokens</div>
+          ${tokBar('parse', tk.parse, total)}
+          ${tokBar('ground', tk.ground, total)}
+          ${tokBar('check', tk.uncertainty, total)}
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;border-top:1px solid var(--border);padding-top:4px">
+            total <b style="color:var(--text);font-variant-numeric:tabular-nums">${total.toLocaleString()}</b>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderSidebar() {
   const list = document.getElementById('q-list');
   list.innerHTML = traces.map((t, i) => {
@@ -363,12 +579,61 @@ function renderSidebar() {
           ${statusBadge(ans.status)}
           ${dir ? dirBadge(dir) : ''}
           ${t.parse ? methodBadge(t.parse.method) : ''}
+          ${uncBadge(t.uncertainty)}
         </div>
       </div>`;
   }).join('');
   const total = traces.reduce((s,t) => s + ((t.tokens||{}).total || 0), 0);
+  const uncTok = traces.reduce((s,t) => s + ((t.tokens||{}).uncertainty || 0), 0);
   document.querySelector('.app-sub').textContent =
-    `${traces.length} questions · ${total.toLocaleString()} LLM tokens`;
+    `${traces.length} questions · ${total.toLocaleString()} LLM tokens`
+    + (uncTok ? ` (${uncTok.toLocaleString()} on parse checks)` : '');
+}
+
+// --- Sub-questions --------------------------------------------------------
+// A question naming several causes or effects is searched once per (X,Y) pair,
+// each judged on its own, because a finding can hold for glyphosate and not for
+// herbicides generally.
+function renderPairs(pairs, parse) {
+  if (!pairs || pairs.length < 2) return '';
+  const answered = pairs.filter(p => p.status === 'answered').length;
+  const dirs = [...new Set(pairs.filter(p => p.direction).map(p => p.direction))];
+
+  const row = p => {
+    const dead = p.status !== 'answered';
+    const anchorBad = (p.anchor || []).some(a => a === 0);
+    return `<tr class="${dead ? 'dead' : ''}">
+      <td class="pr-x">${esc(p.intervention)}</td>
+      <td class="pr-arrow">→</td>
+      <td class="pr-y">${esc(p.outcome)}</td>
+      <td class="pr-n ${anchorBad ? 'warn' : ''}" title="nodes matched on each side">
+        ${(p.nodes || []).join(' × ')}</td>
+      <td class="pr-n">${p.edges}</td>
+      <td class="pr-d ${dead ? '' : 'live'}">${esc(String(p.direction ?? 'no evidence'))}</td>
+      <td class="pr-n">${p.certainty ? esc(p.certainty) : '–'}</td>
+      <td class="pr-n">${p.confidence ?? '–'}</td>
+    </tr>`;
+  };
+
+  return `
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-label">Sub-questions</span>
+      <span class="card-head-tag badge badge-grey">${pairs.length} pairs · ${answered} answered</span>
+    </div>
+    <div class="pr-intro">${esc((parse.interventions || []).join(', '))}
+      <b>×</b> ${esc((parse.outcomes || []).join(', '))} — each searched and judged separately.</div>
+    <table class="pr">
+      <tr><th>Cause</th><th></th><th>Effect</th><th class="pr-n">nodes</th>
+          <th class="pr-n">edges</th><th>direction</th><th class="pr-n">certainty</th><th class="pr-n">conf</th></tr>
+      ${pairs.map(row).join('')}
+    </table>
+    ${dirs.length > 1 ? `<div class="pr-foot">The pairs disagree (${dirs.map(esc).join(', ')}),
+      which is why the combined answer is mixed. A finding can be true of one and not the other.</div>` : ''}
+    ${pairs.some(p => (p.anchor || []).some(a => a === 0))
+      ? `<div class="pr-foot warn">An amber node count means the question's own wording matched nothing
+         on that side; any edges there came from the text-match fallback.</div>` : ''}
+  </div>`;
 }
 
 // --- Funnel: counts before and after each filter --------------------------
@@ -474,6 +739,43 @@ let _graphEdges = [];
 
 const DIR_LABEL = {inc:'▲ increase', dec:'▼ decrease', neu:'– no change'};
 
+// A question naming two outcomes is two X->Y questions sharing one search.
+// One merged graph hides which evidence answers which half, so split them.
+function renderPanels(edges, parse) {
+  const outcomes = (parse && parse.outcomes) || [];
+  if (outcomes.length < 2) return `<div class="graph-wrap">${renderGraph(edges)}</div>`;
+
+  const panels = outcomes.map(o => {
+    const sub = edges.filter(e => (e.answers || []).includes(o));
+    return {o, sub};
+  }).filter(p => p.sub.length);
+
+  const claimed = new Set();
+  panels.forEach(p => p.sub.forEach(e => claimed.add(e.id)));
+  const rest = edges.filter(e => !claimed.has(e.id));
+  if (rest.length) panels.push({o: 'not attributable to one outcome', sub: rest, grey: true});
+
+  if (!panels.length) return `<div class="graph-wrap">${renderGraph(edges)}</div>`;
+
+  return panels.map(p => `
+    <div class="panel">
+      <div class="panel-head ${p.grey ? 'grey' : ''}">
+        <span class="panel-q">${esc(p.o)}</span>
+        <span class="panel-n">${p.sub.length} edge${p.sub.length > 1 ? 's' : ''}</span>
+        ${p.grey ? '' : `<span class="panel-tally">${tallyOf(p.sub)}</span>`}
+      </div>
+      <div class="graph-wrap">${renderGraph(p.sub)}</div>
+    </div>`).join('');
+}
+
+function tallyOf(edges) {
+  const t = {inc: 0, dec: 0, neu: 0};
+  edges.forEach(e => { t[edgeClass(e)]++; });
+  return ['inc', 'dec', 'neu']
+    .filter(k => t[k])
+    .map(k => `<i class="tl tl-${k}">${DIR_LABEL[k]} ${t[k]}</i>`).join('');
+}
+
 function renderGraph(edges) {
   _graphEdges = edges;
   // collapse to unique nodes per side, preserving first-seen order
@@ -488,8 +790,23 @@ function renderGraph(edges) {
   const padY = 36, colW = 340, gap = 230, lineH = 14, rowPad = 14;
   const W = colW * 2 + gap;
 
-  const wrapAll = ns => ns.map(n => wrapText(n.name, 40));
-  const LW = wrapAll(L), RW = wrapAll(R);
+  // the graph has many distinct nodes sharing a name ("Richness" four times
+  // over); number the repeats so a line can be traced to a specific one
+  const tag = ns => {
+    const seen = {};
+    ns.forEach(n => { seen[n.name] = (seen[n.name] || 0) + 1; });
+    const run = {};
+    return ns.map(n => {
+      if ((seen[n.name] || 0) < 2) return n.name;
+      run[n.name] = (run[n.name] || 0) + 1;
+      return `${n.name} (${run[n.name]})`;
+    });
+  };
+  const LN = tag(L), RN = tag(R);
+  const LW = LN.map(s => wrapText(s, 40));
+  // the " [increased]" suffix shares the last line, so wrap a little narrower
+  const RW = RN.map((s, i) => wrapText(s, R[i].qualifier
+    ? Math.max(24, 40 - R[i].qualifier.length - 3) : 40));
 
   // lay rows out independently per side, then align each side's block
   const rowTops = w => {
@@ -516,20 +833,22 @@ function renderGraph(edges) {
       <path d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"
         class="ge ge-${cls}${e.negated ? ' ge-neg' : ''}" stroke-width="${w}"
         marker-end="url(#arrow-${cls})" data-k="${k}"/>
-      <text x="${mx}" y="${(y1 + y2) / 2 - 5}" class="ge-lbl ge-lbl-${cls}" text-anchor="middle"
-        >${e.negated ? 'no relationship' : esc(e.predicate || '')}</text>
       <title>${esc(labelFor(e))}</title>
     </g>`;
   }).join('');
 
   // one <tspan> per wrapped line; qualifier goes on its own line at the end
+  // qualifier trails the name, on the same line, so the label reads as a
+  // sentence: "Native species richness [decreased]"
   const nodeLabel = (n, wrapped, x, top, anchor, side) => {
     const cls = (n.type || '').split('_')[0];
-    const spans = wrapped.map((ln, i) =>
-      `<tspan x="${x}" dy="${i === 0 ? 0 : lineH}">${esc(ln)}</tspan>`).join('');
-    const q = (side === 'r' && n.qualifier)
-      ? `<tspan x="${x}" dy="${lineH}" class="gq">[${esc(n.qualifier)}]</tspan>` : '';
-    return `<text x="${x}" y="${top + 10}" class="gl gl-${cls}" text-anchor="${anchor}">${spans}${q}</text>`;
+    const qual = (side === 'r' && n.qualifier) ? ` [${n.qualifier}]` : '';
+    const last = wrapped.length - 1;
+    const spans = wrapped.map((ln, i) => {
+      const tail = (i === last && qual) ? `<tspan class="gq">${esc(qual)}</tspan>` : '';
+      return `<tspan x="${x}" dy="${i === 0 ? 0 : lineH}">${esc(ln)}${tail}</tspan>`;
+    }).join('');
+    return `<text x="${x}" y="${top + 10}" class="gl gl-${cls}" text-anchor="${anchor}">${spans}</text>`;
   };
 
   const defs = ['inc', 'dec', 'neu'].map(c =>
@@ -549,13 +868,14 @@ function renderGraph(edges) {
 }
 
 // greedy word wrap; SVG text has no automatic wrapping
-function wrapText(s, maxChars) {
+function wrapText(s, maxChars, firstLineIndent) {
   const words = String(s == null ? '?' : s).split(/\s+/);
   const lines = [];
   let cur = '';
   for (const w of words) {
+    const budget = maxChars - (lines.length === 0 ? (firstLineIndent || 0) : 0);
     if (!cur) { cur = w; continue; }
-    if ((cur + ' ' + w).length <= maxChars) cur += ' ' + w;
+    if ((cur + ' ' + w).length <= budget) cur += ' ' + w;
     else { lines.push(cur); cur = w; }
   }
   if (cur) lines.push(cur);
@@ -629,7 +949,25 @@ function selectTrace(i) {
   renderMain(traces[i]);
 }
 
+// A throw anywhere inside the template below abandons the whole string, so the
+// page silently keeps whatever it showed before. Surface the error instead.
 function renderMain(t) {
+  try {
+    renderMainInner(t);
+  } catch (err) {
+    document.getElementById('main').innerHTML = `
+      <div class="card">
+        <div class="card-head"><span class="card-head-label" style="color:var(--dec)">Render error</span></div>
+        <div class="answer-box">
+          <p>The page could not draw this question. The trace loaded fine; the fault is in the viewer.</p>
+          <pre style="margin-top:10px;white-space:pre-wrap;font-size:11px">${esc(err && err.stack || String(err))}</pre>
+        </div>
+      </div>`;
+    throw err;
+  }
+}
+
+function renderMainInner(t) {
   const ans = t.answer || {};
   const p = t.parse || {};
   const g = t.ground || {};
@@ -665,6 +1003,10 @@ function renderMain(t) {
         <div class="p-step-val">${methodBadge(p.method)}</div>
         <div class="p-step-sub">${p.intervention ? `X: ${p.intervention}` : '—'}</div>
         <div class="p-step-sub">${p.outcome ? `Y: ${p.outcome}` : '—'}</div>
+        ${(t.uncertainty || tok.total) ? `<div class="p-step-sub" style="margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          ${uncBadge(t.uncertainty)}
+          ${tok.total ? `<span title="parse ${tok.parse||0} + ground ${tok.ground||0} + check ${tok.uncertainty||0} tokens" style="font-variant-numeric:tabular-nums;cursor:help">${(tok.total||0).toLocaleString()} tok</span>` : ''}
+        </div>` : ''}
       </div>
       <div class="p-arrow">▶</div>
       <div class="p-step">
@@ -685,6 +1027,9 @@ function renderMain(t) {
         <div class="p-step-sub">${d.certainty || '—'} certainty</div>
       </div>
     </div>
+
+    <!-- Parse check + token spend -->
+    ${renderParseCheck(t)}
 
     <!-- Ground detail -->
     <div class="card">
@@ -708,6 +1053,26 @@ function renderMain(t) {
       </div>
     </div>
 
+    <!-- Everything parse decided, including what is usually dropped -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-label">Parse detail</span>
+        <span class="card-head-tag badge badge-grey">${esc(p.method || '?')}</span>
+      </div>
+      <div class="kv">
+        <div><span>mode</span><b>${esc(p.mode || 'effect')}</b></div>
+        <div><span>kind (from yaml)</span><b>${esc(t.kind || '—')}</b></div>
+        <div><span>interventions</span><b>${(p.interventions || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
+        <div><span>outcomes</span><b>${(p.outcomes || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
+        <div><span>pairs</span><b>${(p.pairs || []).length}</b></div>
+        ${p.presumed && Object.keys(p.presumed).length
+          ? `<div><span>presumed direction</span><b>${esc(JSON.stringify(p.presumed))}</b></div>` : ''}
+      </div>
+    </div>
+
+    <!-- Sub-questions: one row per X->Y pair -->
+    ${renderPairs(t.pairs, p)}
+
     <!-- Funnel: what each filter removed -->
     ${renderFunnel(g, r)}
 
@@ -719,13 +1084,21 @@ function renderMain(t) {
         <span class="card-head-tag badge badge-grey">${r.edges.length} of ${r.edge_count} edges</span>
       </div>
       <div class="graph-legend">
-        <span><i class="sw" style="background:var(--inc)"></i>increase</span>
-        <span><i class="sw" style="background:var(--dec)"></i>decrease</span>
-        <span><i class="sw" style="background:var(--neu)"></i>unchanged / other</span>
-        <span><i class="sw dash"></i>negated (no relationship)</span>
-        <span class="legend-note">line thickness = certainty · click an edge for the source sentence</span>
+        <span class="lg-grp"><b>line</b>
+          <i class="sw" style="background:var(--inc)"></i>increase
+          <i class="sw" style="background:var(--dec)"></i>decrease
+          <i class="sw" style="background:var(--neu)"></i>other
+          <i class="sw dash"></i>no relationship
+        </span>
+        <span class="lg-grp"><b>text</b>
+          <i class="dot" style="background:#a78bfa"></i>intervention
+          <i class="dot" style="background:#fbbf24"></i>taxon
+          <i class="dot" style="background:var(--fg)"></i>variable
+        </span>
+        <span class="lg-grp"><b>[word]</b> the effect's recorded change, which is what decide reads</span>
+        <span class="legend-note">thickness = certainty · hover a line · click for the source sentence</span>
       </div>
-      <div class="graph-wrap">${renderGraph(r.edges)}</div>
+      ${renderPanels(r.edges, p)}
       ${renderEdgeTable(r.edges)}
       <div id="edge-detail" class="edge-detail">Click any edge or row to see its claim.</div>
     </div>` : ''}
