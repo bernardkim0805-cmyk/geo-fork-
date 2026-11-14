@@ -392,6 +392,26 @@ details.raw pre{margin:0;padding:12px 14px;background:var(--code-bg);color:var(-
 .lv-wait{border-color:var(--warn)}
 .lv-wait .answer-box{color:var(--warn)}
 @media (prefers-reduced-motion: reduce){.spin,.lv-dot{animation:none}}
+
+/* Run panel */
+#run-panel{border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:7px;font-size:11px;background:var(--surface2)}
+.rp-h{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.rp-l{display:flex;flex-direction:column;gap:3px;color:var(--fg);font-weight:600}
+.rp-l .muted{font-weight:400}
+.rp-l select,.rp-l input{font:inherit;font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 6px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--fg);font-weight:400;min-width:0}
+.rp-c{display:flex;gap:6px;align-items:center;cursor:pointer}
+.rp-btns{display:flex;gap:6px}
+.rp-btns button{flex:1;font:inherit;font-weight:700;font-size:12px;padding:7px;border-radius:6px;border:none;cursor:pointer}
+.rp-go{background:var(--accent);color:#fff}
+.rp-stop{background:var(--err-bg);color:var(--err);border:1px solid var(--err)!important}
+.rp-btns button:disabled{opacity:.4;cursor:default}
+.rp-err{color:var(--err);font-weight:600}
+.rp-cmd{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);word-break:break-all}
+.rp-end{color:var(--accent);font-weight:600}
+.rp-end.bad{color:var(--err)}
+.rp-log summary{cursor:pointer;color:var(--muted)}
+.rp-log pre{margin-top:5px;max-height:180px;overflow:auto;background:var(--code-bg);color:var(--code-fg);padding:6px;border-radius:4px;font-size:9.5px;white-space:pre-wrap;word-break:break-all}
+.rp-note{color:var(--muted);font-size:10px}
 </style>
 </head>
 <body>
@@ -409,6 +429,7 @@ details.raw pre{margin:0;padding:12px 14px;background:var(--code-bg);color:var(-
         <input type="file" accept=".json" id="file-input">
       </label>
       <div class="drop-zone" id="drop-zone">or drag &amp; drop here</div>
+      <div id="run-panel" style="display:none"></div>
     </div>
     <div class="q-list" id="q-list">
       <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">No trace loaded yet.</div>
@@ -643,7 +664,7 @@ function renderLiveBar(d) {
   const L = d.llm || {};
   bar.innerHTML = `
     <div class="lv-top">
-      ${d.running ? '<span class="lv-dot"></span><b>LIVE</b>' : '<b class="lv-done">✓ FINISHED</b>'}
+      ${d.running ? '<span class="lv-dot"></span><b>LIVE</b>' : d.stopped ? '<b class="lv-done">■ STOPPED</b>' : '<b class="lv-done">✓ FINISHED</b>'}
       <span class="lv-count">${d.done} / ${d.total}</span>
     </div>
     <div class="lv-prog"><div style="width:${pct}%"></div></div>
@@ -785,8 +806,11 @@ function renderLiveQuestion(q, d) {
 function finishLive(d) {
   live = d;
   renderLiveBar(d);
-  traces = d.questions.map(q => d.traces[q.id] || {id: q.id, question: q.question, error: 'no trace'});
+  traces = d.questions.map(q => d.traces[q.id] || {id: q.id, question: q.question,
+    error: d.stopped ? 'The run was stopped before this question finished.' : 'No trace for this question.'});
   mode = 'trace';
+  // the run just ended: refresh the Run panel now instead of on its next slow poll
+  if (runStatus) api('/api/status').then(st => { runStatus = st; renderRunPanel(); }).catch(() => {});
   renderSidebar();
   const i = Math.max(0, traces.findIndex(t => t.id === liveSel));
   selectTrace(i);
@@ -796,8 +820,92 @@ fetch('answers.trace.json')
   .then(r => r.ok ? r.json() : Promise.reject())
   .then(d => { if (mode !== 'live') autoLoad(d); })
   .catch(() => {});
+
+// --- Run panel (only when served by `./serve.sh`) --------------------------
+// serve.py exposes /api/status, /api/run and /api/stop. Opened any other way
+// (python -m http.server, a file), /api/status fails and the panel stays hidden.
+const API_HDR = {'X-Pipeline': '1', 'Content-Type': 'application/json'};
+let runStatus = null, runBusy = false, runErr = '';
+
+async function api(path, body) {
+  const r = await fetch(path, body === undefined
+    ? {headers: API_HDR, cache: 'no-store'}
+    : {method: 'POST', headers: API_HDR, body: JSON.stringify(body)});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+  return j;
+}
+
+async function pollRun() {
+  try {
+    runStatus = await api('/api/status');
+    renderRunPanel();
+  } catch (e) {
+    if (!runStatus) return;   // not served by serve.py: no panel, stop polling
+  }
+  setTimeout(pollRun, runStatus && runStatus.running ? 1500 : 4000);
+}
+
+function renderRunPanel() {
+  const el = document.getElementById('run-panel');
+  const st = runStatus;
+  if (!st) return;
+  el.style.display = '';
+  // keep what the user typed while we re-render
+  const prev = {
+    q: (document.getElementById('rp-q') || {}).value,
+    only: (document.getElementById('rp-only') || {}).value,
+    unc: (document.getElementById('rp-unc') || {}).checked,
+  };
+  if (document.activeElement && document.activeElement.id === 'rp-only') return;
+  const sets = st.question_sets || [];
+  const pick = prev.q || (sets.find(x => x.file === 'dev_questions.yaml') || sets[0] || {}).file;
+  const ended = !st.running && st.finished
+    ? (st.returncode === 0 ? `✓ last run finished (${fmtDur(st.finished - st.started)})`
+                           : `✕ last run exited with code ${st.returncode}`) : '';
+  el.innerHTML = `
+    <div class="rp-h">Run the pipeline</div>
+    <label class="rp-l">Questions
+      <select id="rp-q" ${st.running ? 'disabled' : ''}>
+        ${sets.map(x => `<option value="${esc(x.file)}" ${x.file === pick ? 'selected' : ''}>${esc(x.file)} · ${x.count}</option>`).join('')}
+      </select></label>
+    <label class="rp-l">Only these ids <span class="muted">(optional, comma-separated)</span>
+      <input id="rp-only" placeholder="e.g. D-006,D-010" value="${esc(prev.only || '')}" ${st.running ? 'disabled' : ''}></label>
+    <label class="rp-c"><input type="checkbox" id="rp-unc" ${prev.unc ? 'checked' : ''} ${st.running ? 'disabled' : ''}>
+      parse check <span class="muted">(dev only, +1 LLM call per question)</span></label>
+    <div class="rp-btns">
+      <button class="rp-go" onclick="startRun()" ${st.running || runBusy ? 'disabled' : ''}>▶ Start run</button>
+      <button class="rp-stop" onclick="stopRun()" ${!st.running || runBusy ? 'disabled' : ''}>■ Stop</button>
+    </div>
+    ${runErr ? `<div class="rp-err">${esc(runErr)}</div>` : ''}
+    ${st.command ? `<div class="rp-cmd" title="the exact command">$ ${esc(st.command)}</div>` : ''}
+    ${ended ? `<div class="rp-end ${st.returncode === 0 ? '' : 'bad'}">${ended}</div>` : ''}
+    ${st.log && st.log.length ? `<details class="rp-log"><summary>run log</summary><pre>${esc(st.log.join('\n'))}</pre></details>` : ''}
+    <div class="rp-note">Writes answers.json and answers.trace.json in the repo.</div>`;
+}
+
+async function startRun() {
+  runBusy = true; runErr = '';
+  try {
+    runStatus = await api('/api/run', {
+      questions: document.getElementById('rp-q').value,
+      only: document.getElementById('rp-only').value,
+      uncertainty: document.getElementById('rp-unc').checked,
+    });
+  } catch (e) { runErr = e.message; }
+  runBusy = false;
+  renderRunPanel();
+}
+
+async function stopRun() {
+  runBusy = true; runErr = '';
+  try { runStatus = await api('/api/stop', {}); } catch (e) { runErr = e.message; }
+  runBusy = false;
+  renderRunPanel();
+}
 // after the whole script has run, so every const below is initialised
 setTimeout(pollLive, 0);
+setTimeout(pollRun, 0);
 
 function dirBadge(d) {
   if (!d) return `<span class="badge badge-grey">no_evidence</span>`;
@@ -1260,6 +1368,7 @@ function esc(s) {
 function selectTrace(i) {
   selected = i;
   document.querySelectorAll('.q-item').forEach((el,j) => el.classList.toggle('active', j===i));
+  if (traces[i] && traces[i].error) { renderError(traces[i]); return; }
   renderMain(traces[i]);
 }
 
