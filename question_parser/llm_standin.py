@@ -28,7 +28,7 @@ HAND_WRITTEN = {
  f"Which physical and chemical conditions best predict variation in {T} across sites?":
   {"kind": "drivers",
    "triples": [{"s": "?x", "s_type": "physical or chemical condition", "p": "associated_with", "o": T}],
-   "context": ["across sites"],
+   "context": [{"text": "across sites", "role": "setting"}],
    "camo_fields": ["ecosystem_context"]},
 
  f"How does {T} vary across spatial scales, from local patches to whole landscapes or regions?":

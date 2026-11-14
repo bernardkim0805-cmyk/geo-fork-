@@ -111,8 +111,34 @@ used only after a 2nd LLM answer agrees) -> strict spaCy rules -> LLM teacher. O
 `kind, topic, triples [{s, p, o}], context, camo_fields`.
 Since then (commits 04ba815, e02125e on `actual-parse`):
 - sides can be **groups** `{"class", "members", "relation"}` with relation
-  exemplar ("herbicides such as glyphosate") / list / contrast / alternatives;
-  `expand_subquestions()` turns them into flat sub-questions (capped);
+  exemplar ("herbicides such as glyphosate") / list / contrast / alternatives / **combination**
+  ("deer browsing plus competing vegetation": things acting together, >= 2 members, class may
+  be null). "combined with" / "in combination with" are enforced markers (none of the
+  candidate markers occurs in the three banks; "plus" / "together with" stay prompt-only as
+  too loose in English);
+- **context with roles**: `"context": [{"text": <copied phrase>, "role": setting|purpose|time|population}]`.
+  setting = where/which ecosystem; purpose = what the intervention targets ("against invasive
+  plants" -> "invasive plants"). A triple may carry its own `context`, which then replaces the
+  question-level one for that triple. The old plain-string list is rejected by `validate`.
+- `expand_subquestions()` turns groups into flat sub-questions. Context is a **parameter, never
+  a multiplier**: every sub-question carries a copy of its context. Each also has `s_group` /
+  `o_group` (the relation it came from, else null) and `group_id` (e.g. `"t0:s"`; shared by the
+  sub-questions to report side by side, contrast, or as class vs member, exemplar). A
+  combination side gives ONE sub-question whose `s` is the member list. Cap 6; class/main
+  options are kept before exemplar members. Output: `subquestions_truncated` and
+  `subquestions_dropped` (count cut);
+- output-only extras, never cached: `spelling` (`{"resotration": "restoration"}`: typed word ->
+  the single graph word it is one typo away from; phrases themselves stay as typed) and
+  `warnings` (`possible unsplit group` / `possible over-split group`, graph-term checks, no LLM);
+- context text is a template blank (key `text` in `SLOT_FIELDS`; `role` is never blanked), so
+  "…in grassland restoration…" and "…in boreal peatlands…" share a template. Exception: a
+  context phrase directly next to another blank stays fixed words (it would make every fill
+  ambiguous). `frames.json` now has `FRAMES_VERSION = 2`; older files are discarded on load.
+- L2 strict rules: their known-ecosystem context becomes `{"text": <question's wording>, "role": "setting"}`.
+- Prompt cost: +436 tokens per LLM call (1,086 -> 1,522 prompt tokens) for the context/role
+  rules and two new examples.
+- Known limit: spaCy tags "cover" in "native plants cover and richness" as a verb, so that
+  outcome blank is refused (safe fallback: LLM call). Not loosened.
 - token usage per call and a **dev-only** Qwen uncertainty score (`--no-uncertainty` skips it);
 - settings read from env, then `.env` in the folder or repo root; fails fast on placeholders;
   key from `API_KEY` or `BRINE_API_KEY`.
@@ -127,12 +153,19 @@ Since then (commits 04ba815, e02125e on `actual-parse`):
 |---|---|---|
 | agent unit + mirror-pair regression | `.venv/bin/python -m unittest tests/test_agent_fixes.py` | 15 OK |
 | answers format | `.venv/bin/python tests/validate_answers.py outputs/dev_answers.json dev_questions.yaml` | 0 problems (last run) |
-| parser structure | `cd question_parser; python structure_test.py` | 19/19 |
+| parser, everything | `cd question_parser && ./run_all_tests.sh` | all rows below |
+| parser structure | `cd question_parser; python structure_test.py` | 34/34 (19 old + 15 for context/combination/tags/spelling/warnings) |
 | parser edge cases | `edge_test.py` | 15/15 |
 | parser audit | `audit_test.py` | 11/11 ok |
 | parser attacks | `attack_test.py`, `attack_round2.py` | 0 fooled |
 | strict rules 10k | `stress_test_v2.py 0 10000` | `TOTAL 10000 2143 2143 0 7857`, 0 false passes |
-| parser bank suites | `run_bank.py`, `messy_test.py`, `run_runon.py` | **never run**: need `data/questions.md`, `questions_varied.md`, `questions_runon.md`, not on this machine |
+| parser bank 1 | `run_bank.py` | `{'llm': 20, 'frame_cache': 980}`, 0 still needed |
+| parser bank 2 | `run_varied.py` (inside `messy_test.py`) | 266 LLM calls, 133 templates, 0 wrong topic |
+| parser messy | `messy_test.py` | WRONG 0 in every row; format 995/5, typo1 785/215, typo2 617/383, topic_typo 946/44 |
+| parser run-on | `run_runon.py` | `{'llm': 1000}`, 0 wrong |
+
+Bank files `data/questions.md`, `questions_varied.md`, `questions_runon.md` are on this machine
+(untracked). Bank numbers were identical before and after the context upgrade.
 
 Hand-checked gold answers for the 10 practice questions: `tests/cases.yaml` (key `cases:`).
 Hand-written correct parses (subject/predicate/object/context + trap notes) for all 20

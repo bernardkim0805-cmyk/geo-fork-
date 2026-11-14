@@ -11,7 +11,7 @@ Every question goes down four layers and stops at the first one that can answer:
 
 The LLM is the teacher: each call it makes is turned into a reusable template.
 """
-import json, re
+import json, re, sys
 from parser_v2 import StrictParser
 
 
@@ -37,7 +37,11 @@ def vocab_from_graph(path):
 # ---------------------------------------------------------------------------
 import copy
 
-SLOT_FIELDS = ("s", "o", "topic", "class")   # fields whose phrases (copied from the question) become blanks
+# Fields whose phrases (copied from the question) become blanks. "text" is a context item's phrase
+# ({"text", "role"}); no other parse field uses that key (the stored-answer marker is "\x00text").
+SLOT_FIELDS = ("s", "o", "topic", "class", "text")
+NEVER_BLANKED = ("relation", "role")          # enum values: never turned into blanks or text templates
+FRAMES_VERSION = 2                            # v2: context items {text, role}, context text blanked
 LIST_SLOT_FIELDS = ("members",)               # list fields whose phrases each become a blank
 # Fields that describe WHAT a blank's phrase is (its type, its ontology id). They were worked out for the
 # old phrase, so they must not be copied onto a new one: they are cleared and listed in "_recompute".
@@ -84,7 +88,7 @@ def _blank_template(obj, phrase_to_name, recompute, path=""):
     for k, v in obj.items():
         if any(_find_phrase(str(k), ph) for ph in phrase_to_name):
             raise _Unlearnable(f"key {k!r} mentions a blank phrase")
-        if isinstance(v, str) and k != "relation" and not (k in SLOT_FIELDS and v.lower().strip() in phrase_to_name):
+        if isinstance(v, str) and k not in NEVER_BLANKED and not (k in SLOT_FIELDS and v.lower().strip() in phrase_to_name):
             text, hit = v, False
             for ph, name in sorted(phrase_to_name.items(), key=lambda x: -len(x[0])):
                 for a, b in reversed(_find_phrase(text, ph)):
@@ -159,10 +163,42 @@ class FrameCache:
     # ---- learning ---------------------------------------------------------
     def learn(self, question, parse):
         """Turn (question, LLM parse) into a reusable frame. Returns the frame text, or None if the
-        parse can't be safely generalised (invented phrase, phrase swallowed by another, too many)."""
+        parse can't be safely generalised (invented phrase, phrase swallowed by another, too many).
+
+        Context phrases (context item "text") are blanks like s / o, so "...in grassland
+        restoration..." and "...in boreal peatlands..." share a template. Exception: a context
+        blank directly next to another blank ("variation in {T} {across sites}?") could be split
+        anywhere, so every later fill would be refused as ambiguous; such a phrase stays fixed words."""
+        context_phrases = {v.lower().strip() for v in _walk_values(_contexts_of(parse), ("text",))}
+        fixed = set()
+        for _ in range(MAX_BLANKS + 1):
+            got = self._frame_for(question, parse, fixed)
+            if got is None:
+                return None
+            frame, phrase_to_name, adjacent = got
+            stuck = {ph for ph, name in phrase_to_name.items() if name in adjacent and ph in context_phrases}
+            if not stuck:
+                break
+            fixed |= stuck
+        else:
+            return None
+        recompute = []
+        try:
+            template = _blank_template(copy.deepcopy(parse), phrase_to_name, recompute)
+        except _Unlearnable:
+            return None
+        parts = _parts_from_frame(frame)
+        if any(f["parts"] == parts for f in self.frames):     # already have this shape
+            return None
+        self.frames.append({"frame": frame, "parts": parts, "template": template, "recompute": recompute,
+                            "status": "pending" if self.confirm else "active"})
+        return frame
+
+    def _frame_for(self, question, parse, fixed):
+        """(frame, phrase -> blank name, names of blanks that touch another blank) or None."""
         phrases = {}
         for v in _walk_values(parse, SLOT_FIELDS):
-            if not v or v.startswith("?"):
+            if not v or v.startswith("?") or v.lower().strip() in fixed:
                 continue
             if not _find_phrase(question, v):        # not in the question as whole words: invented
                 return None
@@ -178,17 +214,12 @@ class FrameCache:
                 return None
             for a, b in reversed(spans):
                 frame = frame[:a] + "{" + name + "}" + frame[b:]
-        recompute = []
-        try:
-            template = _blank_template(copy.deepcopy(parse), phrase_to_name, recompute)
-        except _Unlearnable:
-            return None
         parts = _parts_from_frame(frame)
-        if any(f["parts"] == parts for f in self.frames):     # already have this shape
-            return None
-        self.frames.append({"frame": frame, "parts": parts, "template": template, "recompute": recompute,
-                            "status": "pending" if self.confirm else "active"})
-        return frame
+        adjacent = set()
+        for a, b in zip(parts, parts[1:]):
+            if isinstance(a, str) and isinstance(b, str):
+                adjacent |= {a, b}
+        return frame, phrase_to_name, adjacent
 
     def confirm_or_drop(self, frame_rec, filled, llm_parse):
         """Probation check: activate the template if the LLM agrees with it, otherwise delete it."""
@@ -264,11 +295,20 @@ class FrameCache:
 
     # ---- persistence ------------------------------------------------------
     def save(self, path):
-        json.dump([{k: f[k] for k in ("frame", "template", "recompute", "status")} for f in self.frames],
+        json.dump({"version": FRAMES_VERSION,
+                   "frames": [{k: f[k] for k in ("frame", "template", "recompute", "status")} for f in self.frames]},
                   open(path, "w"), indent=1)
 
     def load(self, path):
-        for f in json.load(open(path)):
+        """Missing or corrupt files raise (the caller decides). Frames saved in another format
+        version are discarded with one line on stderr: their templates have the old shape."""
+        data = json.load(open(path))
+        if not isinstance(data, dict) or data.get("version") != FRAMES_VERSION:
+            n = len(data) if isinstance(data, list) else len(data.get("frames", [])) if isinstance(data, dict) else 0
+            print(f"frames: discarded {n} templates from {path} (format version "
+                  f"{data.get('version') if isinstance(data, dict) else 1}, need {FRAMES_VERSION})", file=sys.stderr)
+            return
+        for f in data["frames"]:
             f["parts"] = _parts_from_frame(f["frame"])
             if not any(g["parts"] == f["parts"] for g in self.frames):
                 self.frames.append(f)
@@ -393,6 +433,18 @@ def _all_fills(qw, parts, limit=10):
     return found
 
 
+def _contexts_of(parse):
+    """Every context list in a parse: the question-level one and each triple's own."""
+    out = []
+    if isinstance(parse, dict):
+        if isinstance(parse.get("context"), list):
+            out.append(parse["context"])
+        for t in parse.get("triples") or []:
+            if isinstance(t, dict) and isinstance(t.get("context"), list):
+                out.append(t["context"])
+    return out
+
+
 def _walk_values(obj, keys):
     """Yield every string stored under one of `keys` (or in a list under LIST_SLOT_FIELDS),
     anywhere in a nested parse."""
@@ -416,31 +468,127 @@ def _walk_values(obj, keys):
 # Sub-questions: how many questions the parse really contains
 # ---------------------------------------------------------------------------
 MAX_SUBQUESTIONS = 6
+_ROLE_RANK = {"main": 0, "class": 0, "combination": 0}   # kept first when the cap cuts: class before members
 
 
 def _side_options(side):
-    """One side of a triple -> [(phrase, role)]. A plain phrase is one option. An exemplar group
+    """One side of a triple -> [(value, role)]. A plain phrase is one option. An exemplar group
     gives the class AND each member (the class answer includes the members' papers; members are
-    also answered on their own). list / contrast / alternatives give each member."""
+    also answered on their own). list / contrast / alternatives give each member. A combination
+    gives ONE option whose value is the member list: the things act together, so splitting them
+    would answer a different question."""
     if isinstance(side, dict):
-        if side.get("relation") == "exemplar":
+        rel = side.get("relation")
+        if rel == "exemplar":
             return [(side.get("class"), "class")] + [(m, "member") for m in side.get("members", [])]
-        return [(m, side.get("relation", "member")) for m in side.get("members", [])]
+        if rel == "combination":
+            return [(list(side.get("members", [])), "combination")]
+        return [(m, rel or "member") for m in side.get("members", [])]
     return [(side, "main")]
 
 
-def expand_subquestions(parse, cap=MAX_SUBQUESTIONS):
+def _group_of(side):
+    return side.get("relation") if isinstance(side, dict) else None
+
+
+def expand_subquestions(parse, cap=MAX_SUBQUESTIONS, count_dropped=False):
     """Flat (s, p, o) sub-questions implied by the parse's groups, at most `cap`.
-    Returns (subquestions, truncated)."""
+    Returns (subquestions, truncated: bool), or (subquestions, number dropped) with count_dropped.
+
+    Context is a PARAMETER of each sub-question, never a multiplier: every sub-question carries a
+    copy of its triple's own context if it has one, else the question-level context, else [].
+    s_group / o_group name the relation a side came from; sub-questions sharing a group_id
+    ("t0:s") are the ones an answer reports side by side (contrast) or as class vs member."""
     out = []
+    q_context = (parse or {}).get("context") if isinstance((parse or {}).get("context"), list) else []
     for i, t in enumerate((parse or {}).get("triples") or []):
         if not isinstance(t, dict):
             continue
+        ctx = t["context"] if isinstance(t.get("context"), list) else q_context
+        s_grp, o_grp = _group_of(t.get("s")), _group_of(t.get("o"))
+        sides = "+".join(x for x, g in (("s", s_grp), ("o", o_grp)) if g)
+        group_id = f"t{i}:{sides}" if sides else None
         for s_val, s_role in _side_options(t.get("s")):
             for o_val, o_role in _side_options(t.get("o")):
                 out.append({"triple": i, "s": s_val, "p": t.get("p", "any"), "o": o_val,
-                            "s_role": s_role, "o_role": o_role})
-    return out[:cap], len(out) > cap
+                            "s_role": s_role, "o_role": o_role, "s_group": s_grp, "o_group": o_grp,
+                            "group_id": group_id, "context": copy.deepcopy(ctx)})
+    # stable sort: options that stand for the whole side (main / class / combination) before members,
+    # so the cap drops exemplar members first, never a triple's class question
+    order = sorted(range(len(out)), key=lambda k: (_ROLE_RANK.get(out[k]["s_role"], 1) +
+                                                   _ROLE_RANK.get(out[k]["o_role"], 1), k))
+    out = [out[k] for k in order]
+    dropped = max(0, len(out) - cap)
+    return out[:cap], (dropped if count_dropped else dropped > 0)
+
+
+# ---------------------------------------------------------------------------
+# Output-only extras: spelling hints and split warnings (no LLM calls, never cached)
+# ---------------------------------------------------------------------------
+def _phrases_in(parse):
+    """Every phrase a parse names: s / o (plain or group class + members), topic, context text."""
+    out = []
+    if not isinstance(parse, dict):
+        return out
+    if isinstance(parse.get("topic"), str):
+        out.append(parse["topic"])
+    for t in parse.get("triples") or []:
+        if not isinstance(t, dict):
+            continue
+        for slot in ("s", "o"):
+            v = t.get(slot)
+            if isinstance(v, str):
+                out.append(v)
+            elif isinstance(v, dict):
+                if isinstance(v.get("class"), str):
+                    out.append(v["class"])
+                out += [m for m in v.get("members", []) if isinstance(m, str)]
+    out += list(_walk_values(_contexts_of(parse), ("text",)))
+    return [p for p in out if p and not p.startswith("?")]
+
+
+def spelling_hints(phrases):
+    """{typed word: graph word} for words that look like typos of exactly ONE graph word.
+    Phrases in the parse stay as typed (that keeps templates safe); retrieval uses these hints."""
+    hints = {}
+    for ph in phrases:
+        for w in re.findall(r"[A-Za-z]+", ph):
+            lw = w.lower()
+            if lw in hints or len(lw) < 5 or lw in DOMAIN_WORDS or zipf_frequency(lw, "en") != 0:
+                continue
+            cands = {d for d in DOMAIN_WORDS if d[:2] == lw[:2] and abs(len(d) - len(lw)) <= 1
+                     and d.isalpha() and _typo_of(d, lw)}
+            if len(cands) == 1:
+                hints[lw] = cands.pop()
+    return hints
+
+
+_CONNECTOR = re.compile(r"\s+(?:and|or)\s+|\s*[&/,]\s*", re.I)
+
+
+def split_warnings(parse, question, terms):
+    """Cheap graph checks on how the parse split (or didn't split) a side. Warnings only."""
+    out = []
+    if not isinstance(parse, dict):
+        return out
+    for t in parse.get("triples") or []:
+        if not isinstance(t, dict):
+            continue
+        for slot in ("s", "o"):
+            v = t.get(slot)
+            if isinstance(v, str) and not v.startswith("?"):
+                parts = [x.strip().lower() for x in _CONNECTOR.split(v) if x.strip()]
+                if len(parts) >= 2 and sum(x in terms for x in parts) >= 2 and v.lower().strip() not in terms:
+                    out.append(f"possible unsplit group: '{v}'")
+            elif isinstance(v, dict) and len(v.get("members") or []) >= 2:
+                mem = v["members"]
+                a = _find_phrase(question, mem[0])
+                b = _find_phrase(question, mem[-1])
+                if a and b and a[0][0] < b[-1][1]:
+                    joined = " ".join(question[a[0][0]:b[-1][1]].lower().split())
+                    if joined in terms:
+                        out.append(f"possible over-split group: '{question[a[0][0]:b[-1][1]]}'")
+    return out
 
 
 class Pipeline:
@@ -464,6 +612,7 @@ class Pipeline:
                        "confirmed": 0, "dropped": 0, "tokens": 0,
                        "uncertainty_tokens": 0}
         self.vocab_size = (len(terms), len(contexts))
+        self.terms = {t.lower() for t in terms}
 
     def parse(self, question):
         """Never raises for bad input or a failing API: returns a route saying what happened."""
@@ -494,10 +643,17 @@ class Pipeline:
                 r["uncertainty"] = {"score": score, "reason": reason, "cached": False}
         r["tokens"] = {"parse": parse_tokens, "uncertainty": check_tokens,
                        "total": parse_tokens + check_tokens}
-        subs, truncated = expand_subquestions(r["parse"])
+        subs, dropped = expand_subquestions(r["parse"], count_dropped=True)
         r["subquestions"] = subs
         r["n_subquestions"] = len(subs)
-        r["subquestions_truncated"] = truncated
+        r["subquestions_truncated"] = dropped > 0
+        r["subquestions_dropped"] = dropped
+        # output-only, computed fresh each time: never stored in the exact cache, frames or templates
+        r["spelling"] = spelling_hints(_phrases_in(r["parse"]))
+        if isinstance(question, bytes):
+            question = question.decode("utf-8", errors="replace")
+        q_text = " ".join(question.split()) if isinstance(question, str) and len(question) <= MAX_QUESTION_CHARS else ""
+        r["warnings"] = split_warnings(r["parse"], q_text, self.terms)
         r["trace"] = r.pop("trace")                  # keep the trace last in the JSON
         return r
 
@@ -547,8 +703,14 @@ class Pipeline:
         r = self.rules.parse(q) if not pending else {"route": "skip", "reasons": ["template on probation"]}
         if r["route"] == "rules":
             self.counts["strict_rules"] += 1
+            # the rules return known context phrases lowercased; use the question's own wording
+            ctx = []
+            for c in r["context"]:
+                spans = _find_phrase(q, c)
+                if spans:
+                    ctx.append({"text": q[spans[0][0]:spans[0][1]], "role": "setting"})
             parse = {"kind": "effect", "triples": [{"s": r["s"], "p": r["p"], "o": r["o"]}],
-                     "context": r["context"]}
+                     "context": ctx}
             trace.append(f"L2 strict rules: PASS -> {parse['triples'][0]}")
             self.exact[key] = copy.deepcopy(parse)
             return {"route": "strict_rules", "parse": parse, "trace": trace}

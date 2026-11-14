@@ -14,7 +14,8 @@ API_KEY = os.environ.get("API_KEY")          # "the API key"
 
 KINDS = ["drivers", "interactions", "scale_dependence", "trajectories", "methods_causal",
          "measurement", "intervention_outcomes", "mechanism", "evidence_gaps", "interaction", "other"]
-RELATIONS = ["exemplar", "list", "contrast", "alternatives"]
+RELATIONS = ["exemplar", "list", "contrast", "alternatives", "combination"]
+CONTEXT_ROLES = ["setting", "purpose", "time", "population"]
 PREDICATES = ["any", "causes", "contributes_to", "associated_with", "correlated_with", "prevents",
               "enables", "disrupts", "regulates", "mediates", "moderates", "precedes"]
 
@@ -35,12 +36,21 @@ Fields:
                  "list"         separate things joined by and/commas: "fire and grazing"
                  "contrast"     things compared head to head: "X versus Y"
                  "alternatives" "X or Y"
+                 "combination"  things applied/acting together: "deer browsing plus competing
+                                vegetation", "burning combined with glyphosate"
                A single compound topic is NOT a group: "population growth and regulation",
                "dispersal and colonization" stay one phrase.
       "p":     one of {PREDICATES}; use "any" unless the question names a specific relation
       optional per triple: "moderators" (list), "candidates" (list), "o_qualifier" (list of
                increased/decreased/unchanged/present/absent), "rank_by", "feature"
-  "context":     optional list of context phrases (places, ecosystems, time spans)
+  "context":     optional list of {{"text": <phrase>, "role": <role>}}, role one of {CONTEXT_ROLES}:
+                   "setting"    where / which ecosystem or study system: "tallgrass prairie"
+                   "purpose"    what the intervention is aimed at: "against woody encroachment"
+                                -> "woody encroachment"
+                   "time"       a time span: "after 10 years"
+                   "population" which organisms the outcome is measured on, if not in "o"
+               A triple may carry its own "context" (same format) ONLY when the sentence ties
+               different contexts to different parts; it then replaces the question-level one.
   "camo_fields": optional list of CAMO field names useful for answering
 
 Rules:
@@ -51,6 +61,8 @@ Rules:
   3. Do not repeat the topic in free-text fields.
   4. Same question shape -> same JSON shape. Be deterministic.
   5. Leave out a leading "the", "a" or "an" from phrases.
+  6. Context phrases follow rule 1 (copied word for word). Keep the setting and the purpose
+     as separate items.
 
 Examples:
 """
@@ -60,6 +72,14 @@ EXAMPLES = [
   {"kind": "intervention_outcomes", "topic": "population of Oryza sativa",
    "triples": [{"s": {"class": "herbicides", "members": ["glyphosate"], "relation": "exemplar"},
                 "p": "any", "o": "population of Oryza sativa", "o_qualifier": ["increased"]}]}),
+ ("When prescribed burning is used against woody encroachment in tallgrass prairie, does it increase forb richness?",
+  {"kind": "intervention_outcomes", "topic": "forb richness",
+   "triples": [{"s": "prescribed burning", "p": "any", "o": "forb richness", "o_qualifier": ["increased"]}],
+   "context": [{"text": "woody encroachment", "role": "purpose"}, {"text": "tallgrass prairie", "role": "setting"}]}),
+ ("How do burning in grasslands and thinning in forests affect bird abundance?",
+  {"kind": "intervention_outcomes", "topic": "bird abundance",
+   "triples": [{"s": "burning", "p": "any", "o": "bird abundance", "context": [{"text": "grasslands", "role": "setting"}]},
+               {"s": "thinning", "p": "any", "o": "bird abundance", "context": [{"text": "forests", "role": "setting"}]}]}),
  ("Which mechanisms most strongly determine density dependence, and how do their relative effects change across environmental gradients?",
   {"kind": "drivers", "topic": "density dependence",
    "triples": [{"s": "?x", "s_type": "mechanism", "p": "any", "o": "density dependence",
@@ -153,6 +173,10 @@ def extract_json(text):
 # ("like", "for example", "rather than", "compared with") are used too loosely to enforce.
 EXEMPLAR_MARKER = re.compile(r"\b(such as|including|especially|particularly)\s+\w|\(\s*e\.g\.", re.I)
 CONTRAST_MARKER = re.compile(r"\b(versus|vs\.?)\s+\w", re.I)
+# Only the unambiguous combination markers are enforced. None of the candidates occurs in the three
+# question banks (data/*.md), so the bank rule passes for all of them; "plus" ("Plus, how ...") and
+# "together with" ("measured together with ...") are too loose in general English to enforce.
+COMBINATION_MARKER = re.compile(r"\b(combined with|in combination with)\s+\w", re.I)
 
 
 def detect_markers(question):
@@ -162,6 +186,8 @@ def detect_markers(question):
         need.add("exemplar")
     if CONTRAST_MARKER.search(question):
         need.add("contrast")
+    if COMBINATION_MARKER.search(question):
+        need.add("combination")
     return need
 
 
@@ -187,7 +213,7 @@ def _check_group(g, where):
         raise ValueError(f"{where}: members must be a non-empty list of phrases")
     if g["relation"] == "exemplar" and not g.get("class"):
         raise ValueError(f"{where}: an exemplar group needs its class")
-    if g["relation"] in ("list", "contrast", "alternatives") and len(mem) < 2:
+    if g["relation"] in ("list", "contrast", "alternatives", "combination") and len(mem) < 2:
         raise ValueError(f"{where}: a {g['relation']} group needs at least two members")
 
 
@@ -195,7 +221,7 @@ _ARTICLE = re.compile(r"^(the|a|an)\s+", re.I)
 
 
 def strip_articles(parse):
-    """Drop a leading the/a/an from every phrase (s, o, topic, group class and members).
+    """Drop a leading the/a/an from every phrase (s, o, topic, group class and members, context text).
     Articles carry no meaning for retrieval, and phrases without them can be reused as templates."""
     def fix(v):
         return _ARTICLE.sub("", v) if isinstance(v, str) and not v.startswith("?") else v
@@ -203,9 +229,15 @@ def strip_articles(parse):
         return parse
     if "topic" in parse:
         parse["topic"] = fix(parse["topic"])
+    def fix_context(ctx):
+        for c in ctx if isinstance(ctx, list) else []:
+            if isinstance(c, dict) and isinstance(c.get("text"), str):
+                c["text"] = fix(c["text"])
+    fix_context(parse.get("context"))
     for t in parse.get("triples") or []:
         if not isinstance(t, dict):
             continue
+        fix_context(t.get("context"))
         for slot in ("s", "o"):
             v = t.get(slot)
             if isinstance(v, dict):
@@ -214,6 +246,22 @@ def strip_articles(parse):
             else:
                 t[slot] = fix(v)
     return parse
+
+
+def _check_context(ctx, low, where):
+    """Context: a list of {"text", "role"} items, text copied from the question. The old format
+    (a list of plain strings) is rejected, so the corrective retry teaches the model the new one."""
+    if not isinstance(ctx, list):
+        raise ValueError(f"{where} must be a list of {{text, role}} items")
+    for c in ctx:
+        if not isinstance(c, dict) or set(c) != {"text", "role"}:
+            raise ValueError(f"{where} items must be {{\"text\": phrase, \"role\": role}}, got {c!r}")
+        if c["role"] not in CONTEXT_ROLES:
+            raise ValueError(f"{where}: bad role {c['role']!r} (use one of {CONTEXT_ROLES})")
+        if not (isinstance(c["text"], str) and c["text"].strip()):
+            raise ValueError(f"{where}: text must be a non-empty phrase")
+        if " ".join(c["text"].lower().split()) not in low:
+            raise ValueError(f"{where} phrase {c['text']!r} is not copied from the question")
 
 
 def validate(parse, question):
@@ -239,6 +287,10 @@ def validate(parse, question):
             for ph in _phrases_of(v):
                 if ph and not ph.startswith("?") and " ".join(ph.lower().split()) not in low:
                     raise ValueError(f"{slot} phrase {ph!r} is not copied from the question")
+        if "context" in t:
+            _check_context(t["context"], low, "triple context")
+    if "context" in parse:
+        _check_context(parse["context"], low, "context")
     missing = detect_markers(question) - found
     if missing:
         raise ValueError(f"the question's wording needs a {'/'.join(sorted(missing))} group, "
