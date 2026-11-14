@@ -291,6 +291,78 @@ table.et td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-alig
   border-left:2px solid var(--border);border-radius:0 5px 5px 0;
   font-size:12px;line-height:1.55;color:var(--fg);font-style:italic;
 }
+
+/* Stage sections */
+html{scroll-behavior:smooth}
+a.p-step{color:inherit;text-decoration:none;cursor:pointer}
+a.p-step:hover{background:var(--surface2)}
+.p-step.final{background:var(--accent-bg)}
+.p-tok{margin-top:auto;padding-top:4px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.p-tok.zero{opacity:.55}
+.stage-head{display:flex;align-items:baseline;gap:10px;margin-top:10px;padding-bottom:6px;border-bottom:2px solid var(--border);scroll-margin-top:12px;flex-wrap:wrap}
+.stage-n{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#fff;background:var(--accent);border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;align-self:center}
+.stage-name{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.stage-sub{font-size:12px;color:var(--muted)}
+.ch-note{margin-left:auto;font-size:11px;color:var(--muted)}
+.muted{color:var(--muted)}
+
+/* Decide */
+table.dv{width:100%;border-collapse:collapse;font-size:11.5px}
+table.dv th{text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+table.dv td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+table.dv .n{text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.dv-row{cursor:pointer}
+.dv-row:hover td{background:var(--surface2)}
+.dv-newdoc td{border-top:1px solid var(--muted)}
+.dv-dead td{opacity:.5}
+.dv-claim{line-height:1.5}
+.dv-pred{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--surface2);color:var(--muted);margin:0 3px}
+.dv-pred.neg{background:rgba(248,113,113,.14);color:var(--dec)}
+.dv-why{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.dv-doc{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap}
+.dv-g{font-family:'JetBrains Mono',monospace;font-size:10.5px}
+.dv-detail td{background:var(--surface2);border-bottom:1px solid var(--border)}
+.dv-detail .ed-sent{margin:0 0 6px;background:var(--surface)}
+.dv-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.vb{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;white-space:nowrap;padding:1px 6px;border-radius:3px}
+.vb-inc{color:var(--inc);background:rgba(52,211,153,.12)}
+.vb-dec{color:var(--dec);background:rgba(248,113,113,.12)}
+.vb-neu{color:var(--neu);background:rgba(139,144,173,.15)}
+.vb-abs{color:var(--muted);background:var(--surface2)}
+.vb-x{color:var(--muted);background:transparent;border:1px dashed var(--border)}
+.sb{display:flex;height:10px;border-radius:3px;overflow:hidden;background:var(--surface2);min-width:100px}
+.sb-inc{background:var(--inc)} .sb-dec{background:var(--dec)} .sb-neu{background:var(--neu)}
+.sb-empty{font-size:9px;color:var(--muted);padding:0 4px;line-height:10px}
+.dc-combine{padding:16px 14px 12px}
+.dc-bar-wrap{position:relative;margin-bottom:26px}
+.dc-bar-wrap .sb{height:22px;border-radius:5px}
+.dc-maj{position:absolute;top:-4px;bottom:-4px;border-left:2px dashed var(--fg)}
+.dc-maj span{position:absolute;top:30px;left:-30px;width:60px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted)}
+.dc-legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.dc-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.sw-inc{background:var(--inc)} .sw-dec{background:var(--dec)} .sw-neu{background:var(--neu)}
+.dc-why{margin-top:10px;font-size:13px;line-height:1.55}
+.dc-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){.dc-two{grid-template-columns:1fr}}
+.steps{padding:6px 0}
+.st{display:flex;justify-content:space-between;gap:12px;padding:6px 14px;border-bottom:1px solid var(--border);font-size:12px;align-items:baseline}
+.st:last-child{border-bottom:none;background:var(--accent-bg)}
+.st span{color:var(--muted)}
+.st b{font-family:'JetBrains Mono',monospace;font-size:12px;white-space:nowrap}
+.dc-notes{padding:10px 14px 10px 32px;font-size:12px;line-height:1.6}
+.dc-notes li.muted{color:var(--muted)}
+
+/* Answer */
+.answer-card{border-color:var(--accent)}
+.answer-box.big{font-size:15px;line-height:1.6}
+.ans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));border-top:1px solid var(--border)}
+.ans-grid > div{padding:10px 14px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:3px}
+.ans-grid > div:last-child{border-right:none}
+.ans-grid span{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+.ans-grid b{font-family:'JetBrains Mono',monospace;font-size:13px}
+details.raw{border-top:1px solid var(--border)}
+details.raw summary{padding:9px 14px;font-size:11px;color:var(--muted);cursor:pointer}
+details.raw pre{margin:0;padding:12px 14px;background:var(--code-bg);color:var(--code-fg);font-family:'JetBrains Mono',monospace;font-size:11px;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
 </style>
 </head>
 <body>
@@ -477,7 +549,10 @@ function autoLoad(data) {
   document.getElementById('drop-zone').style.display = 'none';
   document.querySelector('.upload-btn').style.display = 'none';
   renderSidebar();
-  selectTrace(0);
+  // ?q=D-006 opens on that question (handy for demos)
+  const want = new URLSearchParams(location.search).get('q') || window.DEFAULT_Q;
+  const at = want ? traces.findIndex(t => t.id === want) : -1;
+  selectTrace(at >= 0 ? at : 0);
   return true;
 }
 
@@ -509,7 +584,7 @@ function methodBadge(m) {
 // question and 100 = certain it did not. null means no judgement: the check
 // was off, the call failed, or the reply was unusable. Never shown as a 0.
 function uncBadge(u) {
-  if (!u) return '';
+  if (!u || (u.score == null && /disabled/.test(u.reason || ''))) return '';
   const map = {low:'badge-green', moderate:'badge-orange', high:'badge-orange', very_high:'badge-red'};
   const tip = esc(u.reason || '');
   if (u.score == null) return `<span class="badge badge-grey" title="${tip}">unsure —</span>`;
@@ -532,7 +607,8 @@ function tokBar(label, n, total) {
 function renderParseCheck(t) {
   const u = t.uncertainty;
   const tk = t.tokens || {};
-  if (!u && !Object.keys(tk).length) return '';
+  // nothing to show unless the dev-only --uncertainty check actually ran
+  if (!u || (u.score == null && /disabled/.test(u.reason || ''))) return '';
   const total = tk.total || 0;
   const off = u && u.score == null;
   return `
@@ -982,8 +1058,7 @@ function renderMainInner(t) {
   const yCount = g.outcome_count ?? yNodes.length;
   const terms_x = (g.intervention_terms || []);
   const terms_y = (g.outcome_terms || []);
-
-  const confPct = Math.round((d.confidence || 0) * 100);
+  const tk = n => n ? `<span class="p-tok">${(n||0).toLocaleString()} tok</span>` : `<span class="p-tok zero">0 tok</span>`;
 
   document.getElementById('main').innerHTML = `
 
@@ -991,69 +1066,53 @@ function renderMainInner(t) {
     <div class="card">
       <div class="card-head">
         <span class="card-head-label">Question</span>
-        <span class="card-head-tag badge badge-grey">${t.id}</span>
+        <span class="card-head-tag badge badge-grey">${esc(t.id)}</span>
+        ${t.kind ? `<span class="card-head-tag badge badge-grey">${esc(t.kind)}</span>` : ''}
       </div>
-      <div class="q-full">${t.question}</div>
+      <div class="q-full">${esc(t.question)}</div>
     </div>
 
-    <!-- Pipeline summary row -->
+    <!-- Pipeline summary row: click a stage to jump to it -->
     <div class="pipeline-row">
-      <div class="p-step">
-        <div class="p-step-name">Parse</div>
-        <div class="p-step-val">${methodBadge(p.method)}</div>
-        <div class="p-step-sub">${p.intervention ? `X: ${p.intervention}` : '—'}</div>
-        <div class="p-step-sub">${p.outcome ? `Y: ${p.outcome}` : '—'}</div>
-        ${(t.uncertainty || tok.total) ? `<div class="p-step-sub" style="margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          ${uncBadge(t.uncertainty)}
-          ${tok.total ? `<span title="parse ${tok.parse||0} + ground ${tok.ground||0} + check ${tok.uncertainty||0} tokens" style="font-variant-numeric:tabular-nums;cursor:help">${(tok.total||0).toLocaleString()} tok</span>` : ''}
-        </div>` : ''}
-      </div>
+      <a class="p-step" href="#st-parse">
+        <div class="p-step-name">1 · Parse</div>
+        <div class="p-step-val">${methodBadge(p.method)} ${uncBadge(t.uncertainty)}</div>
+        <div class="p-step-sub">X: ${esc(p.intervention || '—')}</div>
+        <div class="p-step-sub">Y: ${esc(p.outcome || '—')}</div>
+        ${tk(tok.parse)}
+      </a>
       <div class="p-arrow">▶</div>
-      <div class="p-step">
-        <div class="p-step-name">Ground</div>
+      <a class="p-step" href="#st-ground">
+        <div class="p-step-name">2 · Ground</div>
         <div class="p-step-val">${xCount} × ${yCount}</div>
         <div class="p-step-sub">intervention × outcome nodes</div>
-      </div>
+        ${tk(tok.ground)}
+      </a>
       <div class="p-arrow">▶</div>
-      <div class="p-step">
-        <div class="p-step-name">Retrieve</div>
+      <a class="p-step" href="#st-retrieve">
+        <div class="p-step-name">3 · Retrieve</div>
         <div class="p-step-val">${r.edge_count ?? 0} edges</div>
         <div class="p-step-sub">connecting X→Y</div>
-      </div>
+        ${tk(0)}
+      </a>
       <div class="p-arrow">▶</div>
-      <div class="p-step">
-        <div class="p-step-name">Decide</div>
-        <div class="p-step-val">${dirBadge(d.direction)}</div>
-        <div class="p-step-sub">${d.certainty || '—'} certainty</div>
-      </div>
+      <a class="p-step" href="#st-decide">
+        <div class="p-step-name">4 · Decide</div>
+        <div class="p-step-val">${d.status === 'answered' ? dirBadge(d.direction) : statusBadge(d.status)}</div>
+        <div class="p-step-sub">${d.status === 'answered' ? `${esc(d.certainty || '—')} certainty · ${d.cited ?? (ans.edge_ids||[]).length} cited` : 'nothing usable'}</div>
+        ${tk(tok.decide)}
+      </a>
+      <div class="p-arrow">▶</div>
+      <a class="p-step final" href="#st-answer">
+        <div class="p-step-name">5 · Answer</div>
+        <div class="p-step-val">${confMeter(ans.confidence)}</div>
+        <div class="p-step-sub">confidence</div>
+        <span class="p-tok">${(tok.total||0).toLocaleString()} tok total</span>
+      </a>
     </div>
 
-    <!-- Parse check + token spend -->
-    ${renderParseCheck(t)}
-
-    <!-- Ground detail -->
-    <div class="card">
-      <div class="card-head">
-        <span class="card-head-label">Ground</span>
-        <span style="margin-left:auto;font-size:11px;color:var(--muted)">What terms were searched, what nodes matched</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border)">
-        <div style="border-right:1px solid var(--border)">
-          <div style="padding:8px 12px;font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.07em">Intervention (X)</div>
-          <div class="terms">${terms_x.map(t=>`<span class="term">${t}</span>`).join('')||'<span style="color:var(--muted);font-size:12px;padding:4px">none</span>'}</div>
-          <div style="padding:4px 12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">${xCount} nodes matched${xCount > xNodes.length ? ` — showing first ${xNodes.length}` : ''}</div>
-          <div class="node-grid">${xNodes.map(n=>`<span class="node-pill intervention" title="${n.id}">${n.name}</span>`).join('')}</div>
-        </div>
-        <div>
-          <div style="padding:8px 12px;font-size:11px;font-weight:700;color:#0891b2;text-transform:uppercase;letter-spacing:.07em">Outcome (Y)</div>
-          <div class="terms">${terms_y.map(t=>`<span class="term">${t}</span>`).join('')||'<span style="color:var(--muted);font-size:12px;padding:4px">none</span>'}</div>
-          <div style="padding:4px 12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">${yCount} nodes matched${yCount > yNodes.length ? ` — showing first ${yNodes.length}` : ''}</div>
-          <div class="node-grid">${yNodes.map(n=>`<span class="node-pill outcome" title="${n.id}">${n.name}</span>`).join('')}</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Everything parse decided, including what is usually dropped -->
+    <!-- 1. Parse -->
+    ${stageHead('parse', 1, 'Parse', 'Question text → cause (X) and effect (Y) phrases')}
     <div class="card">
       <div class="card-head">
         <span class="card-head-label">Parse detail</span>
@@ -1061,22 +1120,38 @@ function renderMainInner(t) {
       </div>
       <div class="kv">
         <div><span>mode</span><b>${esc(p.mode || 'effect')}</b></div>
-        <div><span>kind (from yaml)</span><b>${esc(t.kind || '—')}</b></div>
-        <div><span>interventions</span><b>${(p.interventions || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
-        <div><span>outcomes</span><b>${(p.outcomes || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
-        <div><span>pairs</span><b>${(p.pairs || []).length}</b></div>
+        ${t.kind ? `<div><span>kind (from yaml)</span><b>${esc(t.kind)}</b></div>` : ''}
+        <div><span>interventions (X)</span><b>${(p.interventions || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
+        <div><span>outcomes (Y)</span><b>${(p.outcomes || []).map(x => `<i>${esc(x)}</i>`).join(' ') || '—'}</b></div>
+        <div><span>pairs</span><b>${(p.pairs || []).map(pr => `<i>${esc(pr[0])} → ${esc(pr[1])}</i>`).join(' ') || '—'}</b></div>
         ${p.presumed && Object.keys(p.presumed).length
           ? `<div><span>presumed direction</span><b>${esc(JSON.stringify(p.presumed))}</b></div>` : ''}
       </div>
     </div>
+    ${renderParseCheck(t)}
 
-    <!-- Sub-questions: one row per X->Y pair -->
-    ${renderPairs(t.pairs, p)}
+    <!-- 2. Ground -->
+    ${stageHead('ground', 2, 'Ground', 'Phrases → search terms → graph nodes')}
+    <div class="card">
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div style="border-right:1px solid var(--border)">
+          <div style="padding:8px 12px;font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.07em">Intervention (X)</div>
+          <div class="terms">${terms_x.map(t=>`<span class="term">${esc(t)}</span>`).join('')||'<span style="color:var(--muted);font-size:12px;padding:4px">none</span>'}</div>
+          <div style="padding:4px 12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">${xCount} nodes matched${xCount > xNodes.length ? ` — showing first ${xNodes.length}` : ''}</div>
+          <div class="node-grid">${xNodes.map(n=>`<span class="node-pill intervention" title="${esc(n.id)}">${esc(n.name)}</span>`).join('')}</div>
+        </div>
+        <div>
+          <div style="padding:8px 12px;font-size:11px;font-weight:700;color:#0891b2;text-transform:uppercase;letter-spacing:.07em">Outcome (Y)</div>
+          <div class="terms">${terms_y.map(t=>`<span class="term">${esc(t)}</span>`).join('')||'<span style="color:var(--muted);font-size:12px;padding:4px">none</span>'}</div>
+          <div style="padding:4px 12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">${yCount} nodes matched${yCount > yNodes.length ? ` — showing first ${yNodes.length}` : ''}</div>
+          <div class="node-grid">${yNodes.map(n=>`<span class="node-pill outcome" title="${esc(n.id)}">${esc(n.name)}</span>`).join('')}</div>
+        </div>
+      </div>
+    </div>
 
-    <!-- Funnel: what each filter removed -->
-    ${renderFunnel(g, r)}
-
-    <!-- Evidence graph -->
+    <!-- 3. Retrieve -->
+    ${stageHead('retrieve', 3, 'Retrieve', 'Nodes → the X→Y edges between them')}
+    ${renderFunnel(g, r) || `<div class="card"><div class="answer-box" style="color:var(--muted)">No funnel stats in this trace.</div></div>`}
     ${(r.edges && r.edges.length) ? `
     <div class="card">
       <div class="card-head">
@@ -1095,72 +1170,221 @@ function renderMainInner(t) {
           <i class="dot" style="background:#fbbf24"></i>taxon
           <i class="dot" style="background:var(--fg)"></i>variable
         </span>
-        <span class="lg-grp"><b>[word]</b> the effect's recorded change, which is what decide reads</span>
-        <span class="legend-note">thickness = certainty · hover a line · click for the source sentence</span>
+        <span class="lg-grp"><b>[word]</b> the effect's recorded change</span>
+        <span class="legend-note">thickness = certainty · click for the source sentence</span>
       </div>
       ${renderPanels(r.edges, p)}
       ${renderEdgeTable(r.edges)}
       <div id="edge-detail" class="edge-detail">Click any edge or row to see its claim.</div>
-    </div>` : ''}
+    </div>` : `<div class="card"><div class="answer-box" style="color:var(--muted)">Retrieve found no X→Y edges, so decide has nothing to weigh.</div></div>`}
 
-    <!-- Retrieve + Decide -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="card">
-        <div class="card-head"><span class="card-head-label">Retrieve</span></div>
-        <div class="card-body">
-          <div style="font-size:28px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)">${r.edge_count ?? 0}</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:12px">edges found</div>
-          ${(r.edge_ids||[]).slice(0,8).map(id=>`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);padding:2px 0;border-bottom:1px solid var(--border)">${id}</div>`).join('')}
-          ${(r.edge_ids||[]).length > 8 ? `<div style="font-size:11px;color:var(--muted);padding-top:6px">+ ${r.edge_ids.length - 8} more</div>` : ''}
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-head"><span class="card-head-label">Decide</span></div>
-        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-          <div class="stat-row"><span class="stat-key">Status</span>${statusBadge(d.status)}</div>
-          <div class="stat-row"><span class="stat-key">Direction</span>${dirBadge(d.direction)}</div>
-          <div class="stat-row"><span class="stat-key">Certainty</span><span class="stat-val">${d.certainty||'—'}</span></div>
-          <div class="stat-row">
-            <span class="stat-key">Confidence</span>
-            <div class="conf-bar-wrap">
-              <div class="conf-bar"><div class="conf-fill" style="width:${confPct}%"></div></div>
-              <span class="stat-val">${confPct}%</span>
-            </div>
-          </div>
-          ${d.tally && Object.keys(d.tally).length ? `
-          <div style="font-size:11px;color:var(--muted);padding-top:4px">
-            ${Object.entries(d.tally).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span style="margin-right:8px">${k}: <b>${v}</b></span>`).join('')}
-          </div>` : ''}
-        </div>
-      </div>
-    </div>
+    <!-- 4. Decide -->
+    ${stageHead('decide', 4, 'Decide', 'Edges → one vote each → one vote per paper → direction, certainty, confidence')}
+    ${renderDecide(d)}
+    ${renderPairs(t.pairs, p)}
 
-    <!-- Tokens -->
-    <div class="card">
-      <div class="card-head"><span class="card-head-label">LLM Tokens</span></div>
-      <div class="card-body" style="display:flex;gap:28px;align-items:baseline">
-        <div>
-          <div style="font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)">${tok.total ?? 0}</div>
-          <div style="font-size:11px;color:var(--muted)">total this question</div>
-        </div>
-        <div>
-          <div style="font-size:16px;font-weight:600;font-family:'JetBrains Mono',monospace">${tok.parse ?? 0}</div>
-          <div style="font-size:11px;color:var(--muted)">parse</div>
-        </div>
-        <div>
-          <div style="font-size:16px;font-weight:600;font-family:'JetBrains Mono',monospace">${tok.ground ?? 0}</div>
-          <div style="font-size:11px;color:var(--muted)">ground</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Answer -->
-    <div class="card">
-      <div class="card-head"><span class="card-head-label">Final Answer</span></div>
-      <div class="answer-box">${ans.answer || '—'}</div>
-      ${ans.searched_for ? `<div style="padding:8px 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">Searched for: ${ans.searched_for}</div>` : ''}
-    </div>
+    <!-- 5. Answer -->
+    ${stageHead('answer', 5, 'Answer', 'What goes into answers.json')}
+    ${renderAnswer(ans, tok)}
   `;
+}
+
+function stageHead(id, n, name, sub) {
+  return `<div class="stage-head" id="st-${id}"><span class="stage-n">${n}</span>
+    <span class="stage-name">${name}</span><span class="stage-sub">${sub}</span></div>`;
+}
+
+function confMeter(c) {
+  if (c == null) return '—';
+  const pc = Math.round(c * 100);
+  return `<span class="conf-bar-wrap"><span class="conf-bar"><span class="conf-fill" style="width:${pc}%;display:block"></span></span><b>${pc}%</b></span>`;
+}
+
+// --- Decide ----------------------------------------------------------------
+const VOTE_CLS = {increase:'inc', decrease:'dec', no_effect:'neu', abstain:'abs'};
+const VOTE_TXT = {increase:'▲ increase', decrease:'▼ decrease', no_effect:'= no effect', abstain:'· abstain'};
+function voteBadge(dir) {
+  if (dir == null) return `<span class="vb vb-x">✕ excluded</span>`;
+  return `<span class="vb vb-${VOTE_CLS[dir] || 'abs'}">${VOTE_TXT[dir] || esc(dir)}</span>`;
+}
+function shortDoc(doc) { return trunc(doc || '?', 28); }
+
+function shareBar(share, total) {
+  const keys = ['increase', 'decrease', 'no_effect'];
+  const sum = total ?? keys.reduce((s, k) => s + (share[k] || 0), 0);
+  if (!sum) return `<div class="sb"><div class="sb-empty">no readable direction</div></div>`;
+  return `<div class="sb">${keys.filter(k => share[k]).map(k =>
+    `<div class="sb-${VOTE_CLS[k]}" style="width:${(100 * share[k] / sum).toFixed(1)}%" title="${k} ${(100 * share[k] / sum).toFixed(0)}%"></div>`).join('')}</div>`;
+}
+
+let _votes = [];
+function toggleVote(k) {
+  const row = document.getElementById('vd-' + k);
+  if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
+}
+
+function renderDecide(d) {
+  const votes = d.votes || [];
+  const x = d.explain || {};
+  _votes = votes;
+
+  if (d.status !== 'answered') {
+    return `<div class="card">
+      <div class="card-head"><span class="card-head-label">Verdict</span>${statusBadge(d.status)}</div>
+      <div class="answer-box">
+        ${votes.length
+          ? `Retrieve found ${votes.length} edge${votes.length > 1 ? 's' : ''}, but none states X's direct effect on the level of Y, so none can vote.`
+          : `Retrieve found no edges. Decide trusts that (rule D3) and answers <b>no_evidence</b>.`}
+        <div class="dc-why">Confidence ${Math.round((d.confidence || 0) * 100)}% that the graph really has nothing: the calibrated rate for no-evidence calls.</div>
+      </div>
+      ${votes.length ? renderVoteTable(votes) : ''}
+      ${d.searched_for ? `<div class="pr-foot">Searched for: ${esc(d.searched_for)}</div>` : ''}
+    </div>`;
+  }
+
+  const counted = votes.filter(v => v.direction && v.direction !== 'abstain').length;
+  const papers = x.papers || [];
+  const totals = x.totals || {};
+  const totalW = Object.values(totals).reduce((a, b) => a + b, 0);
+  const top = Object.entries(totals).sort((a, b) => b[1] - a[1])[0] || ['—', 0];
+  const maj = x.majority ?? 0.66;
+
+  return `
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-label">Step 1 · Read each edge</span>
+      <span class="card-head-tag badge badge-grey">${votes.length} edges · ${counted} vote</span>
+      <span class="ch-note">direction = subject sign × predicate sign × object sign · weight = comparator × language × design × strength</span>
+    </div>
+    ${renderVoteTable(votes)}
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-label">Step 2 · One vote per paper</span>
+      <span class="card-head-tag badge badge-grey">${papers.length} papers${x.sat_out ? ` · ${x.sat_out} sat out` : ''}</span>
+      <span class="ch-note">a paper with 10 edges still counts once, at the weight of its strongest edge</span>
+    </div>
+    <table class="dv">
+      <tr><th>Paper</th><th>Its edges split</th><th>Paper says</th><th class="n">weight</th><th>best grade</th><th>flags</th></tr>
+      ${papers.map(pp => `<tr>
+        <td class="dv-doc" title="${esc(pp.doc)}">${esc(shortDoc(pp.doc))}</td>
+        <td style="min-width:140px">${shareBar(pp.share)}</td>
+        <td>${pp.label === 'mixed' || pp.label === 'unclear' ? `<span class="vb vb-abs">${esc(pp.label)}</span>` : voteBadge(pp.label)}</td>
+        <td class="n">${pp.weight}</td>
+        <td class="dv-g">${esc(pp.grade)}</td>
+        <td>${pp.head_to_head ? '<span class="ab-flag">head-to-head</span>' : ''}${pp.associative ? '<span class="ab-flag">associational</span>' : ''}${pp.observational ? '<span class="ab-flag">observational</span>' : ''}</td>
+      </tr>`).join('')}
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-label">Step 3 · Combine papers</span>
+      ${dirBadge(d.direction)}
+    </div>
+    <div class="dc-combine">
+      <div class="dc-bar-wrap">
+        ${shareBar(totals, totalW)}
+        <div class="dc-maj" style="left:${maj * 100}%"><span>${Math.round(maj * 100)}% needed</span></div>
+      </div>
+      <div class="dc-legend">${['increase','decrease','no_effect'].filter(k => totals[k]).map(k =>
+        `<span><i class="sw-${VOTE_CLS[k]}"></i>${k.replace('_', ' ')} ${totals[k].toFixed(2)} (${Math.round(100 * totals[k] / totalW)}%)</span>`).join('')}</div>
+      <div class="dc-why">
+        ${d.direction === 'mixed'
+          ? `The biggest side, <b>${esc(top[0])}</b>, holds ${Math.round(100 * (x.top_share || 0))}% of the weighted vote, below the ${Math.round(maj * 100)}% majority → <b>mixed</b>.`
+          : d.direction === 'unclear'
+          ? `No paper has a readable up/down direction → <b>unclear</b>.`
+          : `<b>${esc(d.direction)}</b> holds ${Math.round(100 * (x.top_share || 0))}% of the weighted vote (≥ ${Math.round(maj * 100)}%), and ${x.agreeing} of ${papers.length} papers say so.`}
+      </div>
+    </div>
+  </div>
+
+  <div class="dc-two">
+    <div class="card">
+      <div class="card-head"><span class="card-head-label">Step 4 · Certainty</span>
+        <span class="card-head-tag badge badge-grey">${esc(d.certainty)}</span>
+        <span class="ch-note">how strong the evidence is</span></div>
+      <div class="steps">${(x.certainty_steps || []).map(s =>
+        `<div class="st"><span>${esc(s.step)}</span><b>${esc(s.level)}</b></div>`).join('')}</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-head-label">Step 5 · Confidence</span>
+        <span class="card-head-tag badge badge-grey">${Math.round((d.confidence || 0) * 100)}%</span>
+        <span class="ch-note">probability this answer is right</span></div>
+      <div class="steps">${(x.confidence_steps || []).map(s =>
+        `<div class="st"><span>${esc(s.step)}</span><b>${s.value}</b></div>`).join('')}</div>
+    </div>
+  </div>
+
+  ${(d.notes && d.notes.length) || (d.d2 && (d.d2.calls || d.d2.cache_hits || d.d2.fallbacks)) ? `
+  <div class="card">
+    <div class="card-head"><span class="card-head-label">Caveats passed to the answer</span></div>
+    <ul class="dc-notes">
+      ${(d.notes || []).map(n => `<li>${esc(n)}</li>`).join('')}
+      ${d.d2 && (d.d2.calls || d.d2.cache_hits || d.d2.fallbacks) ? `<li class="muted">D2 removal check (LLM: is "removal of …" the intervention or its opposite?): ${d.d2.calls} call${d.d2.calls === 1 ? '' : 's'}, ${d.d2.cache_hits} cached, ${d.d2.fallbacks} word-list fallback${d.d2.fallbacks === 1 ? '' : 's'}</li>` : ''}
+    </ul>
+  </div>` : ''}`;
+}
+
+function renderVoteTable(votes) {
+  // group by paper so step 2 reads straight off step 1
+  const order = [...votes].map((v, k) => ({v, k}))
+    .sort((a, b) => (a.v.doc || '').localeCompare(b.v.doc || '') || a.k - b.k);
+  let lastDoc = null;
+  return `<table class="dv">
+    <tr><th>Vote</th><th>Claim (subject → object)</th><th>Why</th><th class="n">weight</th><th>Paper</th></tr>
+    ${order.map(({v, k}) => {
+      const newDoc = v.doc !== lastDoc; lastDoc = v.doc;
+      const f = v.factors || {};
+      const ftip = Object.keys(f).length ? `comparator ${f.comparator} × language ${f.language} × design ${f.design} × strength ${f.strength}` : '';
+      return `<tr class="dv-row${v.direction == null ? ' dv-dead' : ''}${newDoc ? ' dv-newdoc' : ''}" onclick="toggleVote(${k})">
+        <td>${voteBadge(v.direction)}</td>
+        <td class="dv-claim">${esc(v.subject || '?')}${v.subject_q ? ` <span class="et-q">[${esc(v.subject_q)}]</span>` : ''}
+          <span class="dv-pred${v.negated ? ' neg' : ''}">${v.negated ? 'NOT ' : ''}${esc(v.predicate || '')}</span>
+          ${esc(v.object || '?')}${v.object_q ? ` <span class="et-q">[${esc(v.object_q)}]</span>` : ''}
+          ${v.flipped ? '<span class="ab-flag">subject flipped</span>' : ''}${v.head_to_head ? '<span class="ab-flag">head-to-head</span>' : ''}</td>
+        <td class="dv-why">${esc(v.reason || '')}</td>
+        <td class="n" title="${esc(ftip)}">${v.direction == null ? '–' : v.weight}</td>
+        <td class="dv-doc" title="${esc(v.doc)}">${newDoc ? esc(shortDoc(v.doc)) : '<span class="muted">″</span>'}</td>
+      </tr>
+      <tr id="vd-${k}" class="dv-detail" style="display:none"><td></td><td colspan="4">
+        ${v.sentence ? `<div class="ed-sent">“${esc(v.sentence)}”</div>` : ''}
+        <div class="dv-meta">${esc(v.id)} · grade ${esc(v.grade || '?')}${ftip ? ' · ' + esc(ftip) : ''}</div>
+      </td></tr>`;
+    }).join('')}
+  </table>
+  <div class="pr-foot">Click a row for the source sentence. Excluded edges (mediates/moderates, interactions, “variation in Y”) are never cited.</div>`;
+}
+
+// --- Answer ----------------------------------------------------------------
+function renderAnswer(ans, tok) {
+  const ids = ans.edge_ids || [];
+  const json = JSON.stringify(ans, null, 2);
+  return `<div class="card answer-card">
+    <div class="card-head"><span class="card-head-label">Final answer</span>
+      ${statusBadge(ans.status)} ${ans.direction ? dirBadge(ans.direction) : ''}</div>
+    <div class="answer-box big">${esc(ans.answer || '—')}</div>
+    <div class="ans-grid">
+      <div><span>direction</span><b>${esc(ans.direction ?? 'null')}</b></div>
+      <div><span>certainty</span><b>${esc(ans.certainty ?? 'null')}</b></div>
+      <div><span>confidence</span><b>${confMeter(ans.confidence)}</b></div>
+      <div><span>edges cited</span><b>${ids.length}</b></div>
+      <div><span>LLM tokens</span><b title="parse ${tok.parse||0} · ground ${tok.ground||0} · decide ${tok.decide||0} · check ${tok.uncertainty||0}">${(tok.total||0).toLocaleString()}</b></div>
+    </div>
+    ${ans.searched_for ? `<div class="pr-foot">Searched for: ${esc(ans.searched_for)}</div>` : ''}
+    <details class="raw"><summary>answers.json entry</summary><pre>${esc(json)}</pre></details>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-head-label">LLM tokens by stage</span><span class="ch-note">energy is scored on tokens</span></div>
+    <div style="padding:10px 14px">
+      ${tokBar('parse', tok.parse, tok.total)}
+      ${tokBar('ground', tok.ground, tok.total)}
+      ${tokBar('retrieve', 0, tok.total)}
+      ${tokBar('decide', tok.decide, tok.total)}
+      ${tok.uncertainty ? tokBar('parse check', tok.uncertainty, tok.total) : ''}
+    </div>
+  </div>`;
 }
 </script>
 </body>

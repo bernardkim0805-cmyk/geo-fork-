@@ -119,3 +119,5 @@ class Decision:
     tally: dict = field(default_factory=dict)  # per-direction paper counts, for rendering
     notes: list[str] = field(default_factory=list)  # plain-English caveats for render
     votes: list = field(default_factory=list)       # per-edge EdgeVote trace (debug / extras)
+    # how direction/certainty/confidence were reached, step by step (trace / UI only)
+    explain: dict = field(default_factory=dict)

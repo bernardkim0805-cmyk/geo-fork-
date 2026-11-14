@@ -146,6 +146,7 @@ def read_edge(edge: dict, graph, query: Query) -> EdgeVote:
     desc = (edge.get("strength") or {}).get("qualitative_descriptor")
     sw = CONFIG["strength_weight"].get(desc, CONFIG["strength_default_weight"])
     v.weight = round(cw * lw * ew * sw, 3)
+    v.extra = {"comparator": cw, "language": lw, "design": ew, "strength": sw}
 
     # R2: null result
     if edge.get("negated") or lang == "no_relationship":
@@ -355,17 +356,24 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
     # 4. certainty
     grades = sorted(p["grade"] for p in papers)
     level = grades[len(grades) // 2]
+    cert_steps = [{"step": f"median of each paper's best grade ({', '.join(GRADES[x] for x in grades)})",
+                   "level": GRADES[level]}]
     all_h2h = all(p["head_to_head"] for p in papers)
     if direction == "mixed":
         level -= 1
+        cert_steps.append({"step": "-1: direction is mixed", "level": GRADES[max(level, 0)]})
     if all(p["associative"] for p in papers):
         level -= 1
+        cert_steps.append({"step": "-1: every paper is associational", "level": GRADES[max(level, 0)]})
         notes.append("All evidence is associational, not causal.")
     if CONFIG["observational_certainty_drop"] and all(p["observational"] for p in papers):
         level -= 1
+        cert_steps.append({"step": "-1: every paper is observational", "level": GRADES[max(level, 0)]})
         notes.append("Every study is observational (no experiment).")
     if all_h2h:
         level -= 1
+        cert_steps.append({"step": "-1: every paper is head-to-head / reference-only",
+                           "level": GRADES[max(level, 0)]})
         notes.append("Every study compares against another treatment or a reference site, "
                      "not against no treatment.")
     certainty = GRADES[max(level, 0)]
@@ -373,16 +381,26 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
     # 5. confidence (placeholder)
     if direction == "mixed":
         conf = CONFIG["conf_mixed"]
+        conf_steps = [{"step": "mixed: fixed calibrated value", "value": round(conf, 3)}]
     elif direction == "unclear":
         conf = CONFIG["conf_unclear"]
+        conf_steps = [{"step": "unclear: fixed prior", "value": round(conf, 3)}]
     else:
         conf = min(CONFIG["conf_cap"], CONFIG["conf_base"] + CONFIG["conf_per_paper"] * agreeing)
+        conf_steps = [{"step": f"{CONFIG['conf_base']} + {CONFIG['conf_per_paper']} x {agreeing} "
+                               f"agreeing paper{'s' if agreeing != 1 else ''} (cap {CONFIG['conf_cap']})",
+                       "value": round(conf, 3)}]
         conf *= top_share
+        conf_steps.append({"step": f"x top share {top_share:.2f}", "value": round(conf, 3)})
     if all_h2h:
         conf *= CONFIG["head_to_head_penalty"]
+        conf_steps.append({"step": f"x {CONFIG['head_to_head_penalty']} all head-to-head",
+                           "value": round(conf, 3)})
     if direction == "mixed" and len(papers) == 1:
         # D1: certainty already dropped a level for "mixed"; don't drop it twice
         conf *= CONFIG["single_study_mixed_penalty"]
+        conf_steps.append({"step": f"x {CONFIG['single_study_mixed_penalty']} one study disagrees with itself",
+                           "value": round(conf, 3)})
         split = defaultdict(int)
         for v in voting:
             if v.direction in DIRS:
@@ -392,7 +410,11 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
                      "the effect likely depends on species, site or time.")
     if bad:
         conf *= CONFIG["bad_input_penalty"]
+        conf_steps.append({"step": f"x {CONFIG['bad_input_penalty']} bad edge ids",
+                           "value": round(conf, 3)})
         notes.append(f"{len(bad)} edge id(s) skipped: not in the graph or missing a node.")
+    conf_steps.append({"step": f"clamp to [{CONFIG['conf_floor']}, {CONFIG['conf_ceiling']}]",
+                       "value": _clamp(conf)})
 
     flipped = sum(1 for v in voting if v.flipped_subject)
     if flipped:
@@ -410,6 +432,18 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
     for p in papers:
         tally[_paper_label(p)] += 1
 
+    explain = {
+        "papers": [{"doc": p["doc"], "label": _paper_label(p),
+                    "share": {k: round(x, 3) for k, x in p["share"].items()},
+                    "weight": p["weight"], "grade": GRADES[p["grade"]],
+                    "head_to_head": p["head_to_head"], "associative": p["associative"],
+                    "observational": p["observational"]} for p in all_papers],
+        "sat_out": len(all_papers) - len(papers),
+        "totals": {k: round(x, 3) for k, x in totals.items()},
+        "top_share": round(top_share, 3), "majority": CONFIG["majority"],
+        "agreeing": agreeing, "certainty_steps": cert_steps, "confidence_steps": conf_steps,
+        "bad_ids": bad,
+    }
     return Decision(status="answered", direction=direction, certainty=certainty,
                     confidence=_clamp(conf), edge_ids=[v.edge_id for v in voting],
-                    tally=dict(tally), notes=notes, votes=votes)
+                    tally=dict(tally), notes=notes, votes=votes, explain=explain)

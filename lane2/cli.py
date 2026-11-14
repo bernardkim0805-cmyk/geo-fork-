@@ -13,7 +13,8 @@ from pathlib import Path
 
 import yaml
 
-from .decide import decide
+from . import llm
+from .decide import LLM_STATS, decide
 from .graph import Graph
 from .parse import parse
 from .render import render
@@ -57,18 +58,46 @@ def _edge_detail(graph: Graph, eid: str, groups: dict | None = None) -> dict:
     }
 
 
+def _llm_tokens() -> int:
+    return llm.USAGE["prompt_tokens"] + llm.USAGE["completion_tokens"]
+
+
+def decide_counted(query, g, ev, graph):
+    """decide() plus the LLM tokens its D2 calls spent (usually 0: cached or skipped)."""
+    before = _llm_tokens()
+    d = decide(query, g, ev, graph)
+    return d, _llm_tokens() - before
+
+
+def _vote_detail(graph: Graph, v) -> dict:
+    """One edge's vote, with the node names and qualifiers that produced it."""
+    e = graph.edges.get(v.edge_id) or {}
+    subj, obj = graph.nodes.get(e.get("subject"), {}), graph.nodes.get(e.get("object"), {})
+    return {
+        "id": v.edge_id, "doc": v.doc, "direction": v.direction, "weight": v.weight,
+        "factors": v.extra, "reason": v.reason, "grade": v.grade,
+        "head_to_head": v.head_to_head, "associative": v.associative,
+        "flipped": v.flipped_subject,
+        "subject": subj.get("name"), "subject_q": subj.get("state_or_change_qualifier"),
+        "predicate": e.get("predicate"), "negated": e.get("negated"),
+        "object": obj.get("name"), "object_q": obj.get("state_or_change_qualifier"),
+        "sentence": (e.get("original_sentence") or "")[:300],
+    }
+
+
 def run_pair(x: str, y: str, raw: str, graph: Graph, debug: bool,
              mode: str = "effect") -> dict:
     """Ground, retrieve and judge one cause->effect pair on its own."""
     sub = Query(x, y, raw=raw, parse_method="pair", mode=mode)
     ev = retrieve(sub, graph)
     g = ev.grounding
-    d = decide(sub, g, ev, graph)
+    d, dtok = decide_counted(sub, g, ev, graph)
     if debug:
         print(f"    [pair] {x!r} -> {y!r}: nodes={len(g.intervention_nodes)}x"
               f"{len(g.outcome_nodes)} edges={len(ev.edge_ids)}"
               f" -> {d.status}/{d.direction}", file=sys.stderr)
-    return {"intervention": x, "outcome": y, "grounding": g, "evidence": ev, "decision": d}
+    return {"intervention": x, "outcome": y, "grounding": g, "evidence": ev, "decision": d,
+            "decide_tokens": dtok}
 
 
 def _dedupe(seqs) -> list:
@@ -150,6 +179,7 @@ def pair_sentences(pairs: list[dict], base: str) -> str:
 def answer_one(q: Question, graph: Graph, debug: bool,
                check_uncertainty: bool = False) -> tuple[dict, dict]:
     query = parse(q, debug=debug)
+    d2_before = dict(LLM_STATS)
     # Advisory only: scores the parse, never changes it. Off unless --uncertainty.
     if check_uncertainty:
         u_score, u_reason, u_tokens, u_cached = score_uncertainty(q.text, query)
@@ -162,7 +192,9 @@ def answer_one(q: Question, graph: Graph, debug: bool,
              for x, y in query.pairs]
     g = combine_groundings([p["grounding"] for p in pairs], query)
     ev = combine_evidence([p["evidence"] for p in pairs])
-    d = decide(query, g, ev, graph)
+    d, dtok = decide_counted(query, g, ev, graph)
+    dtok += sum(p["decide_tokens"] for p in pairs)
+    d2 = {k: LLM_STATS[k] - d2_before[k] for k in LLM_STATS}
     out = render(q, query, d)
     if pairs:
         out["answer"] = pair_sentences(pairs, out.get("answer", ""))
@@ -198,8 +230,8 @@ def answer_one(q: Question, graph: Graph, debug: bool,
         "uncertainty": {"score": u_score, "reason": u_reason,
                         "cached": u_cached, "band": band(u_score)},
         "tokens": {"parse": query.tokens, "ground": g.tokens,
-                   "uncertainty": u_tokens,
-                   "total": query.tokens + g.tokens + u_tokens},
+                   "decide": dtok, "uncertainty": u_tokens,
+                   "total": query.tokens + g.tokens + dtok + u_tokens},
         "ground": {
             "intervention_terms": g.intervention_terms,
             "outcome_terms": g.outcome_terms,
@@ -223,7 +255,13 @@ def answer_one(q: Question, graph: Graph, debug: bool,
             "reverse": [_edge_detail(graph, eid) for eid in ev.reverse_edge_ids[:10]],
         },
         "decide": {"status": d.status, "direction": d.direction, "certainty": d.certainty,
-                   "confidence": d.confidence, "tally": d.tally},
+                   "confidence": d.confidence, "tally": d.tally,
+                   "notes": d.notes, "searched_for": d.searched_for,
+                   "cited": len(d.edge_ids),
+                   "votes": [_vote_detail(graph, v) for v in d.votes],
+                   "explain": d.explain,
+                   # D2: removal-subject LLM check, this question only
+                   "d2": d2},
         "answer": out,
     }
     return out, trace
