@@ -45,7 +45,9 @@ Rules:
   ("herbicid" matches herbicides). Add specific examples (herbicide -> glyphosate, picloram).
 - modifier_terms: stems for the other words of the phrase and their synonyms ("peatland" ->
   peatland, peat, bog, fen; "water table" -> water table, groundwater). Empty for a one-word phrase.
-- Never add actions or interventions that change the variable (for a water table: not rewetting,
+- For an intervention, head_terms also list the names papers use for the same action
+  (peatland rewetting -> rewetting, restoration, reclamation, ditch blocking; herbicide -> glyphosate).
+- Never add actions or interventions that change a VARIABLE (for a water table: not rewetting,
   drainage, ditch blocking), never things it causes, never broader umbrella terms (hydrology),
   never its opposite.
 - Use the term "native" (exactly) when the phrase is about native species; exclude: stems that
@@ -53,7 +55,9 @@ Rules:
 
 FILTER_SYSTEM = """You check candidate edges from an evidence graph against a question.
 You are given the intervention and outcome being asked about, then lines "index: SUBJECT -> OBJECT".
-Be strict: when unsure, leave the edge out.
+Be strict: when unsure, leave the edge out. A line tagged "[not stated: ...]" names context words
+from the question that the graph text does not mention; keep the edge only if the question's
+meaning still clearly applies (a planted white pine IS a seedling; a bog IS a peatland).
 Keep an edge only if SUBJECT is an instance of the question's intervention/condition AND
 OBJECT measures the question's outcome (or its direct opposite).
 Watch for traps: native vs non-native/invasive are DIFFERENT outcomes; a subject that is
@@ -70,11 +74,15 @@ def plan(question):
     return llm.chat_json(PLAN_SYSTEM, question, max_tokens=400)
 
 
-def filter_edges(graph, question, p, edges):
+def filter_edges(graph, question, p, edges, partial_ids=()):
+    """`partial_ids`: candidates whose context words (modifiers) the graph never states; the
+    filter is told so it can judge from the question whether the edge is still about them."""
+    unstated = ", ".join(p["cause"].get("modifier_terms", [])[:2] + p["outcome"].get("modifier_terms", [])[:2])
     lines = []
     for i, e in enumerate(edges):
         s, o = graph.nodes[e["subject"]], graph.nodes[e["object"]]
-        lines.append(f"{i}: {s['name']} -> {o['name']}")
+        tag = f"  [not stated: {unstated}]" if e["id"] in partial_ids and unstated else ""
+        lines.append(f"{i}: {s['name']} -> {o['name']}{tag}")
     user = (f"Question: {question}\nIntervention: {p['cause'].get('label')}\n"
             f"Outcome: {p['outcome'].get('label')}\n\nCandidates:\n" + "\n".join(lines))
     out = llm.chat_json(FILTER_SYSTEM, user, max_tokens=60 + 4 * len(edges))
@@ -121,11 +129,12 @@ def answer_one(graph, checker, q):
     try:
         p = checker.validate(plan(question), question)
         trace["plan"] = p
-        cands, reversed_n = graph.candidates(p)
+        cands, partial_ids, reversed_n = graph.candidates(p)
         trace["n_candidates"] = len(cands)
+        trace["modifier_unmatched"] = partial_ids
         trace["reversed_rejected"] = reversed_n
         cands = graph.spread_by_paper(cands, MAX_CANDIDATES)
-        kept, llm_flips = filter_edges(graph, question, p, cands) if cands else ([], set())
+        kept, llm_flips = filter_edges(graph, question, p, cands, set(partial_ids)) if cands else ([], set())
         trace["llm_rejected"] = [e["id"] for e in cands if e not in kept]
 
         # fix 2.6: only the asked-about attribute counts
