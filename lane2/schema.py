@@ -16,6 +16,8 @@ from typing import Optional
 class Question:
     id: str
     text: str
+    kind: str = ""   # intervention_outcomes | species_selection | outcome_trajectories
+                     # | prioritization | graph  -- only the first is plain cause->effect
 
 
 @dataclass
@@ -25,6 +27,7 @@ class Query:
     outcome: Optional[str]       # effect side, e.g. "invasive / non-native species abundance"
     raw: str = ""
     parse_method: str = ""       # "regex" | "llm" | "failed": useful for debugging
+    tokens: int = 0              # LLM tokens spent parsing (0 if regex hit)
 
 
 @dataclass
@@ -34,6 +37,7 @@ class Grounding:
     outcome_nodes: list[str] = field(default_factory=list)
     intervention_terms: list[str] = field(default_factory=list)  # what we searched for
     outcome_terms: list[str] = field(default_factory=list)
+    tokens: int = 0              # LLM tokens spent on synonym expansion (0 for strategy B)
 
 
 @dataclass
