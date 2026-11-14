@@ -215,6 +215,14 @@ class Aggregate(unittest.TestCase):
         self.assertEqual((d.status, d.direction), ("no_evidence", None))
         self.assertTrue(d.searched_for)
 
+    def test_D3_no_evidence_ignores_grounding_and_names_the_query(self):
+        rich = decide(q("mowing", "soil carbon"),
+                      Grounding(intervention_nodes=["a"], outcome_nodes=["b"]), Evidence([]), self.g)
+        bare = decide(q("mowing", "soil carbon"), Grounding(), Evidence([]), self.g)
+        self.assertEqual(rich.confidence, bare.confidence)
+        self.assertIn("'mowing'", bare.searched_for)
+        self.assertIn("'soil carbon'", bare.searched_for)
+
     def test_only_excluded_edges_is_no_evidence(self):
         d = run(self.g, [self.g.edge(self.x, "moderates", self.up)])
         self.assertEqual(d.status, "no_evidence")

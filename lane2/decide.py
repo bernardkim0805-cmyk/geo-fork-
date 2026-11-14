@@ -43,8 +43,7 @@ CONFIG = {
     "conf_base": 0.45, "conf_per_paper": 0.08, "conf_cap": 0.9,
     "conf_mixed": 0.45, "conf_unclear": 0.3, "head_to_head_penalty": 0.85,
     "single_study_mixed_penalty": 0.85,  # D1: one paper that disagrees with itself
-    "conf_no_evidence_gap": 0.75,    # both sides grounded, nothing joins them
-    "conf_no_evidence_miss": 0.55,   # a side grounded to nothing (maybe our miss)
+    "conf_no_evidence": 0.75,        # D3: zero usable edges -> trust retrieve; one value
     "conf_parse_failed": 0.3,
     "bad_input_penalty": 0.9,
     # C1: study design -> vote weight (evidential_basis.evidence_types; max if several)
@@ -220,19 +219,16 @@ def _paper_label(p: dict) -> str:
     return top if p["share"][top] >= CONFIG["majority"] else "mixed"
 
 
-def describe_search(query: Query, g: Grounding) -> str:
-    return (
-        f"edges whose subject node matches {g.intervention_terms or [query.intervention]} "
-        f"({len(g.intervention_nodes)} nodes) and whose object node matches "
-        f"{g.outcome_terms or [query.outcome]} ({len(g.outcome_nodes)} nodes)"
-    )
+def describe_search(query: Query, g: Grounding = None) -> str:
+    """D3: built from the Query alone (the retrieve -> decide contract is edge ids only)."""
+    return (f"edges whose subject (cause) is '{query.intervention}' and whose object "
+            f"(effect) is '{query.outcome}', in that direction")
 
 
-def _no_evidence(query: Query, g: Grounding, extra_note: str = "") -> Decision:
-    both_grounded = bool(g.intervention_nodes) and bool(g.outcome_nodes)
-    conf = CONFIG["conf_no_evidence_gap"] if both_grounded else CONFIG["conf_no_evidence_miss"]
-    return Decision(status="no_evidence", confidence=conf,
-                    searched_for=describe_search(query, g) + extra_note)
+def _no_evidence(query: Query, g: Grounding = None, extra_note: str = "") -> Decision:
+    """D3: retrieve returned nothing usable; trust it."""
+    return Decision(status="no_evidence", confidence=CONFIG["conf_no_evidence"],
+                    searched_for=describe_search(query) + extra_note)
 
 
 def _usable_edges(edge_ids, graph) -> tuple[list[str], list[str]]:

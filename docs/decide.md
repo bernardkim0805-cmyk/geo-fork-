@@ -90,7 +90,7 @@ double-counts. Turning it on changed no eval_decide result.
 ## 5. Confidence (probability we are right): PLACEHOLDER until tests/cases.yaml exists
 
 - answered: `base + per_paper × agreeing papers` (capped), scaled by the top share; `mixed` and `unclear` get flat low values; × `head_to_head_penalty` when every paper is head-to-head.
-- no_evidence: higher when both sides grounded to nodes but no edge joins them (a real gap), lower when one side grounded to nothing (could be a grounding miss).
+- no_evidence (D3): zero usable edges from retrieve → trust it. One value, `conf_no_evidence`. The Grounding split was dropped: ground is being folded into retrieve, and the retrieve → decide contract is edge ids only. `searched_for` is built from the Query ("edges whose subject (cause) is 'X' and whose object (effect) is 'Y', in that direction"), plus a note when edges existed but were all excluded or missing.
 
 ## 5b. One study that disagrees with itself (D1)
 
