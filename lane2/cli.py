@@ -31,6 +31,29 @@ def load_questions(path: Path) -> list[Question]:
             for q in items]
 
 
+def _edge_detail(graph: Graph, eid: str) -> dict:
+    """Flatten one edge into what the UI needs to draw and label it."""
+    e = graph.edges[eid]
+    subj, obj = graph.nodes.get(e["subject"], {}), graph.nodes.get(e["object"], {})
+    return {
+        "id": eid,
+        "subject": {"id": e["subject"], "name": subj.get("name"),
+                    "type": subj.get("entity_type")},
+        "object": {"id": e["object"], "name": obj.get("name"),
+                   "type": obj.get("entity_type"),
+                   "qualifier": obj.get("state_or_change_qualifier")},
+        "predicate": e.get("predicate"),
+        "negated": e.get("negated"),
+        "certainty": e.get("certainty_grade"),
+        "causal_language": e.get("causal_language"),
+        "context": e.get("ecosystem_context"),
+        "strength": (e.get("strength") or {}).get("qualitative_descriptor"),
+        "evidence": ((e.get("evidential_basis") or {}).get("evidence_types") or [None])[0],
+        "sentence": (e.get("original_sentence") or "")[:300],
+        "doc": e.get("source_document"),
+    }
+
+
 def answer_one(q: Question, graph: Graph, debug: bool) -> tuple[dict, dict]:
     query = parse(q, debug=debug)
     g = ground(query, graph, debug=debug)
@@ -46,16 +69,30 @@ def answer_one(q: Question, graph: Graph, debug: bool) -> tuple[dict, dict]:
         "question": q.text,
         "kind": q.kind,
         "parse": {"method": query.parse_method, "intervention": query.intervention,
-                  "outcome": query.outcome, "tokens": query.tokens},
+                  "outcome": query.outcome, "tokens": query.tokens,
+                  "interventions": query.interventions, "outcomes": query.outcomes},
         "tokens": {"parse": query.tokens, "ground": g.tokens, "total": query.tokens + g.tokens},
         "ground": {
             "intervention_terms": g.intervention_terms,
             "outcome_terms": g.outcome_terms,
             "tokens": g.tokens,
+            "contexts": g.contexts,
+            # true totals; the node lists below are truncated for display
+            "intervention_count": len(g.intervention_nodes),
+            "outcome_count": len(g.outcome_nodes),
+            "stats": g.stats,
             "intervention_nodes": [{"id": n, "name": graph.nodes[n]["name"]} for n in g.intervention_nodes[:10]],
             "outcome_nodes": [{"id": n, "name": graph.nodes[n]["name"]} for n in g.outcome_nodes[:10]],
         },
-        "retrieve": {"edge_count": len(ev.edge_ids), "edge_ids": ev.edge_ids[:20]},
+        "retrieve": {
+            "edge_count": len(ev.edge_ids),
+            "edge_ids": ev.edge_ids[:20],
+            "edges": [_edge_detail(graph, eid) for eid in ev.edge_ids[:40]],
+            "stats": ev.stats,
+            "found_by": ev.found_by,
+            "out_of_context": ev.out_of_context,
+            "reverse": [_edge_detail(graph, eid) for eid in ev.reverse_edge_ids[:10]],
+        },
         "decide": {"status": d.status, "direction": d.direction, "certainty": d.certainty,
                    "confidence": d.confidence, "tally": d.tally},
         "answer": out,
