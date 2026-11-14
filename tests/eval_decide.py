@@ -115,17 +115,23 @@ def main(argv=None) -> int:
         for k in ("pass", "strict", "status", "direction", "certainty", "cited"):
             totals[k] += r[k]
         calib.append((d.confidence, r["strict"]))
-        flag = "PASS" if r["pass"] else "FAIL"
+        known = bool(c.get("known_limit"))
+        totals["known"] += known
+        totals["known_pass"] += known and r["pass"]
+        flag = "PASS" if r["pass"] else ("MISS*" if known else "FAIL")
         misses = ",".join(k for k in ("status", "direction", "certainty", "cited") if not r[k])
         print(f"{flag} {c['id']:6} {str(c.get('trap') or ''):20} got={r['got']} exp={r['exp']}"
               + (f"  [{misses}]" if misses else ""))
-        if args.verbose or args.case or not r["pass"]:
+        if args.verbose or args.case or (not r["pass"] and not known):
             trace(c, d, graph)
 
     n = len(cases) or 1
     print(f"\n{totals['pass']}/{len(cases)} pass   strict {totals['strict']}/{len(cases)}   "
           f"status {totals['status']}  direction {totals['direction']}  "
           f"certainty±1 {totals['certainty']}  cited {totals['cited']}")
+    if totals["known"]:
+        print(f"(MISS* = known_limit case, {totals['known_pass']}/{totals['known']} pass; "
+              f"excluding them: {totals['pass'] - totals['known_pass']}/{len(cases) - totals['known']} pass)")
     if calib:
         calibration(calib)
     return 0
