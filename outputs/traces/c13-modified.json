@@ -1,0 +1,174 @@
+{
+  "id": "c13-modified",
+  "question": "After wildfire in boreal forests, what controls natural conifer regeneration (fire interval, fire severity, seed supply, seedbed type), and which conditions signal that regeneration will fail without active restoration?",
+  "plan": {
+    "cause": {
+      "label": "Wildfire in boreal forests",
+      "terms": [
+        "wildfire",
+        "fire",
+        "burn",
+        "boreal",
+        "conifer",
+        "regeneration"
+      ],
+      "exclude": [
+        "prescribed",
+        "prescription",
+        "agricultural",
+        "urban"
+      ]
+    },
+    "outcome": {
+      "label": "Conifer regeneration failure",
+      "terms": [
+        "conifer",
+        "regeneration",
+        "seedling",
+        "seed",
+        "seedbed",
+        "fire interval",
+        "fire severity",
+        "seed supply",
+        "recovery"
+      ],
+      "attributes": [
+        "cover",
+        "density",
+        "abundance",
+        "success",
+        "failure",
+        "establishment"
+      ],
+      "exclude": [
+        "broadleaf",
+        "deciduous",
+        "invasive",
+        "exotic",
+        "non-native"
+      ]
+    }
+  },
+  "n_candidates": 21,
+  "kept": [
+    "camo:edge_adafd09cfb41",
+    "camo:edge_0a918ec7ae8b",
+    "camo:edge_7df11c8ca338",
+    "camo:edge_44367055d6ec",
+    "camo:edge_531b195503af",
+    "camo:edge_8a79ce3ea0d9",
+    "camo:edge_ca7cb3312e5d"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_4c78d788f9e0",
+    "camo:edge_fa643657cf56",
+    "camo:edge_b190062b645e",
+    "camo:edge_b8744ac5f78d",
+    "camo:edge_63dcc4800f91",
+    "camo:edge_1f5f5f368bf6",
+    "camo:edge_b6fcaeee45eb",
+    "camo:edge_24ebb1726faa",
+    "camo:edge_06206aad90af",
+    "camo:edge_b298a5e3fc18",
+    "camo:edge_2df6435352cb",
+    "camo:edge_d45af8b54803",
+    "camo:edge_13fa9ab84d1e",
+    "camo:edge_529184b0595c"
+  ],
+  "aggregate": {
+    "direction": "decrease",
+    "certainty": "low",
+    "confidence": 0.72,
+    "papers": {
+      "10.1016/j.foreco.2011.11.006": "mixed",
+      "DBNSNWLE": "decrease",
+      "10.1016/S0378-1127(96)03831-5": "decrease"
+    },
+    "paper_counts": {
+      "mixed": 1,
+      "decrease": 2
+    },
+    "agreement": 0.67,
+    "n_papers": 3
+  },
+  "edges": [
+    {
+      "id": "camo:edge_adafd09cfb41",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Short-interval fire history",
+      "predicate": "associated_with",
+      "object": "Decreased total black spruce seed rain",
+      "paper": "10.1016/j.foreco.2011.11.006",
+      "grade": "low",
+      "sentence": "Total (X<sup>2</sup> = 87.00, df = 2, p < 0.001) and viable (X<sup>2</sup> = 13.35, df = 2, p = 0.001) black spruce seed rain counts differed significantly among fire history classes (Table 1). This difference was due to SI sites, which had lower counts of both total (z = -8.83, p < 0.001) and viable (z = -4.73, p < 0.001) black spruce seed than MF and LI sites"
+    },
+    {
+      "id": "camo:edge_0a918ec7ae8b",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Presence of dense fireweed thickets",
+      "predicate": "associated_with",
+      "object": "Poor survival and growth",
+      "paper": "DBNSNWLE",
+      "grade": "very_low",
+      "sentence": "Observations from field tours conducted in the summer of 1992 indicated that survival and growth on subalpine c1earcuts is particularly poor under thickets of dense fireweed."
+    },
+    {
+      "id": "camo:edge_7df11c8ca338",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "logging in TB408",
+      "predicate": "contributes_to",
+      "object": "failure of natural regeneration of white spruce",
+      "paper": "10.1016/S0378-1127(96)03831-5",
+      "grade": "low",
+      "sentence": "Failure of post-logging natural regeneration in Wood Buffalo National Park is attributable primarily to two factors: (1) large size of the clearcuts, placing most of any area logged beyond the effective dispersal distance of white spruce seed; (2) destruction of advance growth (seedlings and transgressives) and lack of residual growth (trees and saplings)."
+    },
+    {
+      "id": "camo:edge_44367055d6ec",
+      "direction": "decrease",
+      "flipped": false,
+      "subject": "Short-interval fire history",
+      "predicate": "associated_with",
+      "object": "Decreased viable black spruce seed rain",
+      "paper": "10.1016/j.foreco.2011.11.006",
+      "grade": "low",
+      "sentence": "Total (X<sup>2</sup> = 87.00, df = 2, p < 0.001) and viable (X<sup>2</sup> = 13.35, df = 2, p = 0.001) black spruce seed rain counts differed significantly among fire history classes (Table 1). This difference was due to SI sites, which had lower counts of both total (z = -8.83, p < 0.001) and viable (z = -4.73, p < 0.001) black spruce seed than MF and LI sites"
+    },
+    {
+      "id": "camo:edge_531b195503af",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Long-interval fire history",
+      "predicate": "associated_with",
+      "object": "Increased presence of black spruce seedlings",
+      "paper": "10.1016/j.foreco.2011.11.006",
+      "grade": "low",
+      "sentence": "The binomial model, which was built upon presence/absence data, indicated that LI sites had significantly more plots with black spruce seedlings present than SI or MF sites, and black spruce seedlings were significantly more abundant in hollows than on hummocks."
+    },
+    {
+      "id": "camo:edge_8a79ce3ea0d9",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "Interaction of fire history and microtopography",
+      "predicate": "causes",
+      "object": "Mean percent viability of black spruce seeds",
+      "paper": "10.1016/j.foreco.2011.11.006",
+      "grade": "low",
+      "sentence": "The mean percent viability did not differ in MF, LI, and SI sites (8.0 ± 1.5%, 6.5 ± 0.9%, and 7.2 ± 4.8%, respectively; F = 0.066, df = 2, p = 0.93)."
+    },
+    {
+      "id": "camo:edge_ca7cb3312e5d",
+      "direction": "no_effect",
+      "flipped": false,
+      "subject": "Interaction of fire history and microtopography",
+      "predicate": "causes",
+      "object": "Total and viable black spruce seed rain",
+      "paper": "10.1016/j.foreco.2011.11.006",
+      "grade": "low",
+      "sentence": "Total and viable black spruce seed rain did not differ between MF and LI sites in any year (p > 0.05; Table 1)."
+    }
+  ]
+}

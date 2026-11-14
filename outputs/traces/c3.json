@@ -1,0 +1,154 @@
+{
+  "id": "c3",
+  "question": "Which seed-mix species establish, persist and self-seed in each Ontario ELC ecosite type (e.g. dry/wet deciduous forest, meadow, riparian)?",
+  "plan": {
+    "cause": {
+      "label": "seed-mix species",
+      "terms": [
+        "seed",
+        "mix",
+        "seedmix",
+        "seed mix",
+        "seeded",
+        "sowing",
+        "sow",
+        "seeded mix",
+        "seeded species",
+        "seeded plant"
+      ],
+      "exclude": [
+        "invasive",
+        "exotic",
+        "non-native",
+        "weed",
+        "contaminant"
+      ]
+    },
+    "outcome": {
+      "label": "establishment, persistence, and self-seeding in Ontario ELC ecosite types",
+      "terms": [
+        "establish",
+        "establishment",
+        "persist",
+        "persistence",
+        "self-seed",
+        "selfseed",
+        "self seed",
+        "reseed",
+        "reseeded",
+        "recolonize",
+        "recolonization",
+        "ontario",
+        "elc",
+        "ecosite",
+        "dry",
+        "wet",
+        "deciduous",
+        "forest",
+        "meadow",
+        "riparian"
+      ],
+      "attributes": [
+        "cover",
+        "abundance",
+        "density",
+        "survival",
+        "recruitment",
+        "regeneration",
+        "succession",
+        "community",
+        "composition",
+        "diversity"
+      ],
+      "exclude": [
+        "invasive",
+        "exotic",
+        "non-native",
+        "weed",
+        "contaminant",
+        "annual",
+        "biennial"
+      ]
+    }
+  },
+  "n_candidates": 48,
+  "kept": [
+    "camo:edge_47e880513c6d"
+  ],
+  "flipped": [],
+  "rejected": [
+    "camo:edge_6e2f988b4a10",
+    "camo:edge_e3a1c4207fa4",
+    "camo:edge_2e11d901ae72",
+    "camo:edge_45ce7927e7f2",
+    "camo:edge_72941a1b5f79",
+    "camo:edge_c914e6807a80",
+    "camo:edge_54b5e7cf526f",
+    "camo:edge_92bea65950fc",
+    "camo:edge_02b6860f7ef8",
+    "camo:edge_c4b724c32b4f",
+    "camo:edge_5ded15409571",
+    "camo:edge_75ecd71f9266",
+    "camo:edge_e48ba8228037",
+    "camo:edge_5e8400c03987",
+    "camo:edge_1f5f5f368bf6",
+    "camo:edge_90f9ccbb80ba",
+    "camo:edge_3d5bb3850116",
+    "camo:edge_42a5a2a9e0c0",
+    "camo:edge_d4daea6c347e",
+    "camo:edge_89d406d5dcbd",
+    "camo:edge_b3563dbcdc08",
+    "camo:edge_1bca7adff786",
+    "camo:edge_cf9d556d8f1d",
+    "camo:edge_8523016ba4e6",
+    "camo:edge_7f2d2dff3d5f",
+    "camo:edge_ccb2d09d2051",
+    "camo:edge_cc2fe09cd951",
+    "camo:edge_6a5d44eabd48",
+    "camo:edge_b298a5e3fc18",
+    "camo:edge_afe4b7c4e031",
+    "camo:edge_47550d5854d6",
+    "camo:edge_f674c0dc310e",
+    "camo:edge_ca8d7a2503bd",
+    "camo:edge_d2f4fa8c6aad",
+    "camo:edge_1ae3fe92831d",
+    "camo:edge_2c35751d7137",
+    "camo:edge_0e93a9b40236",
+    "camo:edge_22e169009fff",
+    "camo:edge_482d3e88639d",
+    "camo:edge_714d3a7032d8",
+    "camo:edge_f7810e44c4f2",
+    "camo:edge_05dc376821b2",
+    "camo:edge_6c0bf8b12929",
+    "camo:edge_ad6204c54b5d",
+    "camo:edge_72ade58c6633",
+    "camo:edge_87491ffd6a53",
+    "camo:edge_c562f248ffbe"
+  ],
+  "aggregate": {
+    "direction": "increase",
+    "certainty": "low",
+    "confidence": 0.63,
+    "papers": {
+      "10.1890/08-1092.1": "increase"
+    },
+    "paper_counts": {
+      "increase": 1
+    },
+    "agreement": 1.0,
+    "n_papers": 1
+  },
+  "edges": [
+    {
+      "id": "camo:edge_47e880513c6d",
+      "direction": "increase",
+      "flipped": false,
+      "subject": "Seeding with alvar species",
+      "predicate": "associated_with",
+      "object": "Increased establishment of species and individuals",
+      "paper": "10.1890/08-1092.1",
+      "grade": "moderate",
+      "sentence": "in general more species and more individuals established in plots seeded with alvar species compared to those seeded with weed species (Fig. 2)."
+    }
+  ]
+}

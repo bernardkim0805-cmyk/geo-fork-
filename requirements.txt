@@ -1,2 +1,4 @@
-# Pinned runtime deps. Keep this list tiny: judging runs on ARM64 Linux.
-PyYAML==6.0.2
+# Pinned runtime deps for run.sh (both the lane2/ skeleton and the agent/ pipeline).
+# Keep this list tiny: judging runs on ARM64 Linux.
+# The question parser in question_parser/ has its own requirements.txt (spaCy, wordfreq).
+PyYAML==6.0.3
