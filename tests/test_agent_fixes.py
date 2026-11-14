@@ -197,6 +197,7 @@ class SecondRoundGuardTests(unittest.TestCase):
                             "head_terms": ["pollinator diversity", "diversity", "richness", "abundance"],
                             "modifier_terms": ["pollinator", "pollinators", "bees"], "exclude": []}}
         p = PC.validate(plan, "What effect does grazing exclusion have on pollinator diversity?")
+        self.assertIn("fencing", p["cause"]["head_terms"], "grazing exclusion IS fencing; the category rule must not drop it")
         fwd, _, _ = G.candidates(p)
         # the two edges the second rerun wrongly kept (plant richness under fencing, oak savanna)
         self.assertNotIn("camo:edge_8a1705c68fa7", {e["id"] for e in fwd})
