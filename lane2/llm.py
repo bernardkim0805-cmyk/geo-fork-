@@ -37,7 +37,8 @@ def _load_dotenv() -> dict:
     for path in (REPO_ROOT / ".env", Path.cwd() / ".env"):
         if path.exists():
             for line in path.read_text(encoding="utf-8").splitlines():
-                m = re.match(r"\s*(?:export\s+)?([A-Z_][A-Z0-9_]*)\s*=\s*(.*?)\s*$", line)
+                # KEY=value, export KEY=value, or KEY: value
+                m = re.match(r"\s*(?:export\s+)?([A-Z_][A-Z0-9_]*)\s*[=:]\s*(.*?)\s*$", line)
                 if m and m.group(1) not in vals:
                     vals[m.group(1)] = m.group(2).strip('"').strip("'")
     return vals

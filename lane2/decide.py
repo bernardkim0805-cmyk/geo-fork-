@@ -191,13 +191,14 @@ LLM_STATS = {"calls": 0, "cache_hits": 0, "fallbacks": 0}
 _OPPOSITE_CACHE: dict[tuple[str, str], bool] = {}
 
 _PROMPT = (
-    "A question asks about the effect of an intervention: \"{x}\".\n"
-    "A study's claim has this subject, which describes something being removed, absent "
-    "or reduced: \"{s}\".\n"
-    "Does the subject describe the intervention itself happening (SAME), e.g. "
-    "'weed removal' for 'weed control', 'release from browsing' for 'browsing exclusion'; "
-    "or the intervention NOT happening / its opposite (OPPOSITE), e.g. 'absence of "
-    "fertilization' for 'fertilization', 'weed removal' for 'competing vegetation'?\n"
+    "Question intervention: \"{x}\".\n"
+    "A study's claim is about: \"{s}\" (something removed, absent or reduced).\n"
+    "Rule: if the claim removes or lacks the very thing the question names, answer "
+    "OPPOSITE (e.g. 'removal of cattle' for 'grazing'; 'absence of fertilization' for "
+    "'fertilization'; 'weed removal' for 'competing vegetation'). If the question's "
+    "intervention is itself a removal, control or exclusion and the claim describes that "
+    "same action, answer SAME (e.g. 'weed removal' for 'weed control'; 'removal of trees' "
+    "for 'thinning'; 'release from browsing' for 'browsing exclusion').\n"
     "Answer with one word: SAME or OPPOSITE."
 )
 
