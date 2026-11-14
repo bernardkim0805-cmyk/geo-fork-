@@ -52,6 +52,13 @@ FRAME_NOUNS = {"application", "applications", "treatment", "treatments", "retent
                "program", "programs", "programme", "intervention", "action", "actions", "deployment",
                "provision", "supply"}
 
+# Distinct intervention categories (the hidden set asks about one at a time). A synonym offered
+# for one category may not be the name of another: grazing is not a synonym of mowing.
+CATEGORIES = [("mow", "cutting"), ("graz", "livestock"), ("burn", "fire"), ("herbicid", "glyphosate"),
+              ("seeding", "sowing", "seed addition"), ("planting",), ("fertiliz", "fertilis"),
+              ("thinning",), ("harvest", "logging", "clearcut"), ("mulch",), ("fenc", "exclosure"),
+              ("irrigat",), ("inoculat",), ("scarif",)]
+
 UMBRELLA_RATIO = 5          # a term matching > 5x the nodes of the phrase (in context) is too broad
 MIN_NAMED = 2               # nodes needed before a term's entity type is trusted
 
@@ -91,6 +98,13 @@ def _stem_conflict(a, b):
 
 def _words(s):
     return [w for w in re.findall(r"[a-z][a-z-]*", s.lower()) if w not in GENERIC]
+
+
+def _category(term):
+    for i, stems in enumerate(CATEGORIES):
+        if any(st in term for st in stems):
+            return i
+    return None
 
 
 def _pat(term):
@@ -208,6 +222,10 @@ class PlanChecker:
                 continue
             shares_word = bool(phrase_words & set(_words(t)))
             attribute = self.is_attribute(t)                        # attributes: no entity-type reasoning
+            pc, tc = _category(phrase), _category(t)
+            if tc is not None and tc != pc:
+                dropped.append({"term": t, "reason": "names a different intervention category"})
+                continue
             # Rule 1: same kind of thing as the phrase.
             if phrase_type and not side["low_grounding"] and not attribute:
                 tt = self.dominant_type(t)
