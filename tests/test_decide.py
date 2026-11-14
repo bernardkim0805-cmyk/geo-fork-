@@ -280,21 +280,17 @@ class RemovalCheck(unittest.TestCase):
         dec._OPPOSITE_CACHE.clear()
         for k in dec.LLM_STATS:
             dec.LLM_STATS[k] = 0
-        self._chat, self._env = llm.chat, os.environ.get("BRINE_URL")
+        self._chat, self._configured = llm.chat, llm.configured
         self.g = FakeGraph()
         self.removal = self.g.node("Weed removal", "removed", "management_intervention")
         self.e = self.g.edge(self.removal, "causes", self.g.node("seedling growth", "increased"))
 
     def tearDown(self):
-        self.llm.chat = self._chat
-        if self._env is None:
-            self.os.environ.pop("BRINE_URL", None)
-        else:
-            self.os.environ["BRINE_URL"] = self._env
+        self.llm.chat, self.llm.configured = self._chat, self._configured
         self.dec._OPPOSITE_CACHE.clear()
 
     def _with_llm(self, reply):
-        self.os.environ["BRINE_URL"] = "http://stub"
+        self.llm.configured = lambda: True
         self.calls = []
 
         def fake_chat(messages, **kw):
@@ -335,7 +331,7 @@ class RemovalCheck(unittest.TestCase):
         self.assertEqual(self.calls, [])
 
     def test_tightened_fallback_flips_erosion_control(self):
-        self.os.environ.pop("BRINE_URL", None)
+        self.llm.configured = lambda: False
         subj = self.g.node("absence of erosion control", "absent", "management_intervention")
         e = self.g.edge(subj, "causes", self.g.node("sediment loss", "increased"))
         v = read_edge(self.g.edges[e], self.g, q("erosion control", "sediment loss"))

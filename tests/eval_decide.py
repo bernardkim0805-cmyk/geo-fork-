@@ -137,6 +137,9 @@ def main(argv=None) -> int:
     from lane2.decide import LLM_STATS
     print(f"  D2 removal check: {LLM_STATS['calls']} LLM call(s), {LLM_STATS['cache_hits']} cache hit(s), "
           f"{LLM_STATS['fallbacks']} word-list fallback(s) over {len(cases)} cases")
+    from lane2 import llm
+    print(f"  LLM endpoint: {'configured' if llm.configured() else 'NOT configured (word-list fallback)'}; "
+          f"tokens in/out {llm.USAGE['prompt_tokens']}/{llm.USAGE['completion_tokens']}")
     return 0
 
 

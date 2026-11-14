@@ -9,7 +9,6 @@ Tests: tests/test_decide.py.  Tune numbers in CONFIG only.
 """
 from __future__ import annotations
 
-import os
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -35,8 +34,8 @@ CONFIG = {
     # Tightened: control/cut/thin/clear/harvest/'no ' removed (e.g. 'erosion control').
     "removal_words": r"\b(remov|exclu|exclos|absen|suppress|eradicat|cull|elimin|"
                      r"release from|without|withdraw|cessation)",
-    "removal_llm": True,             # D2: ask the LLM when BRINE_URL is set
-    "removal_llm_max_tokens": 400,
+    "removal_llm": True,             # D2: ask the LLM when BRINE_* are set (env or .env)
+    "removal_llm_max_tokens": 5,     # thinking is off; the answer is one word
     "comparator_weight": {"untreated_control": 1.0, "pre_treatment_baseline": 1.0,
                           "spatial_or_temporal_control": 1.0, "passive_management_arm": 1.0,
                           "alternative_treatment": 0.5, "reference_undisturbed": 0.5},
@@ -199,7 +198,7 @@ _PROMPT = (
     "'weed removal' for 'weed control', 'release from browsing' for 'browsing exclusion'; "
     "or the intervention NOT happening / its opposite (OPPOSITE), e.g. 'absence of "
     "fertilization' for 'fertilization', 'weed removal' for 'competing vegetation'?\n"
-    "Answer with one word: SAME or OPPOSITE. /no_think"
+    "Answer with one word: SAME or OPPOSITE."
 )
 
 
@@ -226,7 +225,8 @@ def subject_is_opposite(intervention: str, subject: str) -> bool:
         LLM_STATS["cache_hits"] += 1
         return _OPPOSITE_CACHE[key]
     ans = None
-    if CONFIG["removal_llm"] and os.environ.get("BRINE_URL"):
+    from . import llm
+    if CONFIG["removal_llm"] and llm.configured():
         try:
             LLM_STATS["calls"] += 1
             ans = _llm_opposite(intervention, subject)
