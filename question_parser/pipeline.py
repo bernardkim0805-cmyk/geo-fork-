@@ -37,7 +37,8 @@ def vocab_from_graph(path):
 # ---------------------------------------------------------------------------
 import copy
 
-SLOT_FIELDS = ("s", "o", "topic")      # parse fields whose phrases (copied from the question) become blanks
+SLOT_FIELDS = ("s", "o", "topic", "class")   # fields whose phrases (copied from the question) become blanks
+LIST_SLOT_FIELDS = ("members",)               # list fields whose phrases each become a blank
 # Fields that describe WHAT a blank's phrase is (its type, its ontology id). They were worked out for the
 # old phrase, so they must not be copied onto a new one: they are cleared and listed in "_recompute".
 # Convention: anything named "<slot>_..." (s_entity_type, o_entity_term, topic_id) plus these names.
@@ -52,7 +53,10 @@ BLANK_STOP_WORDS = {"not", "no", "never", "nor", "neither", "none", "without", "
                     "but", "besides", "other", "than", "instead", "lack", "lacking", "absence", "absent",
                     "minus", "non", "anti", "un", "less", "fewer", "free", "deficit", "deficient",
                     "devoid", "opposite", "reverse", "inverse", "zero", "nil", "missing", "loss",
-                    "lost", "failed", "failure", "reduced", "decreased", "declining", "decline"}
+                    "lost", "failed", "failure", "reduced", "decreased", "declining", "decline",
+                    # several things in one phrase: these need a group, so the LLM decides
+                    "such", "including", "especially", "particularly", "like", "versus", "vs",
+                    "vs.", "e.g.", "eg", "i.e.", "compared", "rather"}
 
 
 def _find_phrase(question, phrase):
@@ -80,7 +84,7 @@ def _blank_template(obj, phrase_to_name, recompute, path=""):
     for k, v in obj.items():
         if any(_find_phrase(str(k), ph) for ph in phrase_to_name):
             raise _Unlearnable(f"key {k!r} mentions a blank phrase")
-        if isinstance(v, str) and not (k in SLOT_FIELDS and v.lower().strip() in phrase_to_name):
+        if isinstance(v, str) and k != "relation" and not (k in SLOT_FIELDS and v.lower().strip() in phrase_to_name):
             text, hit = v, False
             for ph, name in sorted(phrase_to_name.items(), key=lambda x: -len(x[0])):
                 for a, b in reversed(_find_phrase(text, ph)):
@@ -90,6 +94,10 @@ def _blank_template(obj, phrase_to_name, recompute, path=""):
                 continue
         if k in SLOT_FIELDS and isinstance(v, str) and v.lower().strip() in phrase_to_name:
             out[k] = {BLANK_KEY: phrase_to_name[v.lower().strip()]}
+            blanked.add(k)
+        elif k in LIST_SLOT_FIELDS and isinstance(v, list) and all(isinstance(x, str) for x in v):
+            out[k] = [{BLANK_KEY: phrase_to_name[x.lower().strip()]} if x.lower().strip() in phrase_to_name
+                      else x for x in v]
             blanked.add(k)
         else:
             out[k] = _blank_template(v, phrase_to_name, recompute, f"{path}.{k}")
@@ -140,10 +148,11 @@ def _parts_from_frame(frame):
 
 
 class FrameCache:
-    def __init__(self, nlp, confirm=True):
+    def __init__(self, nlp, confirm=True, terms=()):
         """confirm=True: a new template is on probation until a second LLM answer, for a different
         question of the same shape, agrees with what the template would have produced."""
         self.nlp = nlp          # spaCy, used only to sanity-check what goes into a blank
+        self.terms = {t.lower() for t in terms}   # graph vocabulary, to spot "grazing and mowing"
         self.confirm = confirm
         self.frames = []        # {"frame", "parts", "template", "recompute", "status"}
 
@@ -230,6 +239,9 @@ class FrameCache:
             return False
         if text.isupper():               # SHOUTED TEXT confuses the tagger; judge it in lowercase
             text = text.lower()
+        parts = [x.strip() for x in re.split(r",|\band\b|\bor\b", text.lower()) if x.strip()]
+        if len(parts) >= 2 and sum(x in self.terms for x in parts) >= 2:
+            return False                 # "grazing and mowing": two known things -> needs a list group
         doc = self.nlp(text)
         if any(t.dep_ == "neg" or t.lower_ in BLANK_STOP_WORDS for t in doc):
             return False
@@ -382,11 +394,14 @@ def _all_fills(qw, parts, limit=10):
 
 
 def _walk_values(obj, keys):
-    """Yield every string stored under one of `keys`, anywhere in a nested parse."""
+    """Yield every string stored under one of `keys` (or in a list under LIST_SLOT_FIELDS),
+    anywhere in a nested parse."""
     if isinstance(obj, dict):
         for k, v in obj.items():
             if k in keys and isinstance(v, str):
                 yield v
+            elif k in LIST_SLOT_FIELDS and isinstance(v, list) and all(isinstance(x, str) for x in v):
+                yield from v
             else:
                 yield from _walk_values(v, keys)
     elif isinstance(obj, list):
@@ -397,6 +412,37 @@ def _walk_values(obj, keys):
 # ---------------------------------------------------------------------------
 # The pipeline
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Sub-questions: how many questions the parse really contains
+# ---------------------------------------------------------------------------
+MAX_SUBQUESTIONS = 6
+
+
+def _side_options(side):
+    """One side of a triple -> [(phrase, role)]. A plain phrase is one option. An exemplar group
+    gives the class AND each member (the class answer includes the members' papers; members are
+    also answered on their own). list / contrast / alternatives give each member."""
+    if isinstance(side, dict):
+        if side.get("relation") == "exemplar":
+            return [(side.get("class"), "class")] + [(m, "member") for m in side.get("members", [])]
+        return [(m, side.get("relation", "member")) for m in side.get("members", [])]
+    return [(side, "main")]
+
+
+def expand_subquestions(parse, cap=MAX_SUBQUESTIONS):
+    """Flat (s, p, o) sub-questions implied by the parse's groups, at most `cap`.
+    Returns (subquestions, truncated)."""
+    out = []
+    for i, t in enumerate((parse or {}).get("triples") or []):
+        if not isinstance(t, dict):
+            continue
+        for s_val, s_role in _side_options(t.get("s")):
+            for o_val, o_role in _side_options(t.get("o")):
+                out.append({"triple": i, "s": s_val, "p": t.get("p", "any"), "o": o_val,
+                            "s_role": s_role, "o_role": o_role})
+    return out[:cap], len(out) > cap
+
+
 class Pipeline:
     def __init__(self, graph_path, llm, confirm=True, checker=None):
         """llm: function(question) -> parse dict, (parse dict, tokens_used), or None if it can't answer.
@@ -409,7 +455,7 @@ class Pipeline:
             DOMAIN_WORDS.update(w for w, _, _ in _words(" ".join(str(n.get(k) or "") for k in
                                 ("name", "entity_term", "measured_attribute"))))
         self.rules = StrictParser(terms, contexts)
-        self.frames = FrameCache(self.rules.nlp, confirm=confirm)
+        self.frames = FrameCache(self.rules.nlp, confirm=confirm, terms=terms)
         self.exact = {}
         self.llm = llm
         self.checker = checker
@@ -448,6 +494,10 @@ class Pipeline:
                 r["uncertainty"] = {"score": score, "reason": reason, "cached": False}
         r["tokens"] = {"parse": parse_tokens, "uncertainty": check_tokens,
                        "total": parse_tokens + check_tokens}
+        subs, truncated = expand_subquestions(r["parse"])
+        r["subquestions"] = subs
+        r["n_subquestions"] = len(subs)
+        r["subquestions_truncated"] = truncated
         r["trace"] = r.pop("trace")                  # keep the trace last in the JSON
         return r
 

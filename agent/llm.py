@@ -29,13 +29,39 @@ def _ssl_context():
 _SSL = _ssl_context()
 
 
+# Template values like "YOUR_URL" / "<key>" mean the setting was never filled in.
+PLACEHOLDER = re.compile(r"^\s*(your[_ -]|<|xxx|changeme|replace)", re.I)
+
+
+def _load_dotenv(path=".env"):
+    """KEY=value lines from .env (with or without 'export'). Values are never printed."""
+    vals = {}
+    if os.path.exists(path):
+        for line in open(path, encoding="utf-8"):
+            m = re.match(r"\s*(?:export\s+)?([A-Z_][A-Z0-9_]*)\s*=\s*(.*?)\s*$", line)
+            if m:
+                vals[m.group(1)] = m.group(2).strip('"').strip("'")
+    return vals
+
+
 def _config():
-    try:
-        return (os.environ["BRINE_URL"].rstrip("/"), os.environ["BRINE_MODEL"],
-                os.environ["BRINE_API_KEY"])
-    except KeyError as missing:
-        raise SystemExit(f"Environment variable {missing} is not set "
-                         "(need BRINE_URL, BRINE_MODEL, BRINE_API_KEY).")
+    """BRINE settings from the environment, falling back to .env for any setting that is
+    missing or still a template placeholder (so running `python -m agent.run` directly works
+    too). Exits BEFORE any question runs if a setting is missing, a placeholder, or invalid."""
+    dot = _load_dotenv()
+    vals = []
+    for k in ("BRINE_URL", "BRINE_MODEL", "BRINE_API_KEY"):
+        v = os.environ.get(k, "")
+        if not v or PLACEHOLDER.match(v):
+            v = dot.get(k, v)
+        if not v or PLACEHOLDER.match(v):
+            raise SystemExit(f"{k} is {'a placeholder' if v else 'not set'}: put the real value "
+                             "in .env (see run.sh) or export it.")
+        vals.append(v)
+    url, model, key = vals
+    if not url.startswith(("http://", "https://")):
+        raise SystemExit("BRINE_URL must start with http:// or https://")
+    return url.rstrip("/"), model, key
 
 
 def chat_json(system, user, max_tokens=400, retries=3):

@@ -10,3 +10,4 @@ echo "== rules 10k";     python stress_test_v2.py 0 10000 | grep -E "TOTAL|false
 echo "== attacks";         python attack_test.py | tail -1; python attack_round2.py | tail -1
 echo "== audit";           python audit_test.py
 echo "== edge cases";      python edge_test.py
+echo "== structure";       python structure_test.py

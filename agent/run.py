@@ -215,10 +215,18 @@ def main():
     qfile, out = (sys.argv[1:3] + ["questions.yaml", "answers.json"][len(sys.argv) - 1:])[:2]
     with open(qfile, encoding="utf-8") as f:
         questions = yaml.safe_load(f)["questions"]
+    llm._config()      # fail fast on missing / placeholder / invalid settings, before any work
     graph = Graph(os.environ.get("GRAPH_PATH", "causal_graph.json"))
     checker = PlanChecker(graph)
     with ThreadPoolExecutor(max_workers=4) as pool:
         answers = list(pool.map(lambda q: answer_one(graph, checker, q), questions))
+    failed = [a["id"] for a in answers if a.get("answer", "").startswith("The system failed")]
+    if answers and len(failed) == len(answers):
+        # Every question failed (bad settings, endpoint down): don't overwrite good answers
+        # with placeholder ones. See outputs/traces/<id>.json for each error.
+        print(f"ERROR: all {len(answers)} questions failed; {out} was NOT written. "
+              "Check the traces' 'error' field.", file=sys.stderr)
+        sys.exit(2)
     with open(out, "w", encoding="utf-8") as f:
         json.dump({"team": TEAM, "answers": answers}, f, indent=2, ensure_ascii=False)
     u = llm.USAGE
@@ -226,6 +234,10 @@ def main():
           f"{u['prompt_tokens']} prompt + {u['completion_tokens']} completion tokens "
           f"({(u['prompt_tokens'] + u['completion_tokens']) / max(1, len(answers)):.0f}/question)",
           file=sys.stderr)
+    if failed:
+        print(f"WARNING: {len(failed)} question(s) failed and were written as low-confidence "
+              f"fallbacks: {', '.join(failed)}. See their traces.", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
