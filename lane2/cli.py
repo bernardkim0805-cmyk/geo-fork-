@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import json
+import os
 import sys
 import traceback
 from pathlib import Path
@@ -15,6 +16,7 @@ from pathlib import Path
 import yaml
 
 from . import llm
+from . import paper_retrieve
 from . import roles
 from .decide import CONFIG as DECIDE_CONFIG, LLM_STATS, decide, role_items
 from .graph import Graph
@@ -233,6 +235,15 @@ def answer_one(q: Question, graph: Graph, debug: bool,
     for i, (x, y) in enumerate(query.pairs):
         say("ground", pair=i)
         pairs.append(retrieve_pair(x, y, query.raw, graph, query.mode, say))
+    # Retrieval by meaning: the model reads paper titles, then the chosen papers'
+    # edges, and its picks replace what the keyword passes found for each pair.
+    # RETRIEVE_LLM=only (default) | union (add to keyword edges) | off (keyword only).
+    llm_mode = os.environ.get("RETRIEVE_LLM", "only").lower()
+    llm_info = None
+    if llm_mode in ("union", "only") and pairs:
+        say("retrieve")
+        llm_info = paper_retrieve.apply(query, pairs, graph, llm_mode)
+    ltok = llm_info["tokens"]["total"] if llm_info else 0
     # D5: one batched role-check call for the whole question; every decide below
     # (each pair, then the combined pass) reads from its cache.
     rtok = _llm_tokens()
@@ -287,8 +298,11 @@ def answer_one(q: Question, graph: Graph, debug: bool,
         "uncertainty": {"score": u_score, "reason": u_reason,
                         "cached": u_cached, "band": band(u_score)},
         "tokens": {"parse": query.tokens, "ground": g.tokens,
+                   "retrieve_llm": ltok,
                    "decide": dtok, "uncertainty": u_tokens,
-                   "total": query.tokens + g.tokens + dtok + u_tokens},
+                   "total": query.tokens + g.tokens + ltok + dtok + u_tokens},
+        # what the LLM retrieval pass picked; null when RETRIEVE_LLM is off
+        "llm_retrieve": llm_info,
         "ground": {
             "intervention_terms": g.intervention_terms,
             "outcome_terms": g.outcome_terms,
