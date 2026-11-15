@@ -198,13 +198,19 @@ def pair_sentences(pairs: list[dict], base: str) -> str:
     lines = []
     for p in pairs:
         d = p["decision"]
-        n = len(d.edge_ids)
         if d.status != "answered":
             lines.append(f"{p['intervention']} on {p['outcome']}: no evidence found")
         else:
-            lines.append(f"{p['intervention']} on {p['outcome']}: {d.direction}"
-                         f" ({n} edge{'s' if n != 1 else ''}, certainty {d.certainty})")
-    return base + " Per sub-question: " + "; ".join(lines) + "."
+            wording = {
+                "increase": "the evidence suggests an increase",
+                "decrease": "the evidence suggests a decrease",
+                "no_effect": "studies tested this and found no effect",
+                "mixed": "the evidence is mixed",
+                "unclear": "the direction of change is unclear",
+            }[d.direction]
+            lines.append(f"{p['intervention']} on {p['outcome']}: {wording}"
+                         f" ({d.certainty.replace('_', ' ')} certainty)")
+    return base + " For each intervention and outcome: " + "; ".join(lines) + "."
 
 
 def answer_one(q: Question, graph: Graph, debug: bool,
