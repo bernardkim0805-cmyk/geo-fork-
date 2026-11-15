@@ -49,8 +49,11 @@ _EDGE_SYSTEM = """\
 You select findings for an evidence review in ecology and restoration.
 
 You get a QUESTION, numbered CAUSES, numbered EFFECTS, and numbered findings
-grouped by paper. Each finding reads "cause -> effect"; "(NOT)" marks a tested
-relationship that was not found, which is still evidence.
+grouped by paper. Each finding reads "cause -> effect".
+
+"(NOT)" marks a relationship that was tested and not found. A null result is
+evidence and matters as much as a positive one: when the left and right sides
+fit, list the "(NOT)" finding exactly as you would list any other.
 
 For each cause/effect combination, list the findings whose left side is that
 cause (or a specific instance, level or proxy of it) and whose right side is
@@ -194,3 +197,57 @@ def llm_retrieve(question: str, causes: list[str], effects: list[str],
     edge_ids = list(dict.fromkeys(e for ids in by_pair.values() for e in ids))
     return {"papers": papers, "by_pair": by_pair, "edge_ids": edge_ids,
             "tokens": {"papers": t1, "edges": t2, "total": t1 + t2}}
+
+
+def apply(query, pairs: list[dict], graph: Graph, mode: str) -> dict:
+    """Run the LLM pass once for the question and fold its edges into each pair.
+
+    mode "union": the model's edges are added to what the keyword passes found.
+    mode "only":  they replace it, so the pair rests on the model's picks alone.
+
+    One call serves every pair, which is why this lives outside retrieve():
+    that runs once per pair and would pay for the title list each time.
+    """
+    from .retrieve import _score  # same ranking as every other pass
+
+    causes = list(dict.fromkeys(p["intervention"] for p in pairs))
+    effects = list(dict.fromkeys(p["outcome"] for p in pairs))
+    res = llm_retrieve(query.raw, causes, effects, graph)
+    by_doc = _edges_by_doc(graph)
+    picked_per_doc: dict[str, int] = defaultdict(int)
+    for eid in res["edge_ids"]:
+        picked_per_doc[graph.edges[eid].get("source_document")] += 1
+
+    per_pair = []
+    for p in pairs:
+        ev = p["evidence"]
+        picks = res["by_pair"].get((p["intervention"], p["outcome"]), [])
+        before = list(ev.edge_ids)
+        if mode == "only":
+            ev.found_by = {e: ["llm_paper"] for e in picks}
+            ev.out_of_context = []
+            ids = list(picks)
+        else:
+            for e in picks:
+                ev.found_by.setdefault(e, []).append("llm_paper")
+            ids = list(dict.fromkeys(before + picks))
+        ev.by_pass["llm_paper"] = sorted(picks)
+        ev.scores = {e: round(ev.scores[e] if e in ev.scores and mode != "only"
+                              else _score(e, graph, ev.found_by, True, False), 2)
+                     for e in ids}
+        ev.edge_ids = sorted(ids, key=lambda e: (-ev.scores[e], e))
+        ev.stats["total"] = len(ev.edge_ids)
+        ev.stats["llm_paper"] = len(picks)
+        per_pair.append({"intervention": p["intervention"], "outcome": p["outcome"],
+                         "keyword": len(before), "llm": len(picks),
+                         "both": len(set(before) & set(picks)),
+                         "final": len(ev.edge_ids)})
+    return {
+        "mode": mode,
+        "papers": [{"id": d, "title": graph.docs[d].get("title"),
+                    "edges": len(by_doc[d]), "picked": picked_per_doc.get(d, 0)}
+                   for d in res["papers"]],
+        "pairs": per_pair,
+        "edge_count": len(res["edge_ids"]),
+        "tokens": res["tokens"],
+    }
