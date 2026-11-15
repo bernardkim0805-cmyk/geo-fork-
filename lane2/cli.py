@@ -190,7 +190,7 @@ def answer_one(q: Question, graph: Graph, debug: bool,
     parse_trace = {"method": query.parse_method, "intervention": query.intervention,
                    "outcome": query.outcome, "tokens": query.tokens,
                    "interventions": query.interventions, "outcomes": query.outcomes,
-                   "pairs": [list(p) for p in query.pairs],
+                   "pairs": [list(p) for p in query.pairs], "links": query.links,
                    "mode": query.mode, "presumed": query.presumed}
     d2_before = dict(LLM_STATS)
     # Advisory only: scores the parse, never changes it. Off unless --uncertainty.

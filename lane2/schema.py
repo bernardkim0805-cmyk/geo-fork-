@@ -40,6 +40,9 @@ class Query:
     # own, because a finding can hold for glyphosate and not for herbicides
     # generally, and one merged search cannot tell the two apart.
     pairs: list[tuple[str, str]] = field(default_factory=list)
+    # how parse grouped the question: [{"interventions": [...], "outcomes": [...]}].
+    # pairs are crossed inside a link only, so separate clauses never mix.
+    links: list[dict] = field(default_factory=list)
     # effect | interaction | gap_map | trajectory. Decided before extraction,
     # so a question about the evidence itself is not forced into cause/effect.
     mode: str = "effect"
