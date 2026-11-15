@@ -1,0 +1,46 @@
+$ -m lane2.cli dev_questions.yaml answers.json --live --debug
+  [parse] mode=effect tokens=877 X=['mulch', 'surface cover'] Y=['invasive species abundance', 'non-native species abundance']
+  [parse] 4 pair(s): mulch -> invasive species abundance; mulch -> non-native species abundance; surface cover -> invasive species abundance; surface cover -> non-native species abundance
+    [pair] 'mulch' -> 'invasive species abundance': nodes=37x0 edges=1 -> answered/no_effect
+    [pair] 'mulch' -> 'non-native species abundance': nodes=37x328 edges=1 -> answered/no_effect
+    [pair] 'surface cover' -> 'invasive species abundance': nodes=0x0 edges=0 -> no_evidence/None
+    [pair] 'surface cover' -> 'non-native species abundance': nodes=0x328 edges=0 -> no_evidence/None
+[D-001] parse=llm X='mulch' Y='invasive species abundance' X_nodes=37 Y_nodes=328 edges=1 -> answered/no_effect conf=0.68
+  [parse] mode=effect tokens=863 X=['prescribed burning'] Y=['non-native grass cover']
+  [parse] 1 pair(s): prescribed burning -> non-native grass cover
+    [pair] 'prescribed burning' -> 'non-native grass cover': nodes=0x50 edges=3 -> answered/decrease
+[D-002] parse=llm X='prescribed burning' Y='non-native grass cover' X_nodes=0 Y_nodes=50 edges=3 -> answered/decrease conf=0.8
+  [parse] mode=effect tokens=866 X=['tree shelters'] Y=['seedling survival']
+  [parse] 1 pair(s): tree shelters -> seedling survival
+    [pair] 'tree shelters' -> 'seedling survival': nodes=235x406 edges=16 -> answered/mixed
+[D-003] parse=llm X='tree shelters' Y='seedling survival' X_nodes=235 Y_nodes=406 edges=16 -> answered/mixed conf=0.57
+  [parse] mode=effect tokens=863 X=['peatland restoration'] Y=['water table position']
+  [parse] 1 pair(s): peatland restoration -> water table position
+    [pair] 'peatland restoration' -> 'water table position': nodes=137x109 edges=13 -> answered/mixed
+[D-004] parse=llm X='peatland restoration' Y='water table position' X_nodes=137 Y_nodes=109 edges=13 -> answered/mixed conf=0.57
+  [parse] mode=effect tokens=860 X=['scarification'] Y=['seedling density']
+  [parse] 1 pair(s): scarification -> seedling density
+    [pair] 'scarification' -> 'seedling density': nodes=29x589 edges=25 -> answered/mixed
+[D-005] parse=llm X='scarification' Y='seedling density' X_nodes=29 Y_nodes=589 edges=25 -> answered/mixed conf=0.57
+  [parse] mode=effect tokens=859 X=['fertilization'] Y=['plant biomass']
+  [parse] 1 pair(s): fertilization -> plant biomass
+    [pair] 'fertilization' -> 'plant biomass': nodes=60x209 edges=17 -> answered/increase
+[D-006] parse=llm X='fertilization' Y='plant biomass' X_nodes=60 Y_nodes=209 edges=17 -> answered/increase conf=0.7
+  [parse] mode=effect tokens=861 X=['mowing'] Y=['soil organic carbon']
+  [parse] 1 pair(s): mowing -> soil organic carbon
+    [pair] 'mowing' -> 'soil organic carbon': nodes=85x150 edges=2 -> answered/mixed
+[D-007] parse=llm X='mowing' Y='soil organic carbon' X_nodes=85 Y_nodes=150 edges=2 -> answered/mixed conf=0.48
+  [parse] mode=effect tokens=864 X=['beaver reintroduction'] Y=['songbird abundance']
+  [parse] 1 pair(s): beaver reintroduction -> songbird abundance
+    [pair] 'beaver reintroduction' -> 'songbird abundance': nodes=0x0 edges=0 -> no_evidence/None
+[D-008] parse=llm X='beaver reintroduction' Y='songbird abundance' X_nodes=0 Y_nodes=0 edges=0 -> no_evidence/None conf=0.75
+  [parse] mode=effect tokens=861 X=['grazing exclusion'] Y=['pollinator diversity']
+  [parse] 1 pair(s): grazing exclusion -> pollinator diversity
+    [pair] 'grazing exclusion' -> 'pollinator diversity': nodes=22x0 edges=1 -> answered/no_effect
+[D-009] parse=llm X='grazing exclusion' Y='pollinator diversity' X_nodes=22 Y_nodes=0 edges=1 -> answered/no_effect conf=0.57
+  [parse] mode=effect tokens=869 X=['water table position'] Y=['peatland restoration']
+  [parse] 1 pair(s): water table position -> peatland restoration
+    [pair] 'water table position' -> 'peatland restoration': nodes=113x0 edges=3 -> answered/mixed
+[D-010] parse=llm X='water table position' Y='peatland restoration' X_nodes=113 Y_nodes=0 edges=3 -> answered/mixed conf=0.48
+wrote 10 answers to answers.json
+wrote trace to answers.trace.json
