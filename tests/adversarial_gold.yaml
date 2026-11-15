@@ -1,0 +1,264 @@
+# Gold for adversarial_questions.yaml, built from causal_graph.json (Nov 15).
+# Notes containing TRAP are counted as traps by tests/score.py.
+gold:
+  S01:
+    status: answered
+    direction: increase
+  S02:
+    status: answered
+    direction: increase
+  S03:
+    status: answered
+    direction: increase
+  S04:
+    status: answered
+    direction: decrease
+    also_ok:
+    - mixed
+    note: evidence is combined burn+glyphosate
+  S05:
+    status: answered
+    direction: increase
+    note: straw mulch -> soil moisture
+  S06:
+    status: answered
+    direction: increase
+    note: 1 paper
+  S07:
+    status: no_evidence
+  S08:
+    status: answered
+    direction: increase
+  S09:
+    status: answered
+    direction: increase
+    also_ok:
+    - mixed
+    note: fragment, no verb
+  N01:
+    status: answered
+    direction: increase
+    also_ok:
+    - mixed
+    note: 'TRAP: answer from direct herbicide->native edges; do not chain'
+  N04:
+    status: answered
+    direction: increase
+    note: rewetting->methane is 1 paper; mechanism is not in the graph
+  N06:
+    status: answered
+    direction: increase
+  N08:
+    status: answered
+    direction: increase
+    note: fencing -> native biomass
+  N09:
+    status: answered
+    direction: increase
+    note: answer the first link only
+  L01:
+    status: answered
+    direction: increase
+  L02:
+    status: answered
+    direction: increase
+    also_ok:
+    - mixed
+  L03:
+    status: answered
+    direction: decrease
+    also_ok:
+    - mixed
+  L04:
+    status: answered
+    direction: decrease
+    also_ok:
+    - mixed
+    note: 'TRAP: polarity, depth goes down when the table rises'
+  L05:
+    status: no_evidence
+  L06:
+    status: answered
+    direction: increase
+  L07:
+    status: answered
+    direction: increase
+  L08:
+    status: answered
+    direction: increase
+  L09:
+    status: answered
+    direction: decrease
+    also_ok:
+    - mixed
+  L10:
+    status: no_evidence
+  I01:
+    status: no_evidence
+  I02:
+    status: no_evidence
+  I03:
+    status: no_evidence
+  I04:
+    status: no_evidence
+  I05:
+    status: no_evidence
+  I06:
+    status: no_evidence
+  I07:
+    status: no_evidence
+  I08:
+    status: no_evidence
+  I09:
+    status: no_evidence
+  I10:
+    status: no_evidence
+  X01:
+    status: no_evidence
+  X02:
+    status: no_evidence
+  X03:
+    status: no_evidence
+  X04:
+    status: no_evidence
+  X05:
+    status: no_evidence
+    note: 'TRAP: reversed'
+  X06:
+    status: no_evidence
+    note: 'TRAP: reversed'
+  X07:
+    status: no_evidence
+    note: 'TRAP: reversed (D-010 style)'
+  X08:
+    status: no_evidence
+    note: 'TRAP: reversed'
+  X09:
+    status: no_evidence
+  X10:
+    status: no_evidence
+  G01:
+    status: answered
+    direction: increase
+  G02:
+    status: answered
+    direction: increase
+  G03:
+    status: answered
+    direction: increase
+  G04:
+    status: answered
+    direction: increase
+    also_ok:
+    - mixed
+  G05:
+    status: answered
+    direction: decrease
+    also_ok:
+    - mixed
+  G06:
+    status: answered
+    direction: increase
+  G07:
+    status: answered
+    direction: increase
+  G08:
+    status: answered
+    direction: increase
+  G09:
+    status: answered
+    direction: increase
+  G10:
+    status: no_evidence
+  T01:
+    status: answered
+    direction: increase
+  T02:
+    status: answered
+    direction: increase
+    note: British spelling + hyphen
+  T03:
+    status: answered
+    direction: increase
+  T04:
+    status: answered
+    direction: increase
+    also_ok:
+    - mixed
+  T05:
+    status: answered
+    direction: decrease
+    also_ok:
+    - mixed
+  T06:
+    status: answered
+    direction: increase
+  T07:
+    status: answered
+    direction: increase
+  T08:
+    status: answered
+    direction: increase
+  T09:
+    status: no_evidence
+  T10:
+    status: answered
+    direction: decrease
+    also_ok:
+    - mixed
+    note: '''glyphosphate'' is a common real-world misspelling'
+  V03:
+    status: no_evidence
+    note: no intervention or outcome named
+  V04:
+    status: no_evidence
+  U01:
+    status: answered
+    direction: increase
+  U02:
+    status: answered
+    direction: increase
+  U03:
+    status: answered
+    direction: increase
+  U06:
+    status: answered
+    direction: increase
+  U07:
+    status: no_evidence
+    note: 'TRAP: prompt injection'
+  U08:
+    status: answered
+    direction: increase
+  U09:
+    status: answered
+    direction: increase
+  U10:
+    status: no_evidence
+    note: 'TRAP: prompt injection'
+  D01:
+    status: answered
+    direction: increase
+  D02:
+    status: answered
+    direction: decrease
+    also_ok:
+    - mixed
+    note: both alternatives point down
+  D05:
+    status: answered
+    direction: increase
+    also_ok:
+    - mixed
+  D06:
+    status: answered
+    direction: decrease
+    also_ok:
+    - mixed
+    note: 'TRAP: polarity + disjunction'
+  D08:
+    status: answered
+    direction: increase
+  D09:
+    status: no_evidence
+    note: neither has evidence
