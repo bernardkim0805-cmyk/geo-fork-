@@ -9,25 +9,33 @@ from __future__ import annotations
 from .schema import Decision, Query, Question
 
 LEAD = {
-    "increase": "The graph's evidence suggests it increases",
-    "decrease": "The graph's evidence suggests it decreases",
-    "no_effect": "Studies in the graph tested this and found no effect on",
+    "increase": "The evidence suggests an increase in",
+    "decrease": "The evidence suggests a decrease in",
+    "no_effect": "Studies tested this and found no effect on",
     "mixed": "The evidence is mixed on its effect on",
-    "unclear": "The graph links these, but the direction of the effect on",
+    "unclear": "A relationship is reported, but the direction of change in",
+}
+
+FINDINGS = {
+    "increase": "an increase",
+    "decrease": "a decrease",
+    "no_effect": "no effect",
+    "mixed": "mixed findings",
+    "unclear": "an unclear direction",
 }
 
 
 def render(q: Question, query: Query, d: Decision) -> dict:
     if d.status == "no_evidence":
-        answer = (f"The graph has no claim linking {query.intervention} to {query.outcome}."
-                  if query.intervention else "Could not identify an intervention and outcome in the question.")
+        answer = (f"The provided evidence contains no claim linking {query.intervention} to {query.outcome}."
+                  if query.intervention else "The intervention and outcome could not be identified in the question.")
     else:
-        counts = ", ".join(f"{v} {k}" for k, v in sorted(d.tally.items(), key=lambda kv: -kv[1]))
+        counts = ", ".join(f"{v} reporting {FINDINGS[k]}" for k, v in sorted(d.tally.items(), key=lambda kv: -kv[1]))
         tail = " is unclear" if d.direction == "unclear" else ""
         n_papers = sum(d.tally.values())
         answer = (f"{LEAD[d.direction]} {query.outcome}{tail} "
                   f"({n_papers} {'study' if n_papers == 1 else 'studies'}, "
-                  f"{len(d.edge_ids)} edges: {counts}; certainty {d.certainty}).")
+                  f"{counts}; {d.certainty.replace('_', ' ')} certainty).")
         if d.notes:
             answer += " " + " ".join(d.notes)
     return {
