@@ -24,7 +24,10 @@ _GROUPS: list[list[str]] = [
     # everything, so relatedness is not enough -- substitutability is.
     ["vegetation", "plant cover", "flora", "sward", "ground cover"],
     ["forb", "graminoid", "herbaceous"],
-    ["seedling", "sapling", "transplant", "planting stock", "nursery stock"],
+    # "transplant" is deliberately absent: moving an established plant is a
+    # different operation, and it matched "transplantation of Erythronium
+    # americanum" for a question about seedling size.
+    ["seedling", "sapling", "planting stock", "nursery stock"],
     ["tree", "conifer", "woody plant"],
     ["wildlife", "fauna", "bird", "waterfowl", "nestling", "fish", "mammal",
      "amphibian", "invertebrate", "insect", "songbird"],

@@ -113,6 +113,10 @@ _W_EVIDENCE = {"observational_cross_sectional": 0.41,
 _W_NEGATED = -0.8           # a "no relationship" claim is usually not the answer
 _W_NO_QUALIFIER = -0.89     # decide reads the object's qualifier; without one it is mute
 _W_TAXON = 0.8             # unmeasured: b4 has no confirmed edge to fit against
+# An endpoint reached only through "applied to: tree seedlings" rather than its
+# own name. Large enough to sink such an edge below every named match, small
+# enough that it still beats nothing when named matches are scarce.
+_W_APPLIED_ONLY = -1.5
 
 
 def _score(eid: str, graph: Graph, found_by: dict[str, list[str]],
@@ -158,6 +162,17 @@ _TAXON_WORDS = {
     "amphibians", "mammal", "mammals", "species", "community", "communities",
     "biodiversity", "taxa", "organism", "organisms",
 }
+
+
+def _named_sets(g: Grounding, graph: Graph) -> tuple[set[str], set[str]]:
+    """Which grounded nodes matched on their own name, rather than only on what
+    they were applied to. ground() returns named matches first, so the counts
+    in stats say where the split is."""
+    xn = (g.stats.get("intervention") or {}).get("named")
+    yn = (g.stats.get("outcome") or {}).get("named")
+    xs = set(g.intervention_nodes[:xn] if xn is not None else g.intervention_nodes)
+    ys = set(g.outcome_nodes[:yn] if yn is not None else g.outcome_nodes)
+    return xs, ys
 
 
 def retrieve(query: Query, graph: Graph, debug: bool = False,
@@ -214,8 +229,23 @@ def _edges_for(g: Grounding, graph: Graph) -> Evidence:
 
     # Best evidence first. Nothing is dropped -- the caller decides where to cut,
     # and the ordering is what makes a cut meaningful.
-    scores = {e: _score(e, graph, found_by, e not in oo_set, taxon_hint)
-              for e in edge_ids}
+    # Penalise an endpoint that WAS grounded but only through "applied to":
+    # the study was measured on the thing asked about, not about it. Endpoints
+    # that were never grounded at all belong to the text passes, whose weakness
+    # _W_PASS already carries -- charging them here as well ranked a name-
+    # matching text edge below a direct edge grounded only by "applied to",
+    # the exact inversion this penalty exists to prevent.
+    x_named, y_named = _named_sets(g, graph)
+    x_applied = set(g.intervention_nodes) - x_named
+    y_applied = set(g.outcome_nodes) - y_named
+    scores = {}
+    for e in edge_ids:
+        s = _score(e, graph, found_by, e not in oo_set, taxon_hint)
+        if graph.edges[e]["subject"] in x_applied:
+            s += _W_APPLIED_ONLY
+        if graph.edges[e]["object"] in y_applied:
+            s += _W_APPLIED_ONLY
+        scores[e] = s
     ranked = sorted(edge_ids, key=lambda e: (-scores[e], e))
 
     stats = {

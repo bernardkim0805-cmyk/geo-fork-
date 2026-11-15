@@ -1012,6 +1012,9 @@ function renderSidebar() {
     + (uncTok ? ` (${uncTok.toLocaleString()} on parse checks)` : '');
 }
 
+// --- How decide voted -----------------------------------------------------
+// The tally counts PAPERS, not edges: one study contributing twenty claims used
+// to outvote twenty studies contributing one each.
 // --- Sub-questions --------------------------------------------------------
 // A question naming several causes or effects is searched once per (X,Y) pair,
 // each judged on its own, because a finding can hold for glyphosate and not for
@@ -1485,6 +1488,8 @@ function renderMainInner(t) {
     <!-- 3. Retrieve -->
     ${stageHead('retrieve', 3, 'Retrieve', 'Nodes → the X→Y edges between them')}
     ${renderFunnel(g, r) || `<div class="card"><div class="answer-box" style="color:var(--muted)">No funnel stats in this trace.</div></div>`}
+
+    <!-- Evidence graph -->
     ${(r.edges && r.edges.length) ? `
     <div class="card">
       <div class="card-head">

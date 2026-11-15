@@ -92,6 +92,11 @@ _BROAD_WORDS = {
     # whose top_k caps the node sets -- but strategy A has no such cap, and the
     # same change took b3 from 27 edges to 370. Only trust an ablation run on
     # the strategy that is actually the default.
+    # Measurement words that name no subject on their own. "seedling size" was
+    # being widened to bare "size", which matches seed size, patch size and
+    # clutch size alike.
+    "size", "amount", "number", "quantity", "value", "index", "score",
+    "content", "status", "condition", "quality", "presence", "absence",
     "soil", "land", "fire", "water", "plant", "species", "cover", "surface",
     "ground", "site", "area", "carbon", "organic", "native", "total", "layer",
     "type", "depth", "level", "rate", "change", "effect", "increase", "decrease",
@@ -141,20 +146,29 @@ def _match(graph: Graph, terms: list[str], allowed_types: set[str],
     removed, so the UI can show the funnel instead of only the survivors."""
     effective = _expand_terms(terms) if expand else list(dict.fromkeys(terms))
     pats = [_term_pattern(t) for t in effective]
-    hits, wrong_type = [], 0
+    # A node whose NAME matches is about the phrase. One that matches only in
+    # the rest of embedding_text was merely measured on it -- "soil inoculum
+    # quantity ... applied to: tree seedlings" is a soil study, not a seedling
+    # one. Both are kept so nothing is lost, but named matches come first and
+    # the weaker ones are recorded so the caller can cut them.
+    named, applied, wrong_type = [], [], 0
     for nid, n in graph.nodes.items():
-        text = graph.node_text(nid)
-        if not any(p.search(text) for p in pats):
+        name_text = graph.node_name_text(nid)
+        on_name = any(p.search(name_text) for p in pats)
+        if not on_name and not any(p.search(graph.node_text(nid)) for p in pats):
             continue
         if n.get("entity_type") not in allowed_types:
             wrong_type += 1
             continue
-        hits.append(nid)
+        (named if on_name else applied).append(nid)
+    hits = named + applied
     if stats is not None:
         stats["expanded_terms"] = effective
         stats["text_matched"] = len(hits) + wrong_type
         stats["dropped_wrong_type"] = wrong_type
         stats["kept"] = len(hits)
+        stats["named"] = len(named)
+        stats["applied_only"] = len(applied)
         # which single term is responsible for the most hits — the usual culprit
         # when grounding explodes to hundreds of nodes
         per_term = {}

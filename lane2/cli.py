@@ -6,6 +6,7 @@ wrong at full confidence, so any crash becomes a low-confidence no_evidence.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import sys
 import traceback

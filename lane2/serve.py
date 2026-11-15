@@ -144,16 +144,26 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    # Only these are served. Everything else in the repo is off limits: the
+    # handler's root is the working directory, so without this GET /.env
+    # returned the BRINE key to anything that could reach the port, including
+    # a page on another site using the browser as a proxy.
+    SERVABLE = {"/ui.html", "/answers.json", "/answers.trace.json",
+                "/answers.live.json", "/ablations.json", "/compare.json"}
+
     def do_GET(self):
-        if self.path.split("?")[0] == "/api/status":
+        path = self.path.split("?")[0]
+        if path == "/api/status":
             if not self._ok_origin():
                 return self._json(403, {"error": "forbidden"})
             return self._json(200, RUNNER.status())
-        if self.path in ("/", ""):
+        if path in ("/", ""):
             self.send_response(302)
             self.send_header("Location", "/ui.html")
             self.end_headers()
             return
+        if path not in self.SERVABLE:
+            return self._json(404, {"error": "not found"})
         return super().do_GET()
 
     def do_POST(self):

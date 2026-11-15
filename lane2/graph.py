@@ -31,9 +31,22 @@ class Graph:
         }
 
     def node_text(self, node_id: str) -> str:
-        """Searchable text for a node. `embedding_text` already joins name,
-        entity_term, measured_attribute, qualifier and applied_to labels."""
+        """Everything searchable about a node. `embedding_text` already joins
+        name, entity_term, measured_attribute, qualifier and applied_to."""
         n = self.nodes[node_id]
         return n.get("embedding_text") or " ".join(
             str(n.get(k) or "") for k in ("name", "entity_term", "measured_attribute")
         )
+
+    def node_name_text(self, node_id: str) -> str:
+        """What the node IS, without what it was measured on.
+
+        `embedding_text` ends with "applied to: tree seedlings", so a question
+        about seedlings matched "soil inoculum quantity" -- a soil study that
+        happened to be measured on seedlings. Those are different claims, and
+        a match on the name is worth far more than a match on the subject the
+        measurement was taken from.
+        """
+        n = self.nodes[node_id]
+        return " ".join(str(n.get(k) or "")
+                        for k in ("name", "entity_term", "measured_attribute"))
