@@ -211,9 +211,8 @@ def read_edge(edge: dict, graph, query: Query) -> EdgeVote:
         v.direction, v.reason = ABSTAIN, f"no sign (predicate={pred}, object={obj_q})"
         return v
     s = 1
-    if s_role is not None:
-        # D5: the role check read the subject WITH its qualifier, so it is the net
-        # sign. UNSURE keeps the subject as is: no second (D2) call for the same node.
+    if s_role in ("SAME", "OPPOSITE"):
+        # D5: the role check read the subject WITH its qualifier, so it is the net sign
         if s_role == "OPPOSITE":
             s, v.flipped_subject = -1, True
     else:

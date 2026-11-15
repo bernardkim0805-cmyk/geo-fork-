@@ -509,14 +509,6 @@ class RoleCheck(unittest.TestCase):
         self.assertEqual(d.direction, "decrease")
         self.assertEqual(d.edge_ids, [e])
 
-    def test_unsure_subject_makes_no_second_d2_call(self):
-        self._answers({"Weed removal": "UNSURE", "seedling growth": "UP"})
-        e = self._edge("Weed removal", "removed", "seedling growth", "increased")
-        d = run(self.g, [e], q("competing vegetation", "seedling growth"))
-        self.assertEqual(len(self.calls), 1)          # the batched call only
-        self.assertEqual(d.direction, "increase")     # UNSURE: subject kept as is
-
-
 class BadInput(unittest.TestCase):
     """F1-F3: decide never throws on bad edge input."""
 
