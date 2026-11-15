@@ -12,17 +12,49 @@ lines), so this narrows in two calls:
   1. pick_papers   question + every paper title      -> relevant papers
   2. pick_edges    those papers' edges, one per line -> edges per cause/effect
 
-Nothing here raises. A failed or unparseable call returns an empty result and
-the caller keeps whatever the keyword passes found.
+A failed call is retried and reported on stderr. If it still fails, the result
+says so (`ok` is False) and the caller keeps what the keyword passes found, so
+a broken LLM call is never reported as "the graph has no evidence".
 """
 from __future__ import annotations
 
 import json
 import re
+import sys
+import time
 from collections import defaultdict
 
 from .graph import Graph
 from .llm import chat_counted
+
+# A failed call is retried, loudly. Each attempt waits a little longer.
+_ATTEMPTS = 3
+_BACKOFF_S = 3
+
+
+def _call(what: str, messages: list[dict], parse, **params):
+    """One LLM call with retries. Returns (parsed value, tokens spent, ok).
+
+    A failure is a network error, a timeout, or a reply `parse` cannot read.
+    Every failure is printed to stderr; nothing is swallowed. `ok` is False
+    only when every attempt failed, so the caller can tell "the model found
+    nothing" (ok, empty) from "we never got an answer" (not ok).
+    """
+    tokens = 0
+    for attempt in range(1, _ATTEMPTS + 1):
+        try:
+            raw, t = chat_counted(messages, **params)
+            tokens += t
+            return parse(raw), tokens, True
+        except Exception as exc:
+            print(f"  [llm_retrieve] {what} failed (attempt {attempt}/{_ATTEMPTS}): "
+                  f"{type(exc).__name__}: {str(exc)[:200]}", file=sys.stderr)
+            if attempt < _ATTEMPTS:
+                time.sleep(_BACKOFF_S * attempt)
+    print(f"  [llm_retrieve] {what} GAVE UP after {_ATTEMPTS} attempts",
+          file=sys.stderr)
+    return None, tokens, False
+
 
 # Edges per pick_edges call. Above this the list is split, so one over-generous
 # paper selection cannot overflow the context window.
@@ -116,23 +148,30 @@ def _header(question: str, causes: list[str], effects: list[str]) -> str:
 
 
 def pick_papers(question: str, causes: list[str], effects: list[str],
-                graph: Graph) -> tuple[list[str], int]:
-    """Document ids the model thinks could hold evidence, and tokens spent."""
+                graph: Graph) -> tuple[list[str], int, bool]:
+    """Document ids the model thinks could hold evidence, tokens spent, and
+    whether the call succeeded (an empty list with ok=True is a real answer)."""
     by_doc = _edges_by_doc(graph)
     docs = [d for d in graph.docs if by_doc.get(d)]
     listing = "\n".join(f"{i}. {(graph.docs[d].get('title') or d)[:160]}"
                         for i, d in enumerate(docs))
-    try:
-        raw, tokens = chat_counted(
-            [{"role": "system", "content": _PAPER_SYSTEM},
-             {"role": "user", "content":
-                 f"{_header(question, causes, effects)}\n\nPAPERS:\n{listing}"}],
-            max_tokens=600, temperature=0)
+
+    def parse(raw: str) -> list[int]:
         picked = _json(raw)
-        return [docs[i] for i in dict.fromkeys(picked)
-                if isinstance(i, int) and 0 <= i < len(docs)], tokens
-    except Exception:
-        return [], 0
+        if not isinstance(picked, list):
+            raise ValueError(f"expected a JSON array, got: {raw[:80]!r}")
+        return picked
+
+    picked, tokens, ok = _call(
+        "paper pick",
+        [{"role": "system", "content": _PAPER_SYSTEM},
+         {"role": "user", "content":
+             f"{_header(question, causes, effects)}\n\nPAPERS:\n{listing}"}],
+        parse, max_tokens=600, temperature=0)
+    if not ok:
+        return [], tokens, False
+    return [docs[i] for i in dict.fromkeys(picked)
+            if isinstance(i, int) and 0 <= i < len(docs)], tokens, True
 
 
 def _edge_line(graph: Graph, eid: str) -> str:
@@ -144,8 +183,9 @@ def _edge_line(graph: Graph, eid: str) -> str:
 
 def pick_edges(question: str, causes: list[str], effects: list[str],
                doc_ids: list[str], graph: Graph
-               ) -> tuple[dict[tuple[str, str], list[str]], int]:
-    """(cause, effect) -> edge ids the model says bear on it, and tokens spent."""
+               ) -> tuple[dict[tuple[str, str], list[str]], int, int]:
+    """(cause, effect) -> edge ids the model says bear on it, tokens spent, and
+    how many batches failed after every retry (0 means all were read)."""
     by_doc = _edges_by_doc(graph)
     # batches of whole papers, so a paper's title always sits above its edges
     batches, cur, n = [], [], 0
@@ -160,25 +200,26 @@ def pick_edges(question: str, causes: list[str], effects: list[str],
         batches.append(cur)
 
     out: dict[tuple[str, str], list[str]] = defaultdict(list)
-    total = 0
-    for batch in batches:
+    total, failed = 0, 0
+    for n_batch, batch in enumerate(batches, 1):
         ids, lines = [], []
         for d in batch:
             lines.append(f"\nPAPER: {(graph.docs[d].get('title') or d)[:160]}")
             for eid in by_doc[d]:
                 lines.append(f"{len(ids)}. {_edge_line(graph, eid)}")
                 ids.append(eid)
-        try:
-            raw, tokens = chat_counted(
-                [{"role": "system", "content": _EDGE_SYSTEM},
-                 {"role": "user", "content":
-                     f"{_header(question, causes, effects)}\n\nFINDINGS:"
-                     + "\n".join(lines)}],
-                max_tokens=500, temperature=0)
-            total += tokens
-        except Exception:
+        picks, tokens, ok = _call(
+            f"edge pick (batch {n_batch}/{len(batches)})",
+            [{"role": "system", "content": _EDGE_SYSTEM},
+             {"role": "user", "content":
+                 f"{_header(question, causes, effects)}\n\nFINDINGS:"
+                 + "\n".join(lines)}],
+            _parse_picks, max_tokens=500, temperature=0)
+        total += tokens
+        if not ok:
+            failed += 1
             continue
-        for key, nums in _parse_picks(raw):
+        for key, nums in picks:
             ci, ei = key
             if not (0 <= ci < len(causes) and 0 <= ei < len(effects)):
                 continue
@@ -186,16 +227,25 @@ def pick_edges(question: str, causes: list[str], effects: list[str],
             for i in nums:
                 if 0 <= i < len(ids) and ids[i] not in out[pair]:
                     out[pair].append(ids[i])
-    return dict(out), total
+    return dict(out), total, failed
 
 
 def llm_retrieve(question: str, causes: list[str], effects: list[str],
                  graph: Graph) -> dict:
-    """Both steps. Returns papers, per-pair edges, the flat edge list and tokens."""
-    papers, t1 = pick_papers(question, causes, effects, graph)
-    by_pair, t2 = pick_edges(question, causes, effects, papers, graph) if papers else ({}, 0)
+    """Both steps. Returns papers, per-pair edges, the flat edge list, tokens,
+    and `ok`: False when the paper call or any edge batch failed every retry."""
+    papers, t1, ok = pick_papers(question, causes, effects, graph)
+    by_pair, t2, failed = ({}, 0, 0)
+    if papers:
+        by_pair, t2, failed = pick_edges(question, causes, effects, papers, graph)
     edge_ids = list(dict.fromkeys(e for ids in by_pair.values() for e in ids))
+    problem = None
+    if not ok:
+        problem = "paper pick failed after every retry"
+    elif failed:
+        problem = f"{failed} edge batch(es) failed after every retry"
     return {"papers": papers, "by_pair": by_pair, "edge_ids": edge_ids,
+            "ok": problem is None, "problem": problem,
             "tokens": {"papers": t1, "edges": t2, "total": t1 + t2}}
 
 
@@ -213,6 +263,13 @@ def apply(query, pairs: list[dict], graph: Graph, mode: str) -> dict:
     causes = list(dict.fromkeys(p["intervention"] for p in pairs))
     effects = list(dict.fromkeys(p["outcome"] for p in pairs))
     res = llm_retrieve(query.raw, causes, effects, graph)
+    if not res["ok"] and mode == "only":
+        # We did not get a full answer from the model, so its picks cannot
+        # stand in for the keyword edges. Keep both rather than report an
+        # outage as "no evidence".
+        print(f"  [llm_retrieve] {res['problem']}: keeping keyword edges "
+              f"for this question", file=sys.stderr)
+        mode = "union"
     by_doc = _edges_by_doc(graph)
     picked_per_doc: dict[str, int] = defaultdict(int)
     for eid in res["edge_ids"]:
@@ -244,6 +301,8 @@ def apply(query, pairs: list[dict], graph: Graph, mode: str) -> dict:
                          "final": len(ev.edge_ids)})
     return {
         "mode": mode,
+        "ok": res["ok"],
+        "problem": res["problem"],
         "papers": [{"id": d, "title": graph.docs[d].get("title"),
                     "edges": len(by_doc[d]), "picked": picked_per_doc.get(d, 0)}
                    for d in res["papers"]],
