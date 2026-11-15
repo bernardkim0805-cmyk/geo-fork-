@@ -28,26 +28,31 @@ _CACHE: dict[tuple, str] = {}
 STATS = {"calls": 0, "items": 0, "cache_hits": 0, "failures": 0}
 
 SYSTEM = """\
-You check whether claims from ecology papers are about what a question asks.
-Each item is a node from a paper; the change the paper reports is in [brackets].
+Match nodes from ecology papers to a question. [brackets] = change the paper reports.
 
-CAUSE items (question cause X). Answer:
-SAME: the node, as stated, means more or presence of X. Narrower or broader
-  forms count ('glyphosate application' for 'herbicides').
-OPPOSITE: the node means less or absence of X ('Time since harvest [increased]'
-  for 'harvesting'; 'Reduced deer densities [decreased]' for 'deer browsing';
-  'distance from smelter [increased]' for 'contaminants').
-UNRELATED: a different cause. UNSURE: cannot tell.
+CAUSE items, vs the question's cause X:
+SAME: more or presence of X. Narrower, broader or unspecified forms count
+ ('glyphosate application' for 'herbicides'; 'harvest disturbance' for 'partial harvesting').
+OPPOSITE: only less or absence of X ('Time since harvest [increased]' for
+ 'harvesting'; 'Reduced deer densities' for 'deer browsing'; 'distance from smelter
+ [increased]' for 'contaminants').
+UNRELATED: a different cause, including a different treatment ('clearcutting' for
+ 'partial harvesting'; 'replanting' for 'competing vegetation').
 
-EFFECT items (question outcome Y). Answer what the node, as stated, says
-happened to Y:
-UP: Y increased ('failure of regeneration [decreased]' for 'recovery').
-DOWN: Y decreased ('Impaired copepod composition [decreased]' for 'aquatic communities').
-NONE: about Y, but no up/down stated or unchanged.
-UNRELATED: a different quantity ('non-native forb cover' for 'native plant cover').
-UNSURE: cannot tell.
+EFFECT items, vs the question's outcome Y. Say what happened to Y. Change words
+in a name (Increased, Decreased, Higher, Lower, Impaired) repeat the bracket:
+count the change once ('Decreased cover of Agrostis [decreased]' is DOWN for
+'non-native plant cover'). Flip only when the node measures the inverse of Y:
+UP or DOWN: 'failure of regeneration [decreased]' is UP for 'recovery'; 'seedling
+ mortality [increased]' is DOWN for 'survival'; 'Impaired copepod composition
+ [decreased]' is DOWN for 'aquatic communities'.
+NONE: about Y, but no direction stated, or unchanged.
+UNRELATED: a different quantity or group ('non-native forb cover' for 'native
+ plant cover'; 'vole survival' for 'seedling survival'). Unspecified forms count
+ as Y ('Richness' for 'native plant richness').
 
-Reply with one line per item: <number> <ANSWER>. Nothing else."""
+UNSURE: either kind, when you cannot tell.
+Reply one line per item: <number> <ANSWER>. Nothing else."""
 
 
 def _key(side: str, phrase: str, name: str, qual) -> tuple:
@@ -60,6 +65,11 @@ def get(side: str, phrase: str, name: str, qual) -> str | None:
     if v is not None:
         STATS["cache_hits"] += 1
     return v
+
+
+def peek(side: str, phrase: str, name: str, qual) -> str | None:
+    """Like get(), without counting a cache hit (used to choose between sub-questions)."""
+    return _CACHE.get(_key(side, phrase, name, qual))
 
 
 def _format(items: list[tuple]) -> str:

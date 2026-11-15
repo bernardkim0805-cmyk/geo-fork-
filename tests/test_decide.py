@@ -483,6 +483,40 @@ class RoleCheck(unittest.TestCase):
         self.assertTrue(d.votes[0].flipped_subject)
 
 
+    def test_combined_pass_picks_the_pair_the_edge_is_about(self):
+        # found by both pairs; richness ranked it higher, but it is a cover edge
+        self._answers({"Glyphosate": "SAME", "native forb cover": "DOWN"})
+        mapping = {("native plant richness", "native forb cover"): "UNRELATED"}
+        inner = self.llm.chat
+
+        def chat(messages, **kw):
+            out, y = [], None
+            for line in messages[-1]["content"].splitlines():
+                if line.startswith("EFFECT Y = "):
+                    y = line.split("'")[1]
+                parts = line.split(" ", 1)
+                if parts[0].isdigit():
+                    name = parts[1].split(" [")[0]
+                    code = mapping.get((y, name)) or inner(
+                        [{"content": f"{parts[0]} {parts[1]}"}]).split(" ", 1)[1]
+                    out.append(f"{parts[0]} {code}")
+            return "\n".join(out)
+        self.llm.chat = chat
+        e = self._edge("Glyphosate", "occurred", "native forb cover", "decreased")
+        rich, cover = q("glyphosate", "native plant richness"), q("glyphosate", "native plant cover")
+        d = decide(q("glyphosate", "native plant richness"), Grounding(),
+                   Evidence(edge_ids=[e]), self.g, {e: [rich, cover]})
+        self.assertEqual(d.direction, "decrease")
+        self.assertEqual(d.edge_ids, [e])
+
+    def test_unsure_subject_makes_no_second_d2_call(self):
+        self._answers({"Weed removal": "UNSURE", "seedling growth": "UP"})
+        e = self._edge("Weed removal", "removed", "seedling growth", "increased")
+        d = run(self.g, [e], q("competing vegetation", "seedling growth"))
+        self.assertEqual(len(self.calls), 1)          # the batched call only
+        self.assertEqual(d.direction, "increase")     # UNSURE: subject kept as is
+
+
 class BadInput(unittest.TestCase):
     """F1-F3: decide never throws on bad edge input."""
 

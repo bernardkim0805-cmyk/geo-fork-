@@ -211,8 +211,9 @@ def read_edge(edge: dict, graph, query: Query) -> EdgeVote:
         v.direction, v.reason = ABSTAIN, f"no sign (predicate={pred}, object={obj_q})"
         return v
     s = 1
-    if s_role in ("SAME", "OPPOSITE"):
-        # D5: the role check read the subject WITH its qualifier, so it is the net sign
+    if s_role is not None:
+        # D5: the role check read the subject WITH its qualifier, so it is the net
+        # sign. UNSURE keeps the subject as is: no second (D2) call for the same node.
         if s_role == "OPPOSITE":
             s, v.flipped_subject = -1, True
     else:
@@ -367,6 +368,13 @@ def _usable_edges(edge_ids, graph) -> tuple[list[str], list[str]]:
     return usable, bad
 
 
+def _candidates(eid: str, query: Query, edge_queries: dict | None) -> list:
+    c = (edge_queries or {}).get(eid)
+    if c is None:
+        return [query]
+    return list(c) if isinstance(c, (list, tuple)) else [c]
+
+
 def role_items(edge_ids, graph, query: Query, edge_queries: dict | None = None) -> list[tuple]:
     """D5: the (side, phrase, node name, qualifier) items the role check needs."""
     items = []
@@ -374,17 +382,34 @@ def role_items(edge_ids, graph, query: Query, edge_queries: dict | None = None) 
         e = graph.edges.get(eid)
         if e is None or e.get("subject") not in graph.nodes or e.get("object") not in graph.nodes:
             continue
-        q = (edge_queries or {}).get(eid, query)
         s, o = graph.nodes[e["subject"]], graph.nodes[e["object"]]
-        items.append((roles.CAUSE, q.intervention, s.get("name"), s.get("state_or_change_qualifier")))
-        items.append((roles.EFFECT, q.outcome, o.get("name"), o.get("state_or_change_qualifier")))
+        for q in _candidates(eid, query, edge_queries):
+            items.append((roles.CAUSE, q.intervention, s.get("name"), s.get("state_or_change_qualifier")))
+            items.append((roles.EFFECT, q.outcome, o.get("name"), o.get("state_or_change_qualifier")))
     return items
+
+
+def _pick_query(eid: str, graph, query: Query, edge_queries: dict | None) -> Query:
+    """D5: of the sub-questions that found this edge, the one it is about.
+    Prefers: neither side UNRELATED, then subject SAME, then retrieval order."""
+    cands = _candidates(eid, query, edge_queries)
+    if len(cands) == 1 or not CONFIG["role_check"]:
+        return cands[0]
+    e = graph.edges[eid]
+    s, o = graph.nodes[e["subject"]], graph.nodes[e["object"]]
+
+    def rank(q):
+        sr = roles.peek(roles.CAUSE, q.intervention, s.get("name"), s.get("state_or_change_qualifier"))
+        orr = roles.peek(roles.EFFECT, q.outcome, o.get("name"), o.get("state_or_change_qualifier"))
+        return ("UNRELATED" not in (sr, orr), sr == "SAME", orr in ("UP", "DOWN", "NONE"))
+    return max(cands, key=rank)  # max() keeps the first of equals: retrieval order
 
 
 def decide(query: Query, g: Grounding, ev: Evidence, graph,
            edge_queries: dict | None = None) -> Decision:
-    """edge_queries: edge id -> the sub-question (X, Y) that found it. The combined
-    pass over several pairs needs it, or every edge is read against the first X."""
+    """edge_queries: edge id -> the sub-question(s) (X, Y) that found it. The
+    combined pass over several pairs needs it, or every edge is read against the
+    first X; with several, the one the edge is about is chosen (D5)."""
     if query.parse_method == "failed":
         return Decision(status="no_evidence", confidence=CONFIG["conf_parse_failed"],
                         searched_for="could not parse an intervention and outcome from the question")
@@ -392,7 +417,7 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph,
     usable, bad = _usable_edges(ev.edge_ids, graph)
     if CONFIG["role_check"]:
         roles.prefetch(role_items(usable, graph, query, edge_queries))
-    votes = [read_edge(graph.edges[e], graph, (edge_queries or {}).get(e, query))
+    votes = [read_edge(graph.edges[e], graph, _pick_query(e, graph, query, edge_queries))
              for e in usable]
     voting = [v for v in votes if v.direction is not None]
     unrelated = sum(1 for v in votes if v.unrelated)

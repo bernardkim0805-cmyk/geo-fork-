@@ -117,16 +117,15 @@ def run_pair(x: str, y: str, raw: str, graph: Graph, debug: bool,
 
 
 def edge_queries(pairs: list[dict]) -> dict:
-    """Edge id -> the sub-question that ranked it highest. The combined pass reads
-    each edge against its own X and Y, not the question's first ones."""
-    best: dict = {}
+    """Edge id -> every sub-question that found it, best retrieval score first.
+    decide picks the one the edge is actually about (D5), so a native-cover edge
+    found by both the cover and the richness pair is read against cover."""
+    found: dict = {}
     for p in pairs:
         ev = p["evidence"]
         for eid in ev.edge_ids:
-            s = ev.scores.get(eid, 0.0)
-            if eid not in best or s > best[eid][0]:
-                best[eid] = (s, p["query"])
-    return {eid: q for eid, (s, q) in best.items()}
+            found.setdefault(eid, []).append((ev.scores.get(eid, 0.0), p["query"]))
+    return {eid: [q for _, q in sorted(c, key=lambda t: -t[0])] for eid, c in found.items()}
 
 
 def _dedupe(seqs) -> list:
