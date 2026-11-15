@@ -14,6 +14,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Optional
 
+from . import roles
 from .schema import Decision, Evidence, Grounding, Query
 
 # --------------------------------------------------------------------------
@@ -30,6 +31,16 @@ CONFIG = {
                     "terminated": -1, "interrupted": -1, "aborted": -1},
     "negative_subject_qualifiers": {"removed", "absent", "decreased",
                                     "terminated", "interrupted", "aborted"},
+    # D4: subject NAMES that measure the inverse of a thing ("distance from X" rises
+    # as X falls). Sent to the same SAME/OPPOSITE check as a removal qualifier.
+    # D5: one batched LLM call per decide() checks each subject against X and each
+    # object against Y (lane2/roles.py). Off -> rules only (D2/D4 still run).
+    "role_check": True,
+    # D5: object qualifier says up, role check says down (or vice versa):
+    # "abstain" = cite as context, no vote; "llm" = trust the role check.
+    "role_disagree": "abstain",
+    "inverse_subject_name": r"\b(distance (from|to)|(time|years?) since|recovery (from|after)|"
+                            r"pristine|undisturbed|unpolluted|uncontaminated|\w+-free)\b",
     # D2 fallback (no LLM): question phrases that are themselves about a removal -> no flip.
     # Tightened: control/cut/thin/clear/harvest/'no ' removed (e.g. 'erosion control').
     "removal_words": r"\b(remov|exclu|exclos|absen|suppress|eradicat|cull|elimin|"
@@ -93,6 +104,7 @@ class EdgeVote:
     head_to_head: bool = False    # compared to another treatment / reference, not "nothing"
     associative: bool = False
     flipped_subject: bool = False
+    unrelated: bool = False       # D5: role check says the cause or effect is off-topic
     observational: bool = False   # no randomized/quasi/natural experiment behind it (C2)
     grade: Optional[str] = None
     reason: str = ""
@@ -133,6 +145,20 @@ def read_edge(edge: dict, graph, query: Query) -> EdgeVote:
         v.reason = "excluded: variation-in object"
         return v
 
+    # D5: role check (lane2/roles.py). None = never classified -> rules only.
+    subj_q = graph.nodes[edge["subject"]].get("state_or_change_qualifier")
+    obj_q = graph.nodes[edge["object"]].get("state_or_change_qualifier")
+    s_role = o_role = None
+    if CONFIG["role_check"]:
+        s_role = roles.get(roles.CAUSE, query.intervention, subj_name, subj_q)
+        o_role = roles.get(roles.EFFECT, query.outcome, obj_name, obj_q)
+    v.extra["roles"] = {"subject": s_role, "object": o_role}
+    if "UNRELATED" in (s_role, o_role):
+        v.unrelated = True
+        side = "cause" if s_role == "UNRELATED" else "effect"
+        v.reason = f"excluded: {side} is not what the question asks about (role check)"
+        return v
+
     cw, v.head_to_head = _comparator_weight(edge)
     lang = edge.get("causal_language")
     lw = CONFIG["language_weight"].get(lang, 0.75)
@@ -146,20 +172,18 @@ def read_edge(edge: dict, graph, query: Query) -> EdgeVote:
     desc = (edge.get("strength") or {}).get("qualitative_descriptor")
     sw = CONFIG["strength_weight"].get(desc, CONFIG["strength_default_weight"])
     v.weight = round(cw * lw * ew * sw, 3)
-    v.extra = {"comparator": cw, "language": lw, "design": ew, "strength": sw}
+    v.extra.update({"comparator": cw, "language": lw, "design": ew, "strength": sw})
 
     # R2: null result
     if edge.get("negated") or lang == "no_relationship":
         v.direction, v.reason = "no_effect", "negated / no_relationship"
         return v
 
-    obj_q = graph.nodes[edge["object"]].get("state_or_change_qualifier")
     # R3: unchanged (team decision: treat as no_effect)
     if obj_q == "unchanged":
         v.direction, v.reason = "no_effect", "object unchanged"
         return v
 
-    subj_q = graph.nodes[edge["subject"]].get("state_or_change_qualifier")
     # B5: an 'unchanged' subject means X itself didn't vary, so it can't say what X does
     if subj_q == "unchanged":
         v.direction, v.reason = ABSTAIN, "subject unchanged"
@@ -170,17 +194,38 @@ def read_edge(edge: dict, graph, query: Query) -> EdgeVote:
     from_name = False
     if o is None:  # B1: fall back to sign words in the object's name
         o, from_name = _name_sign(obj_name), True
+    # D5: the role check reads the object against Y ("failure of regeneration
+    # [decreased]" is UP for recovery). It fills a missing sign; on disagreement
+    # with the qualifier, CONFIG["role_disagree"] decides who wins.
+    o_llm = {"UP": 1, "DOWN": -1}.get(o_role)
+    from_roles = False
+    if o_llm is not None and o_llm != o:
+        if o is None or CONFIG["role_disagree"] == "llm":
+            o, from_roles, from_name = o_llm, True, False
+        else:
+            v.direction = ABSTAIN
+            v.reason = f"qualifier sign {o} disagrees with role check ({o_role})"
+            return v
     p = CONFIG["predicate_sign"].get(pred)
     if o is None or p is None:
         v.direction, v.reason = ABSTAIN, f"no sign (predicate={pred}, object={obj_q})"
         return v
     s = 1
-    if subj_q in CONFIG["negative_subject_qualifiers"]:
-        subj_name = graph.nodes[edge["subject"]].get("name") or ""
-        if subject_is_opposite(query.intervention or "", subj_name):
+    if s_role in ("SAME", "OPPOSITE"):
+        # D5: the role check read the subject WITH its qualifier, so it is the net sign
+        if s_role == "OPPOSITE":
             s, v.flipped_subject = -1, True
+    else:
+        neg_q = subj_q in CONFIG["negative_subject_qualifiers"]
+        inv_name = bool(re.search(CONFIG["inverse_subject_name"], subj_name, re.I))
+        # D4: exactly one inverse -> ask. Both ("distance from X, decreased" = closer
+        # to X) cancel out, so the subject already points the same way as X.
+        if neg_q != inv_name:
+            if subject_is_opposite(query.intervention or "", subj_name):
+                s, v.flipped_subject = -1, True
     v.direction = "increase" if s * p * o > 0 else "decrease"
     v.reason = (f"sign {s}*{p}*{o}" + (" (object sign from name)" if from_name else "")
+                + (" (object sign from role check)" if from_roles else "")
                 + (" (subject flipped)" if v.flipped_subject else ""))
     return v
 
@@ -193,10 +238,13 @@ _OPPOSITE_CACHE: dict[tuple[str, str], bool] = {}
 
 _PROMPT = (
     "Question intervention: \"{x}\".\n"
-    "A study's claim is about: \"{s}\" (something removed, absent or reduced).\n"
-    "Rule: if the claim removes or lacks the very thing the question names, answer "
-    "OPPOSITE (e.g. 'removal of cattle' for 'grazing'; 'absence of fertilization' for "
-    "'fertilization'; 'weed removal' for 'competing vegetation'). If the question's "
+    "A study's claim is about: \"{s}\" (something removed, absent or reduced, or a "
+    "distance, time or recovery away from something).\n"
+    "Rule: if the claim removes, lacks or moves away from the very thing the question "
+    "names, answer OPPOSITE (e.g. 'removal of cattle' for 'grazing'; 'absence of "
+    "fertilization' for 'fertilization'; 'weed removal' for 'competing vegetation'; "
+    "'distance from contamination source' for 'contaminants'; 'time since fire' for "
+    "'fire'). If the question's "
     "intervention is itself a removal, control or exclusion and the claim describes that "
     "same action, answer SAME (e.g. 'weed removal' for 'weed control'; 'removal of trees' "
     "for 'thinning'; 'release from browsing' for 'browsing exclusion').\n"
@@ -319,17 +367,39 @@ def _usable_edges(edge_ids, graph) -> tuple[list[str], list[str]]:
     return usable, bad
 
 
-def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
+def role_items(edge_ids, graph, query: Query, edge_queries: dict | None = None) -> list[tuple]:
+    """D5: the (side, phrase, node name, qualifier) items the role check needs."""
+    items = []
+    for eid in edge_ids:
+        e = graph.edges.get(eid)
+        if e is None or e.get("subject") not in graph.nodes or e.get("object") not in graph.nodes:
+            continue
+        q = (edge_queries or {}).get(eid, query)
+        s, o = graph.nodes[e["subject"]], graph.nodes[e["object"]]
+        items.append((roles.CAUSE, q.intervention, s.get("name"), s.get("state_or_change_qualifier")))
+        items.append((roles.EFFECT, q.outcome, o.get("name"), o.get("state_or_change_qualifier")))
+    return items
+
+
+def decide(query: Query, g: Grounding, ev: Evidence, graph,
+           edge_queries: dict | None = None) -> Decision:
+    """edge_queries: edge id -> the sub-question (X, Y) that found it. The combined
+    pass over several pairs needs it, or every edge is read against the first X."""
     if query.parse_method == "failed":
         return Decision(status="no_evidence", confidence=CONFIG["conf_parse_failed"],
                         searched_for="could not parse an intervention and outcome from the question")
 
     usable, bad = _usable_edges(ev.edge_ids, graph)
-    votes = [read_edge(graph.edges[e], graph, query) for e in usable]
+    if CONFIG["role_check"]:
+        roles.prefetch(role_items(usable, graph, query, edge_queries))
+    votes = [read_edge(graph.edges[e], graph, (edge_queries or {}).get(e, query))
+             for e in usable]
     voting = [v for v in votes if v.direction is not None]
+    unrelated = sum(1 for v in votes if v.unrelated)
     if not voting:
         note = ("; only edges that don't give X's direct effect on Y's level were found "
-                "(mediates/moderates, interactions, variation-only)") if votes else ""
+                "(mediates/moderates, interactions, variation-only, or about a different "
+                "cause or effect)") if votes else ""
         if bad:
             note += f"; {len(bad)} edge id(s) were missing from the graph"
         d = _no_evidence(query, g, note)
@@ -418,9 +488,12 @@ def decide(query: Query, g: Grounding, ev: Evidence, graph) -> Decision:
 
     flipped = sum(1 for v in voting if v.flipped_subject)
     if flipped:
-        notes.append(f"{flipped} edge(s) describe the absence/removal of the intervention; "
+        notes.append(f"{flipped} edge(s) describe the absence, removal or inverse of the intervention; "
                      "their direction was inverted.")
-    excluded = len(votes) - len(voting)
+    if unrelated:
+        notes.append(f"{unrelated} retrieved edge(s) not counted: their cause or effect is "
+                     "a different thing from the one asked about.")
+    excluded = len(votes) - len(voting) - unrelated
     if excluded:
         notes.append(f"{excluded} edge(s) not counted: indirect (mediates/moderates/...), "
                      "interaction or variation-only.")

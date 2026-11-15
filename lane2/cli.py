@@ -15,7 +15,8 @@ from pathlib import Path
 import yaml
 
 from . import llm
-from .decide import LLM_STATS, decide
+from . import roles
+from .decide import CONFIG as DECIDE_CONFIG, LLM_STATS, decide, role_items
 from .graph import Graph
 from .live import Live
 from .parse import parse
@@ -64,10 +65,10 @@ def _llm_tokens() -> int:
     return llm.USAGE["prompt_tokens"] + llm.USAGE["completion_tokens"]
 
 
-def decide_counted(query, g, ev, graph):
-    """decide() plus the LLM tokens its D2 calls spent (usually 0: cached or skipped)."""
+def decide_counted(query, g, ev, graph, edge_q=None):
+    """decide() plus the LLM tokens its role-check / D2 calls spent (0 when cached)."""
     before = _llm_tokens()
-    d = decide(query, g, ev, graph)
+    d = decide(query, g, ev, graph, edge_q)
     return d, _llm_tokens() - before
 
 
@@ -87,20 +88,45 @@ def _vote_detail(graph: Graph, v) -> dict:
     }
 
 
-def run_pair(x: str, y: str, raw: str, graph: Graph, debug: bool,
-             mode: str = "effect", say=None) -> dict:
-    """Ground, retrieve and judge one cause->effect pair on its own."""
+def retrieve_pair(x: str, y: str, raw: str, graph: Graph, mode: str = "effect",
+                  say=None) -> dict:
+    """Ground and retrieve one cause->effect pair (no judging yet)."""
     say = say or (lambda *a, **k: None)
     sub = Query(x, y, raw=raw, parse_method="pair", mode=mode)
     ev = retrieve(sub, graph, on_grounded=lambda g: say("retrieve"))
-    g = ev.grounding
-    d, dtok = decide_counted(sub, g, ev, graph)
+    return {"intervention": x, "outcome": y, "query": sub, "grounding": ev.grounding,
+            "evidence": ev}
+
+
+def decide_pair(pr: dict, graph: Graph, debug: bool) -> dict:
+    """Judge one retrieved pair on its own."""
+    g, ev = pr["grounding"], pr["evidence"]
+    d, dtok = decide_counted(pr["query"], g, ev, graph)
     if debug:
-        print(f"    [pair] {x!r} -> {y!r}: nodes={len(g.intervention_nodes)}x"
-              f"{len(g.outcome_nodes)} edges={len(ev.edge_ids)}"
-              f" -> {d.status}/{d.direction}", file=sys.stderr)
-    return {"intervention": x, "outcome": y, "grounding": g, "evidence": ev, "decision": d,
-            "decide_tokens": dtok}
+        print(f"    [pair] {pr['intervention']!r} -> {pr['outcome']!r}: "
+              f"nodes={len(g.intervention_nodes)}x{len(g.outcome_nodes)} "
+              f"edges={len(ev.edge_ids)} -> {d.status}/{d.direction}", file=sys.stderr)
+    pr.update(decision=d, decide_tokens=dtok)
+    return pr
+
+
+def run_pair(x: str, y: str, raw: str, graph: Graph, debug: bool,
+             mode: str = "effect", say=None) -> dict:
+    """Ground, retrieve and judge one cause->effect pair on its own."""
+    return decide_pair(retrieve_pair(x, y, raw, graph, mode, say), graph, debug)
+
+
+def edge_queries(pairs: list[dict]) -> dict:
+    """Edge id -> the sub-question that ranked it highest. The combined pass reads
+    each edge against its own X and Y, not the question's first ones."""
+    best: dict = {}
+    for p in pairs:
+        ev = p["evidence"]
+        for eid in ev.edge_ids:
+            s = ev.scores.get(eid, 0.0)
+            if eid not in best or s > best[eid][0]:
+                best[eid] = (s, p["query"])
+    return {eid: q for eid, (s, q) in best.items()}
 
 
 def _dedupe(seqs) -> list:
@@ -193,6 +219,7 @@ def answer_one(q: Question, graph: Graph, debug: bool,
                    "pairs": [list(p) for p in query.pairs],
                    "mode": query.mode, "presumed": query.presumed}
     d2_before = dict(LLM_STATS)
+    roles_before = dict(roles.STATS)
     # Advisory only: scores the parse, never changes it. Off unless --uncertainty.
     if check_uncertainty:
         u_score, u_reason, u_tokens, u_cached = score_uncertainty(q.text, query)
@@ -205,10 +232,18 @@ def answer_one(q: Question, graph: Graph, debug: bool,
     pairs = []
     for i, (x, y) in enumerate(query.pairs):
         say("ground", pair=i)
-        pr = run_pair(x, y, query.raw, graph, debug, query.mode, say)
-        pairs.append(pr)
+        pairs.append(retrieve_pair(x, y, query.raw, graph, query.mode, say))
+    # D5: one batched role-check call for the whole question; every decide below
+    # (each pair, then the combined pass) reads from its cache.
+    rtok = _llm_tokens()
+    if DECIDE_CONFIG["role_check"]:
+        roles.prefetch([it for p in pairs for it in role_items(
+            p["evidence"].edge_ids, graph, p["query"])])
+    rtok = _llm_tokens() - rtok
+    for i, pr in enumerate(pairs):
+        decide_pair(pr, graph, debug)
         if live:
-            live.pair_done(q.id, {"intervention": x, "outcome": y,
+            live.pair_done(q.id, {"intervention": pr["intervention"], "outcome": pr["outcome"],
                                   "nodes": [len(pr["grounding"].intervention_nodes),
                                             len(pr["grounding"].outcome_nodes)],
                                   "edges": len(pr["evidence"].edge_ids),
@@ -217,9 +252,10 @@ def answer_one(q: Question, graph: Graph, debug: bool,
     say("decide", pair=None)
     g = combine_groundings([p["grounding"] for p in pairs], query)
     ev = combine_evidence([p["evidence"] for p in pairs])
-    d, dtok = decide_counted(query, g, ev, graph)
-    dtok += sum(p["decide_tokens"] for p in pairs)
+    d, dtok = decide_counted(query, g, ev, graph, edge_queries(pairs))
+    dtok += sum(p["decide_tokens"] for p in pairs) + rtok
     d2 = {k: LLM_STATS[k] - d2_before[k] for k in LLM_STATS}
+    role_stats = {k: roles.STATS[k] - roles_before[k] for k in roles.STATS}
     out = render(q, query, d)
     if pairs:
         out["answer"] = pair_sentences(pairs, out.get("answer", ""))
@@ -282,7 +318,9 @@ def answer_one(q: Question, graph: Graph, debug: bool,
                    "votes": [_vote_detail(graph, v) for v in d.votes],
                    "explain": d.explain,
                    # D2: removal-subject LLM check, this question only
-                   "d2": d2},
+                   "d2": d2,
+                   # D5: batched role check, this question only
+                   "roles": role_stats},
         "answer": out,
     }
     return out, trace

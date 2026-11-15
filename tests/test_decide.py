@@ -6,8 +6,14 @@ from __future__ import annotations
 
 import unittest
 
+import lane2.decide as _dec
+from lane2 import roles
 from lane2.decide import decide, read_edge
 from lane2.schema import Evidence, Grounding, Query
+
+# Unit tests never call the real endpoint: the D5 role check is switched on only
+# inside RoleCheck, with a fake LLM.
+_dec.CONFIG["role_check"] = False
 
 
 class FakeGraph:
@@ -336,6 +342,145 @@ class RemovalCheck(unittest.TestCase):
         e = self.g.edge(subj, "causes", self.g.node("sediment loss", "increased"))
         v = read_edge(self.g.edges[e], self.g, q("erosion control", "sediment loss"))
         self.assertEqual(v.direction, "decrease")
+
+    # D4: inverse subject by NAME ("distance from X"), not by qualifier
+    def _distance_edge(self, qualifier="increased"):
+        subj = self.g.node("Distance from contamination source", qualifier)
+        return self.g.edge(subj, "associated_with", self.g.node("taxonomic richness", "increased"))
+
+    def test_D4_distance_from_x_flips_when_llm_says_opposite(self):
+        self._with_llm("OPPOSITE")
+        v = read_edge(self.g.edges[self._distance_edge()], self.g,
+                      q("contaminants", "aquatic communities"))
+        self.assertEqual(v.direction, "decrease")
+        self.assertTrue(v.flipped_subject)
+        self.assertEqual(len(self.calls), 1)
+
+    def test_D4_distance_from_x_not_flipped_when_llm_says_same(self):
+        self._with_llm("SAME")
+        v = read_edge(self.g.edges[self._distance_edge()], self.g,
+                      q("remediation actions", "aquatic communities"))
+        self.assertEqual(v.direction, "increase")
+        self.assertFalse(v.flipped_subject)
+
+    def test_D4_decreased_distance_is_a_double_inverse_and_never_flips(self):
+        self._with_llm("OPPOSITE")  # closer to the source = more contaminant
+        v = read_edge(self.g.edges[self._distance_edge("decreased")], self.g,
+                      q("contaminants", "aquatic communities"))
+        self.assertEqual(v.direction, "increase")
+        self.assertEqual(self.calls, [])
+
+    def test_D4_fallback_without_llm_flips_distance(self):
+        self.llm.configured = lambda: False
+        v = read_edge(self.g.edges[self._distance_edge()], self.g,
+                      q("contaminants", "aquatic communities"))
+        self.assertEqual(v.direction, "decrease")
+
+
+class RoleCheck(unittest.TestCase):
+    """D5: one batched call classifies subjects vs X and objects vs Y."""
+
+    def setUp(self):
+        import lane2.llm as llm
+        self.llm = llm
+        self._chat, self._configured = llm.chat, llm.configured
+        roles.clear()
+        _dec._OPPOSITE_CACHE.clear()
+        _dec.CONFIG["role_check"] = True
+        self.g = FakeGraph()
+        self.calls = []
+
+    def tearDown(self):
+        self.llm.chat, self.llm.configured = self._chat, self._configured
+        _dec.CONFIG["role_check"] = False
+        _dec.CONFIG["role_disagree"] = "abstain"
+        roles.clear()
+
+    def _answers(self, mapping):
+        """Fake LLM: answer each numbered item by the node name it carries."""
+        self.llm.configured = lambda: True
+
+        def fake_chat(messages, **kw):
+            self.calls.append(messages)
+            out = []
+            for line in messages[-1]["content"].splitlines():
+                parts = line.split(" ", 1)
+                if parts[0].isdigit():
+                    name = parts[1].split(" [")[0]
+                    out.append(f"{parts[0]} {mapping.get(name, 'UNSURE')}")
+            return "\n".join(out)
+        self.llm.chat = fake_chat
+
+    def _edge(self, subj, subj_q, obj, obj_q, doc="doc1"):
+        return self.g.edge(self.g.node(subj, subj_q), "causes", self.g.node(obj, obj_q), doc=doc)
+
+    def test_unrelated_object_is_excluded_and_noted(self):
+        self._answers({"Glyphosate": "SAME", "non-native forb cover": "UNRELATED",
+                       "native forb cover": "DOWN"})
+        e1 = self._edge("Glyphosate", "occurred", "non-native forb cover", "increased")
+        e2 = self._edge("Glyphosate", "occurred", "native forb cover", "decreased", doc="doc2")
+        d = run(self.g, [e1, e2], q("glyphosate", "native plant cover"))
+        self.assertEqual(d.direction, "decrease")
+        self.assertEqual(d.edge_ids, [e2])
+        self.assertTrue(any("different thing" in n for n in d.notes))
+
+    def test_unrelated_subject_is_excluded(self):
+        self._answers({"soil amendment": "UNRELATED", "richness": "UP"})
+        e = self._edge("soil amendment", "occurred", "richness", "increased")
+        d = run(self.g, [e], q("contaminants", "aquatic communities"))
+        self.assertEqual(d.status, "no_evidence")
+
+    def test_opposite_subject_flips(self):
+        self._answers({"Time since harvest": "OPPOSITE", "regeneration density": "UP"})
+        e = self._edge("Time since harvest", "increased", "regeneration density", "increased")
+        d = run(self.g, [e], q("harvesting", "regeneration"))
+        self.assertEqual(d.direction, "decrease")
+
+    def test_inverse_object_disagreeing_with_qualifier_abstains_by_default(self):
+        self._answers({"logging": "SAME", "failure of regeneration": "UP"})
+        e = self._edge("logging", "occurred", "failure of regeneration", "decreased")
+        v = run(self.g, [e], q("logging", "recovery")).votes[0]
+        self.assertEqual(v.direction, "abstain")
+
+    def test_inverse_object_trusted_when_configured(self):
+        _dec.CONFIG["role_disagree"] = "llm"
+        self._answers({"logging": "SAME", "failure of regeneration": "UP"})
+        e = self._edge("logging", "occurred", "failure of regeneration", "decreased")
+        self.assertEqual(run(self.g, [e], q("logging", "recovery")).direction, "increase")
+
+    def test_role_check_fills_a_missing_object_sign(self):
+        self._answers({"fertilization": "SAME", "seedling vigour": "UP"})
+        e = self._edge("fertilization", "introduced", "seedling vigour", "present")
+        self.assertEqual(run(self.g, [e]).direction, "increase")
+
+    def test_one_call_per_decide_and_cached_after(self):
+        self._answers({"fertilization": "SAME", "survival": "UP"})
+        eids = [self._edge("fertilization", "introduced", "survival", "increased", doc=f"d{i}")
+                for i in range(5)]
+        run(self.g, eids)
+        run(self.g, eids)
+        self.assertEqual(len(self.calls), 1)
+
+    def test_endpoint_down_falls_back_to_rules(self):
+        self.llm.configured = lambda: True
+
+        def boom(messages, **kw):
+            raise RuntimeError("down")
+        self.llm.chat = boom
+        e = self._edge("fertilization", "introduced", "survival", "increased")
+        self.assertEqual(run(self.g, [e]).direction, "increase")
+
+    def test_combined_pass_reads_each_edge_against_its_own_x(self):
+        self._answers({"mat removal": "OPPOSITE", "germination": "DOWN"})
+        e = self._edge("mat removal", "removed", "germination", "decreased")
+        sub = q("competing vegetation", "recovery")
+        d = decide(q("deer browsing", "recovery"), Grounding(), Evidence(edge_ids=[e]),
+                   self.g, {e: sub})
+        # less vegetation -> less germination, so vegetation -> more germination
+        self.assertEqual(d.direction, "increase")
+        self.assertEqual(self.calls[0][-1]["content"].splitlines()[0],
+                         "CAUSE X = 'competing vegetation':")
+        self.assertTrue(d.votes[0].flipped_subject)
 
 
 class BadInput(unittest.TestCase):
